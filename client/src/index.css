@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0d0d0d;
+  --bg2: #111111;
+  --bg3: #181818;
+  --border: #1f1f1f;
+  --border2: #252525;
+  --orange: #ff6b35;
+  --orange2: #f7451d;
+  --orange-dim: rgba(255,107,53,0.15);
+  --red: #ef4444;
+  --green: #22c55e;
+  --text: #e5e5e5;
+  --text-dim: #888888;
+  --text-hint: #555555;
+  --purple: #c084fc;
+  --blue: #60a5fa;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+select { outline: none; }
+button { outline: none; }

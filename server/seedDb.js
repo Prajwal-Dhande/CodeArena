@@ -1,0 +1,902 @@
+const mongoose = require('mongoose')
+const Problem = require('./src/models/Problem')
+require('dotenv').config()
+
+const PROBLEMS = [
+  // ── ARRAYS ──
+  {
+    slug: 'two-sum',
+    title: 'Two Sum',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    companies: ['Google', 'Amazon', 'Facebook'],
+    acceptance: 49,
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+    examples: [
+      { input: 'nums = [2,7,11,15], target = 9', output: '[0,1]', explain: 'nums[0] + nums[1] = 9' },
+      { input: 'nums = [3,2,4], target = 6', output: '[1,2]' },
+    ],
+    constraints: ['2 ≤ nums.length ≤ 10⁴', '-10⁹ ≤ nums[i] ≤ 10⁹'],
+    testCases: [
+      { input: { nums: [2,7,11,15], target: 9 }, expected: [0,1], functionCall: 'twoSum([2,7,11,15], 9)' },
+      { input: { nums: [3,2,4], target: 6 }, expected: [1,2], functionCall: 'twoSum([3,2,4], 6)' },
+      { input: { nums: [3,3], target: 6 }, expected: [0,1], functionCall: 'twoSum([3,3], 6)' },
+    ],
+    starterCode: {
+      javascript: `function twoSum(nums, target) {\n  // Your solution here\n};`,
+      python: `def twoSum(nums, target):\n    pass`,
+      cpp: `vector<int> twoSum(vector<int>& nums, int target) {\n}`,
+      java: `public int[] twoSum(int[] nums, int target) {\n    return new int[]{};\n}`,
+    },
+    hints: ['Use a hash map', 'For each number check if target - number exists'],
+  },
+  {
+    slug: 'best-time-to-buy-stock',
+    title: 'Best Time to Buy and Sell Stock',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    companies: ['Amazon', 'Facebook', 'Microsoft'],
+    acceptance: 54,
+    description: 'You are given an array prices where prices[i] is the price of a given stock on the ith day. Return the maximum profit. If no profit possible, return 0.',
+    examples: [
+      { input: 'prices = [7,1,5,3,6,4]', output: '5', explain: 'Buy day 2 price=1, sell day 5 price=6' },
+      { input: 'prices = [7,6,4,3,1]', output: '0' },
+    ],
+    constraints: ['1 ≤ prices.length ≤ 10⁵', '0 ≤ prices[i] ≤ 10⁴'],
+    testCases: [
+      { input: { prices: [7,1,5,3,6,4] }, expected: 5, functionCall: 'maxProfit([7,1,5,3,6,4])' },
+      { input: { prices: [7,6,4,3,1] }, expected: 0, functionCall: 'maxProfit([7,6,4,3,1])' },
+      { input: { prices: [1,2] }, expected: 1, functionCall: 'maxProfit([1,2])' },
+    ],
+    starterCode: {
+      javascript: `function maxProfit(prices) {\n  // Your solution here\n};`,
+      python: `def maxProfit(prices):\n    pass`,
+      cpp: `int maxProfit(vector<int>& prices) {\n    return 0;\n}`,
+      java: `public int maxProfit(int[] prices) {\n    return 0;\n}`,
+    },
+    hints: ['Track minimum price so far', 'Calculate profit at each step'],
+  },
+  {
+    slug: 'contains-duplicate',
+    title: 'Contains Duplicate',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    companies: ['Google', 'Apple'],
+    acceptance: 61,
+    description: 'Given an integer array nums, return true if any value appears at least twice, false if every element is distinct.',
+    examples: [
+      { input: 'nums = [1,2,3,1]', output: 'true' },
+      { input: 'nums = [1,2,3,4]', output: 'false' },
+    ],
+    constraints: ['1 ≤ nums.length ≤ 10⁵'],
+    testCases: [
+      { input: { nums: [1,2,3,1] }, expected: true, functionCall: 'containsDuplicate([1,2,3,1])' },
+      { input: { nums: [1,2,3,4] }, expected: false, functionCall: 'containsDuplicate([1,2,3,4])' },
+      { input: { nums: [1,1,1,3,3,4] }, expected: true, functionCall: 'containsDuplicate([1,1,1,3,3,4])' },
+    ],
+    starterCode: {
+      javascript: `function containsDuplicate(nums) {\n  // Your solution here\n};`,
+      python: `def containsDuplicate(nums):\n    pass`,
+      cpp: `bool containsDuplicate(vector<int>& nums) {\n    return false;\n}`,
+      java: `public boolean containsDuplicate(int[] nums) {\n    return false;\n}`,
+    },
+    hints: ['Use a Set'],
+  },
+  {
+    slug: 'maximum-subarray',
+    title: 'Maximum Subarray',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    companies: ['Amazon', 'Microsoft', 'Google'],
+    acceptance: 50,
+    description: 'Given an integer array nums, find the subarray with the largest sum and return its sum.',
+    examples: [
+      { input: 'nums = [-2,1,-3,4,-1,2,1,-5,4]', output: '6', explain: '[4,-1,2,1] has sum 6' },
+      { input: 'nums = [1]', output: '1' },
+    ],
+    constraints: ['1 ≤ nums.length ≤ 10⁵'],
+    testCases: [
+      { input: { nums: [-2,1,-3,4,-1,2,1,-5,4] }, expected: 6, functionCall: 'maxSubArray([-2,1,-3,4,-1,2,1,-5,4])' },
+      { input: { nums: [1] }, expected: 1, functionCall: 'maxSubArray([1])' },
+      { input: { nums: [5,4,-1,7,8] }, expected: 23, functionCall: 'maxSubArray([5,4,-1,7,8])' },
+    ],
+    starterCode: {
+      javascript: `function maxSubArray(nums) {\n  // Your solution here\n};`,
+      python: `def maxSubArray(nums):\n    pass`,
+      cpp: `int maxSubArray(vector<int>& nums) {\n    return 0;\n}`,
+      java: `public int maxSubArray(int[] nums) {\n    return 0;\n}`,
+    },
+    hints: ["Kadane's algorithm", 'Track current sum and max sum'],
+  },
+  {
+    slug: 'product-of-array-except-self',
+    title: 'Product of Array Except Self',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    companies: ['Facebook', 'Amazon', 'Microsoft'],
+    acceptance: 65,
+    description: 'Given array nums, return array where answer[i] is product of all elements except nums[i]. Must run in O(n) without division.',
+    examples: [
+      { input: 'nums = [1,2,3,4]', output: '[24,12,8,6]' },
+    ],
+    constraints: ['2 ≤ nums.length ≤ 10⁵'],
+    testCases: [
+      { input: { nums: [1,2,3,4] }, expected: [24,12,8,6], functionCall: 'productExceptSelf([1,2,3,4])' },
+      { input: { nums: [-1,1,0,-3,3] }, expected: [0,0,9,0,0], functionCall: 'productExceptSelf([-1,1,0,-3,3])' },
+    ],
+    starterCode: {
+      javascript: `function productExceptSelf(nums) {\n  // Your solution here\n};`,
+      python: `def productExceptSelf(nums):\n    pass`,
+      cpp: `vector<int> productExceptSelf(vector<int>& nums) {\n}`,
+      java: `public int[] productExceptSelf(int[] nums) {\n    return new int[]{};\n}`,
+    },
+    hints: ['Use prefix and suffix products'],
+  },
+  {
+    slug: 'three-sum',
+    title: '3Sum',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    companies: ['Amazon', 'Facebook', 'Microsoft'],
+    acceptance: 32,
+    description: 'Given array nums, return all triplets [nums[i], nums[j], nums[k]] such that they sum to 0.',
+    examples: [
+      { input: 'nums = [-1,0,1,2,-1,-4]', output: '[[-1,-1,2],[-1,0,1]]' },
+    ],
+    constraints: ['3 ≤ nums.length ≤ 3000'],
+    testCases: [
+      { input: { nums: [-1,0,1,2,-1,-4] }, expected: [[-1,-1,2],[-1,0,1]], functionCall: 'threeSum([-1,0,1,2,-1,-4])' },
+      { input: { nums: [0,1,1] }, expected: [], functionCall: 'threeSum([0,1,1])' },
+      { input: { nums: [0,0,0] }, expected: [[0,0,0]], functionCall: 'threeSum([0,0,0])' },
+    ],
+    starterCode: {
+      javascript: `function threeSum(nums) {\n  // Your solution here\n};`,
+      python: `def threeSum(nums):\n    pass`,
+      cpp: `vector<vector<int>> threeSum(vector<int>& nums) {\n}`,
+      java: `public List<List<Integer>> threeSum(int[] nums) {\n    return new ArrayList<>();\n}`,
+    },
+    hints: ['Sort first', 'Fix one element use two pointers'],
+  },
+  {
+    slug: 'container-with-most-water',
+    title: 'Container With Most Water',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    companies: ['Amazon', 'Google', 'Adobe'],
+    acceptance: 54,
+    description: 'Given n non-negative integers representing heights, find two lines that form a container with the most water.',
+    examples: [
+      { input: 'height = [1,8,6,2,5,4,8,3,7]', output: '49' },
+      { input: 'height = [1,1]', output: '1' },
+    ],
+    constraints: ['2 ≤ n ≤ 10⁵'],
+    testCases: [
+      { input: { height: [1,8,6,2,5,4,8,3,7] }, expected: 49, functionCall: 'maxArea([1,8,6,2,5,4,8,3,7])' },
+      { input: { height: [1,1] }, expected: 1, functionCall: 'maxArea([1,1])' },
+      { input: { height: [4,3,2,1,4] }, expected: 16, functionCall: 'maxArea([4,3,2,1,4])' },
+    ],
+    starterCode: {
+      javascript: `function maxArea(height) {\n  // Your solution here\n};`,
+      python: `def maxArea(height):\n    pass`,
+      cpp: `int maxArea(vector<int>& height) {\n    return 0;\n}`,
+      java: `public int maxArea(int[] height) {\n    return 0;\n}`,
+    },
+    hints: ['Two pointers from both ends', 'Move shorter line inward'],
+  },
+  {
+    slug: 'missing-number',
+    title: 'Missing Number',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    companies: ['Microsoft', 'Amazon'],
+    acceptance: 62,
+    description: 'Given array nums containing n distinct numbers in range [0,n], return the only missing number.',
+    examples: [
+      { input: 'nums = [3,0,1]', output: '2' },
+      { input: 'nums = [0,1]', output: '2' },
+    ],
+    constraints: ['1 ≤ n ≤ 10⁴'],
+    testCases: [
+      { input: { nums: [3,0,1] }, expected: 2, functionCall: 'missingNumber([3,0,1])' },
+      { input: { nums: [0,1] }, expected: 2, functionCall: 'missingNumber([0,1])' },
+      { input: { nums: [9,6,4,2,3,5,7,0,1] }, expected: 8, functionCall: 'missingNumber([9,6,4,2,3,5,7,0,1])' },
+    ],
+    starterCode: {
+      javascript: `function missingNumber(nums) {\n  // Your solution here\n};`,
+      python: `def missingNumber(nums):\n    pass`,
+      cpp: `int missingNumber(vector<int>& nums) {\n    return 0;\n}`,
+      java: `public int missingNumber(int[] nums) {\n    return 0;\n}`,
+    },
+    hints: ['Sum formula: n*(n+1)/2'],
+  },
+  {
+    slug: 'merge-intervals',
+    title: 'Merge Intervals',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    companies: ['Facebook', 'Microsoft', 'Google'],
+    acceptance: 46,
+    description: 'Given an array of intervals, merge all overlapping intervals.',
+    examples: [
+      { input: 'intervals = [[1,3],[2,6],[8,10],[15,18]]', output: '[[1,6],[8,10],[15,18]]' },
+    ],
+    constraints: ['1 ≤ intervals.length ≤ 10⁴'],
+    testCases: [
+      { input: { intervals: [[1,3],[2,6],[8,10],[15,18]] }, expected: [[1,6],[8,10],[15,18]], functionCall: 'merge([[1,3],[2,6],[8,10],[15,18]])' },
+      { input: { intervals: [[1,4],[4,5]] }, expected: [[1,5]], functionCall: 'merge([[1,4],[4,5]])' },
+    ],
+    starterCode: {
+      javascript: `function merge(intervals) {\n  // Your solution here\n};`,
+      python: `def merge(intervals):\n    pass`,
+      cpp: `vector<vector<int>> merge(vector<vector<int>>& intervals) {\n}`,
+      java: `public int[][] merge(int[][] intervals) {\n    return intervals;\n}`,
+    },
+    hints: ['Sort by start time', 'Compare end of last merged with start of current'],
+  },
+
+  // ── STRINGS ──
+  {
+    slug: 'valid-parentheses',
+    title: 'Valid Parentheses',
+    difficulty: 'Easy',
+    category: 'Strings',
+    companies: ['Google', 'Facebook', 'Amazon'],
+    acceptance: 40,
+    description: 'Given a string s containing "(", ")", "{", "}", "[" and "]", determine if it is valid.',
+    examples: [
+      { input: 's = "()"', output: 'true' },
+      { input: 's = "(]"', output: 'false' },
+    ],
+    constraints: ['1 ≤ s.length ≤ 10⁴'],
+    testCases: [
+      { input: { s: '()' }, expected: true, functionCall: 'isValid("()")' },
+      { input: { s: '()[]{}' }, expected: true, functionCall: 'isValid("()[]{}")' },
+      { input: { s: '(]' }, expected: false, functionCall: 'isValid("(]")' },
+    ],
+    starterCode: {
+      javascript: `function isValid(s) {\n  // Your solution here\n};`,
+      python: `def isValid(s):\n    pass`,
+      cpp: `bool isValid(string s) {\n    return false;\n}`,
+      java: `public boolean isValid(String s) {\n    return false;\n}`,
+    },
+    hints: ['Use a stack'],
+  },
+  {
+    slug: 'longest-substring-without-repeating',
+    title: 'Longest Substring Without Repeating Characters',
+    difficulty: 'Medium',
+    category: 'Strings',
+    companies: ['Amazon', 'Bloomberg', 'Facebook'],
+    acceptance: 34,
+    description: 'Given a string s, find the length of the longest substring without repeating characters.',
+    examples: [
+      { input: 's = "abcabcbb"', output: '3', explain: '"abc"' },
+      { input: 's = "bbbbb"', output: '1' },
+    ],
+    constraints: ['0 ≤ s.length ≤ 5 * 10⁴'],
+    testCases: [
+      { input: { s: 'abcabcbb' }, expected: 3, functionCall: 'lengthOfLongestSubstring("abcabcbb")' },
+      { input: { s: 'bbbbb' }, expected: 1, functionCall: 'lengthOfLongestSubstring("bbbbb")' },
+      { input: { s: 'pwwkew' }, expected: 3, functionCall: 'lengthOfLongestSubstring("pwwkew")' },
+    ],
+    starterCode: {
+      javascript: `function lengthOfLongestSubstring(s) {\n  // Your solution here\n};`,
+      python: `def lengthOfLongestSubstring(s):\n    pass`,
+      cpp: `int lengthOfLongestSubstring(string s) {\n    return 0;\n}`,
+      java: `public int lengthOfLongestSubstring(String s) {\n    return 0;\n}`,
+    },
+    hints: ['Sliding window', 'Use a Set or Map'],
+  },
+  {
+    slug: 'valid-anagram',
+    title: 'Valid Anagram',
+    difficulty: 'Easy',
+    category: 'Strings',
+    companies: ['Amazon', 'Facebook'],
+    acceptance: 63,
+    description: 'Given two strings s and t, return true if t is an anagram of s.',
+    examples: [
+      { input: 's = "anagram", t = "nagaram"', output: 'true' },
+      { input: 's = "rat", t = "car"', output: 'false' },
+    ],
+    constraints: ['1 ≤ s.length, t.length ≤ 5 * 10⁴'],
+    testCases: [
+      { input: { s: 'anagram', t: 'nagaram' }, expected: true, functionCall: 'isAnagram("anagram", "nagaram")' },
+      { input: { s: 'rat', t: 'car' }, expected: false, functionCall: 'isAnagram("rat", "car")' },
+      { input: { s: 'listen', t: 'silent' }, expected: true, functionCall: 'isAnagram("listen", "silent")' },
+    ],
+    starterCode: {
+      javascript: `function isAnagram(s, t) {\n  // Your solution here\n};`,
+      python: `def isAnagram(s, t):\n    pass`,
+      cpp: `bool isAnagram(string s, string t) {\n    return false;\n}`,
+      java: `public boolean isAnagram(String s, String t) {\n    return false;\n}`,
+    },
+    hints: ['Count character frequencies'],
+  },
+  {
+    slug: 'group-anagrams',
+    title: 'Group Anagrams',
+    difficulty: 'Medium',
+    category: 'Strings',
+    companies: ['Amazon', 'Facebook', 'Apple'],
+    acceptance: 67,
+    description: 'Given an array of strings strs, group the anagrams together.',
+    examples: [
+      { input: 'strs = ["eat","tea","tan","ate","nat","bat"]', output: '[["bat"],["nat","tan"],["ate","eat","tea"]]' },
+    ],
+    constraints: ['1 ≤ strs.length ≤ 10⁴'],
+    testCases: [
+      { input: { strs: ['eat','tea','tan','ate','nat','bat'] }, expected: [['bat'],['nat','tan'],['ate','eat','tea']], functionCall: 'groupAnagrams(["eat","tea","tan","ate","nat","bat"])' },
+      { input: { strs: [''] }, expected: [['']], functionCall: 'groupAnagrams([""])' },
+    ],
+    starterCode: {
+      javascript: `function groupAnagrams(strs) {\n  // Your solution here\n};`,
+      python: `def groupAnagrams(strs):\n    pass`,
+      cpp: `vector<vector<string>> groupAnagrams(vector<string>& strs) {\n}`,
+      java: `public List<List<String>> groupAnagrams(String[] strs) {\n    return new ArrayList<>();\n}`,
+    },
+    hints: ['Sort each string as key', 'Use HashMap'],
+  },
+  {
+    slug: 'longest-palindromic-substring',
+    title: 'Longest Palindromic Substring',
+    difficulty: 'Medium',
+    category: 'Strings',
+    companies: ['Amazon', 'Microsoft', 'Apple'],
+    acceptance: 32,
+    description: 'Given a string s, return the longest palindromic substring.',
+    examples: [
+      { input: 's = "babad"', output: '"bab"' },
+      { input: 's = "cbbd"', output: '"bb"' },
+    ],
+    constraints: ['1 ≤ s.length ≤ 1000'],
+    testCases: [
+      { input: { s: 'babad' }, expected: 'bab', functionCall: 'longestPalindrome("babad")' },
+      { input: { s: 'cbbd' }, expected: 'bb', functionCall: 'longestPalindrome("cbbd")' },
+      { input: { s: 'a' }, expected: 'a', functionCall: 'longestPalindrome("a")' },
+    ],
+    starterCode: {
+      javascript: `function longestPalindrome(s) {\n  // Your solution here\n};`,
+      python: `def longestPalindrome(s):\n    pass`,
+      cpp: `string longestPalindrome(string s) {\n    return "";\n}`,
+      java: `public String longestPalindrome(String s) {\n    return "";\n}`,
+    },
+    hints: ['Expand around center'],
+  },
+
+  // ── LINKED LIST ──
+  {
+    slug: 'reverse-linked-list',
+    title: 'Reverse Linked List',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    companies: ['Amazon', 'Facebook', 'Microsoft'],
+    acceptance: 73,
+    description: 'Given the head of a singly linked list, reverse the list and return the reversed list.',
+    examples: [
+      { input: 'head = [1,2,3,4,5]', output: '[5,4,3,2,1]' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 5000'],
+    testCases: [
+      { input: { head: [1,2,3,4,5] }, expected: [5,4,3,2,1], functionCall: 'reverseList([1,2,3,4,5])' },
+      { input: { head: [1,2] }, expected: [2,1], functionCall: 'reverseList([1,2])' },
+      { input: { head: [] }, expected: [], functionCall: 'reverseList([])' },
+    ],
+    starterCode: {
+      javascript: `function reverseList(head) {\n  // Your solution here\n};`,
+      python: `def reverseList(head):\n    pass`,
+      cpp: `ListNode* reverseList(ListNode* head) {\n    return head;\n}`,
+      java: `public ListNode reverseList(ListNode head) {\n    return head;\n}`,
+    },
+    hints: ['Three pointers: prev, curr, next'],
+  },
+  {
+    slug: 'merge-two-sorted-lists',
+    title: 'Merge Two Sorted Lists',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    companies: ['Amazon', 'Microsoft', 'Apple'],
+    acceptance: 62,
+    description: 'Merge the two sorted linked lists and return the head of the merged list.',
+    examples: [
+      { input: 'list1 = [1,2,4], list2 = [1,3,4]', output: '[1,1,2,3,4,4]' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 50'],
+    testCases: [
+      { input: { l1: [1,2,4], l2: [1,3,4] }, expected: [1,1,2,3,4,4], functionCall: 'mergeTwoLists([1,2,4], [1,3,4])' },
+      { input: { l1: [], l2: [] }, expected: [], functionCall: 'mergeTwoLists([], [])' },
+      { input: { l1: [], l2: [0] }, expected: [0], functionCall: 'mergeTwoLists([], [0])' },
+    ],
+    starterCode: {
+      javascript: `function mergeTwoLists(list1, list2) {\n  // Your solution here\n};`,
+      python: `def mergeTwoLists(list1, list2):\n    pass`,
+      cpp: `ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n    return list1;\n}`,
+      java: `public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n    return list1;\n}`,
+    },
+    hints: ['Use dummy head node'],
+  },
+  {
+    slug: 'linked-list-cycle',
+    title: 'Linked List Cycle',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    companies: ['Amazon', 'Microsoft'],
+    acceptance: 49,
+    description: 'Given head of a linked list, determine if it has a cycle.',
+    examples: [
+      { input: 'head = [3,2,0,-4]', output: 'true' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 10⁴'],
+    testCases: [
+      { input: { head: [3,2,0,-4], pos: 1 }, expected: true, functionCall: 'hasCycle([3,2,0,-4])' },
+      { input: { head: [1], pos: -1 }, expected: false, functionCall: 'hasCycle([1])' },
+    ],
+    starterCode: {
+      javascript: `function hasCycle(head) {\n  // Your solution here\n};`,
+      python: `def hasCycle(head):\n    pass`,
+      cpp: `bool hasCycle(ListNode *head) {\n    return false;\n}`,
+      java: `public boolean hasCycle(ListNode head) {\n    return false;\n}`,
+    },
+    hints: ["Floyd's cycle detection", 'Slow and fast pointers'],
+  },
+
+  // ── TREES ──
+  {
+    slug: 'maximum-depth-binary-tree',
+    title: 'Maximum Depth of Binary Tree',
+    difficulty: 'Easy',
+    category: 'Trees',
+    companies: ['LinkedIn', 'Google', 'Amazon'],
+    acceptance: 73,
+    description: 'Given the root of a binary tree, return its maximum depth.',
+    examples: [
+      { input: 'root = [3,9,20,null,null,15,7]', output: '3' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 10⁴'],
+    testCases: [
+      { input: { root: [3,9,20,null,null,15,7] }, expected: 3, functionCall: 'maxDepth([3,9,20,null,null,15,7])' },
+      { input: { root: [1,null,2] }, expected: 2, functionCall: 'maxDepth([1,null,2])' },
+      { input: { root: [] }, expected: 0, functionCall: 'maxDepth([])' },
+    ],
+    starterCode: {
+      javascript: `function maxDepth(root) {\n  // Your solution here\n};`,
+      python: `def maxDepth(root):\n    pass`,
+      cpp: `int maxDepth(TreeNode* root) {\n    return 0;\n}`,
+      java: `public int maxDepth(TreeNode root) {\n    return 0;\n}`,
+    },
+    hints: ['Recursion: max(left, right) + 1'],
+  },
+  {
+    slug: 'invert-binary-tree',
+    title: 'Invert Binary Tree',
+    difficulty: 'Easy',
+    category: 'Trees',
+    companies: ['Google', 'Facebook', 'Uber'],
+    acceptance: 76,
+    description: 'Given the root of a binary tree, invert the tree and return its root.',
+    examples: [
+      { input: 'root = [4,2,7,1,3,6,9]', output: '[4,7,2,9,6,3,1]' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 100'],
+    testCases: [
+      { input: { root: [4,2,7,1,3,6,9] }, expected: [4,7,2,9,6,3,1], functionCall: 'invertTree([4,2,7,1,3,6,9])' },
+      { input: { root: [2,1,3] }, expected: [2,3,1], functionCall: 'invertTree([2,1,3])' },
+    ],
+    starterCode: {
+      javascript: `function invertTree(root) {\n  // Your solution here\n};`,
+      python: `def invertTree(root):\n    pass`,
+      cpp: `TreeNode* invertTree(TreeNode* root) {\n    return root;\n}`,
+      java: `public TreeNode invertTree(TreeNode root) {\n    return root;\n}`,
+    },
+    hints: ['Swap left and right recursively'],
+  },
+  {
+    slug: 'binary-tree-level-order',
+    title: 'Binary Tree Level Order Traversal',
+    difficulty: 'Medium',
+    category: 'Trees',
+    companies: ['Amazon', 'Facebook', 'Bloomberg'],
+    acceptance: 65,
+    description: 'Given the root of a binary tree, return the level order traversal of its nodes values.',
+    examples: [
+      { input: 'root = [3,9,20,null,null,15,7]', output: '[[3],[9,20],[15,7]]' },
+    ],
+    constraints: ['0 ≤ nodes ≤ 2000'],
+    testCases: [
+      { input: { root: [3,9,20,null,null,15,7] }, expected: [[3],[9,20],[15,7]], functionCall: 'levelOrder([3,9,20,null,null,15,7])' },
+      { input: { root: [1] }, expected: [[1]], functionCall: 'levelOrder([1])' },
+      { input: { root: [] }, expected: [], functionCall: 'levelOrder([])' },
+    ],
+    starterCode: {
+      javascript: `function levelOrder(root) {\n  // Your solution here\n};`,
+      python: `def levelOrder(root):\n    pass`,
+      cpp: `vector<vector<int>> levelOrder(TreeNode* root) {\n}`,
+      java: `public List<List<Integer>> levelOrder(TreeNode root) {\n    return new ArrayList<>();\n}`,
+    },
+    hints: ['BFS with queue', 'Process level by level'],
+  },
+  {
+    slug: 'validate-binary-search-tree',
+    title: 'Validate Binary Search Tree',
+    difficulty: 'Medium',
+    category: 'Trees',
+    companies: ['Amazon', 'Microsoft', 'Facebook'],
+    acceptance: 32,
+    description: 'Given the root of a binary tree, determine if it is a valid binary search tree.',
+    examples: [
+      { input: 'root = [2,1,3]', output: 'true' },
+      { input: 'root = [5,1,4,null,null,3,6]', output: 'false' },
+    ],
+    constraints: ['1 ≤ nodes ≤ 10⁴'],
+    testCases: [
+      { input: { root: [2,1,3] }, expected: true, functionCall: 'isValidBST([2,1,3])' },
+      { input: { root: [5,1,4,null,null,3,6] }, expected: false, functionCall: 'isValidBST([5,1,4,null,null,3,6])' },
+    ],
+    starterCode: {
+      javascript: `function isValidBST(root) {\n  // Your solution here\n};`,
+      python: `def isValidBST(root):\n    pass`,
+      cpp: `bool isValidBST(TreeNode* root) {\n    return false;\n}`,
+      java: `public boolean isValidBST(TreeNode root) {\n    return false;\n}`,
+    },
+    hints: ['Pass min and max bounds recursively'],
+  },
+
+  // ── DYNAMIC PROGRAMMING ──
+  {
+    slug: 'climbing-stairs',
+    title: 'Climbing Stairs',
+    difficulty: 'Easy',
+    category: 'Dynamic Programming',
+    companies: ['Amazon', 'Adobe', 'Apple'],
+    acceptance: 52,
+    description: 'You are climbing a staircase. It takes n steps to reach the top. Each time you can climb 1 or 2 steps. In how many distinct ways can you climb to the top?',
+    examples: [
+      { input: 'n = 2', output: '2' },
+      { input: 'n = 3', output: '3' },
+    ],
+    constraints: ['1 ≤ n ≤ 45'],
+    testCases: [
+      { input: { n: 2 }, expected: 2, functionCall: 'climbStairs(2)' },
+      { input: { n: 3 }, expected: 3, functionCall: 'climbStairs(3)' },
+      { input: { n: 5 }, expected: 8, functionCall: 'climbStairs(5)' },
+    ],
+    starterCode: {
+      javascript: `function climbStairs(n) {\n  // Your solution here\n};`,
+      python: `def climbStairs(n):\n    pass`,
+      cpp: `int climbStairs(int n) {\n    return 0;\n}`,
+      java: `public int climbStairs(int n) {\n    return 0;\n}`,
+    },
+    hints: ['Fibonacci pattern', 'dp[i] = dp[i-1] + dp[i-2]'],
+  },
+  {
+    slug: 'coin-change',
+    title: 'Coin Change',
+    difficulty: 'Medium',
+    category: 'Dynamic Programming',
+    companies: ['Amazon', 'Microsoft', 'Goldman Sachs'],
+    acceptance: 42,
+    description: 'Given coins of different denominations and an amount, return the fewest coins needed. If impossible, return -1.',
+    examples: [
+      { input: 'coins = [1,5,11], amount = 11', output: '1' },
+      { input: 'coins = [2], amount = 3', output: '-1' },
+    ],
+    constraints: ['1 ≤ coins.length ≤ 12', '0 ≤ amount ≤ 10⁴'],
+    testCases: [
+      { input: { coins: [1,5,11], amount: 11 }, expected: 1, functionCall: 'coinChange([1,5,11], 11)' },
+      { input: { coins: [2], amount: 3 }, expected: -1, functionCall: 'coinChange([2], 3)' },
+      { input: { coins: [1,2,5], amount: 11 }, expected: 3, functionCall: 'coinChange([1,2,5], 11)' },
+    ],
+    starterCode: {
+      javascript: `function coinChange(coins, amount) {\n  // Your solution here\n};`,
+      python: `def coinChange(coins, amount):\n    pass`,
+      cpp: `int coinChange(vector<int>& coins, int amount) {\n    return -1;\n}`,
+      java: `public int coinChange(int[] coins, int amount) {\n    return -1;\n}`,
+    },
+    hints: ['Bottom-up DP', 'dp[i] = min coins to make amount i'],
+  },
+  {
+    slug: 'house-robber',
+    title: 'House Robber',
+    difficulty: 'Medium',
+    category: 'Dynamic Programming',
+    companies: ['Airbnb', 'LinkedIn', 'Amazon'],
+    acceptance: 50,
+    description: 'Adjacent houses cannot be robbed. Return the maximum amount you can rob tonight.',
+    examples: [
+      { input: 'nums = [1,2,3,1]', output: '4' },
+      { input: 'nums = [2,7,9,3,1]', output: '12' },
+    ],
+    constraints: ['1 ≤ nums.length ≤ 100'],
+    testCases: [
+      { input: { nums: [1,2,3,1] }, expected: 4, functionCall: 'rob([1,2,3,1])' },
+      { input: { nums: [2,7,9,3,1] }, expected: 12, functionCall: 'rob([2,7,9,3,1])' },
+      { input: { nums: [2,1,1,2] }, expected: 4, functionCall: 'rob([2,1,1,2])' },
+    ],
+    starterCode: {
+      javascript: `function rob(nums) {\n  // Your solution here\n};`,
+      python: `def rob(nums):\n    pass`,
+      cpp: `int rob(vector<int>& nums) {\n    return 0;\n}`,
+      java: `public int rob(int[] nums) {\n    return 0;\n}`,
+    },
+    hints: ['dp[i] = max(dp[i-1], dp[i-2] + nums[i])'],
+  },
+  {
+    slug: 'longest-common-subsequence',
+    title: 'Longest Common Subsequence',
+    difficulty: 'Medium',
+    category: 'Dynamic Programming',
+    companies: ['Amazon', 'Google', 'Microsoft'],
+    acceptance: 57,
+    description: 'Given two strings text1 and text2, return the length of their longest common subsequence.',
+    examples: [
+      { input: 'text1 = "abcde", text2 = "ace"', output: '3' },
+    ],
+    constraints: ['1 ≤ text1.length, text2.length ≤ 1000'],
+    testCases: [
+      { input: { text1: 'abcde', text2: 'ace' }, expected: 3, functionCall: 'longestCommonSubsequence("abcde", "ace")' },
+      { input: { text1: 'abc', text2: 'abc' }, expected: 3, functionCall: 'longestCommonSubsequence("abc", "abc")' },
+      { input: { text1: 'abc', text2: 'def' }, expected: 0, functionCall: 'longestCommonSubsequence("abc", "def")' },
+    ],
+    starterCode: {
+      javascript: `function longestCommonSubsequence(text1, text2) {\n  // Your solution here\n};`,
+      python: `def longestCommonSubsequence(text1, text2):\n    pass`,
+      cpp: `int longestCommonSubsequence(string text1, string text2) {\n    return 0;\n}`,
+      java: `public int longestCommonSubsequence(String text1, String text2) {\n    return 0;\n}`,
+    },
+    hints: ['2D DP table', 'If chars match: dp[i][j] = dp[i-1][j-1] + 1'],
+  },
+  {
+    slug: 'word-break',
+    title: 'Word Break',
+    difficulty: 'Medium',
+    category: 'Dynamic Programming',
+    companies: ['Amazon', 'Facebook', 'Google'],
+    acceptance: 45,
+    description: 'Given a string s and dictionary wordDict, return true if s can be segmented into dictionary words.',
+    examples: [
+      { input: 's = "leetcode", wordDict = ["leet","code"]', output: 'true' },
+    ],
+    constraints: ['1 ≤ s.length ≤ 300'],
+    testCases: [
+      { input: { s: 'leetcode', wordDict: ['leet','code'] }, expected: true, functionCall: 'wordBreak("leetcode", ["leet","code"])' },
+      { input: { s: 'catsandog', wordDict: ['cats','dog','sand','and','cat'] }, expected: false, functionCall: 'wordBreak("catsandog", [...])' },
+    ],
+    starterCode: {
+      javascript: `function wordBreak(s, wordDict) {\n  // Your solution here\n};`,
+      python: `def wordBreak(s, wordDict):\n    pass`,
+      cpp: `bool wordBreak(string s, vector<string>& wordDict) {\n    return false;\n}`,
+      java: `public boolean wordBreak(String s, List<String> wordDict) {\n    return false;\n}`,
+    },
+    hints: ['DP array of length n+1'],
+  },
+
+  // ── GRAPHS ──
+  {
+    slug: 'number-of-islands',
+    title: 'Number of Islands',
+    difficulty: 'Medium',
+    category: 'Graphs',
+    companies: ['Amazon', 'Bloomberg', 'Facebook'],
+    acceptance: 57,
+    description: 'Given an m x n grid of "1"s (land) and "0"s (water), return the number of islands.',
+    examples: [
+      { input: 'grid = [["1","1","0"],["0","1","0"],["0","0","1"]]', output: '2' },
+    ],
+    constraints: ['m, n >= 1'],
+    testCases: [
+      { input: { grid: [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]] }, expected: 1, functionCall: 'numIslands(grid)' },
+      { input: { grid: [["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]] }, expected: 3, functionCall: 'numIslands(grid)' },
+    ],
+    starterCode: {
+      javascript: `function numIslands(grid) {\n  // Your solution here\n};`,
+      python: `def numIslands(grid):\n    pass`,
+      cpp: `int numIslands(vector<vector<char>>& grid) {\n    return 0;\n}`,
+      java: `public int numIslands(char[][] grid) {\n    return 0;\n}`,
+    },
+    hints: ['DFS from each unvisited land cell'],
+  },
+  {
+    slug: 'course-schedule',
+    title: 'Course Schedule',
+    difficulty: 'Medium',
+    category: 'Graphs',
+    companies: ['Amazon', 'Facebook', 'Uber'],
+    acceptance: 45,
+    description: 'Given numCourses and prerequisites, return true if you can finish all courses.',
+    examples: [
+      { input: 'numCourses = 2, prerequisites = [[1,0]]', output: 'true' },
+      { input: 'numCourses = 2, prerequisites = [[1,0],[0,1]]', output: 'false' },
+    ],
+    constraints: ['1 ≤ numCourses ≤ 2000'],
+    testCases: [
+      { input: { numCourses: 2, prerequisites: [[1,0]] }, expected: true, functionCall: 'canFinish(2, [[1,0]])' },
+      { input: { numCourses: 2, prerequisites: [[1,0],[0,1]] }, expected: false, functionCall: 'canFinish(2, [[1,0],[0,1]])' },
+    ],
+    starterCode: {
+      javascript: `function canFinish(numCourses, prerequisites) {\n  // Your solution here\n};`,
+      python: `def canFinish(numCourses, prerequisites):\n    pass`,
+      cpp: `bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {\n    return false;\n}`,
+      java: `public boolean canFinish(int numCourses, int[][] prerequisites) {\n    return false;\n}`,
+    },
+    hints: ['Detect cycle in directed graph', 'Topological sort'],
+  },
+
+  // ── BINARY SEARCH ──
+  {
+    slug: 'binary-search',
+    title: 'Binary Search',
+    difficulty: 'Easy',
+    category: 'Binary Search',
+    companies: ['Facebook', 'Amazon'],
+    acceptance: 55,
+    description: 'Given a sorted array nums and target, return the index of target or -1 if not found.',
+    examples: [
+      { input: 'nums = [-1,0,3,5,9,12], target = 9', output: '4' },
+      { input: 'nums = [-1,0,3,5,9,12], target = 2', output: '-1' },
+    ],
+    constraints: ['1 ≤ nums.length ≤ 10⁴', 'Sorted ascending'],
+    testCases: [
+      { input: { nums: [-1,0,3,5,9,12], target: 9 }, expected: 4, functionCall: 'search([-1,0,3,5,9,12], 9)' },
+      { input: { nums: [-1,0,3,5,9,12], target: 2 }, expected: -1, functionCall: 'search([-1,0,3,5,9,12], 2)' },
+      { input: { nums: [5], target: 5 }, expected: 0, functionCall: 'search([5], 5)' },
+    ],
+    starterCode: {
+      javascript: `function search(nums, target) {\n  // Your solution here\n};`,
+      python: `def search(nums, target):\n    pass`,
+      cpp: `int search(vector<int>& nums, int target) {\n    return -1;\n}`,
+      java: `public int search(int[] nums, int target) {\n    return -1;\n}`,
+    },
+    hints: ['left=0, right=n-1', 'mid = Math.floor((left+right)/2)'],
+  },
+  {
+    slug: 'find-minimum-in-rotated-array',
+    title: 'Find Minimum in Rotated Sorted Array',
+    difficulty: 'Medium',
+    category: 'Binary Search',
+    companies: ['Microsoft', 'Amazon', 'Facebook'],
+    acceptance: 49,
+    description: 'Given the sorted rotated array nums of unique elements, return the minimum element.',
+    examples: [
+      { input: 'nums = [3,4,5,1,2]', output: '1' },
+      { input: 'nums = [4,5,6,7,0,1,2]', output: '0' },
+    ],
+    constraints: ['1 ≤ n ≤ 5000', 'All unique'],
+    testCases: [
+      { input: { nums: [3,4,5,1,2] }, expected: 1, functionCall: 'findMin([3,4,5,1,2])' },
+      { input: { nums: [4,5,6,7,0,1,2] }, expected: 0, functionCall: 'findMin([4,5,6,7,0,1,2])' },
+      { input: { nums: [11,13,15,17] }, expected: 11, functionCall: 'findMin([11,13,15,17])' },
+    ],
+    starterCode: {
+      javascript: `function findMin(nums) {\n  // Your solution here\n};`,
+      python: `def findMin(nums):\n    pass`,
+      cpp: `int findMin(vector<int>& nums) {\n    return 0;\n}`,
+      java: `public int findMin(int[] nums) {\n    return 0;\n}`,
+    },
+    hints: ['Modified binary search', 'Compare mid with right'],
+  },
+
+  // ── STACK ──
+  {
+    slug: 'min-stack',
+    title: 'Min Stack',
+    difficulty: 'Medium',
+    category: 'Stack',
+    companies: ['Amazon', 'Bloomberg', 'Google'],
+    acceptance: 53,
+    description: 'Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.',
+    examples: [
+      { input: 'push(-2), push(0), push(-3), getMin(), pop(), top(), getMin()', output: '-3, 0, -2' },
+    ],
+    constraints: ['-2^31 ≤ val ≤ 2^31 - 1'],
+    testCases: [
+      { input: { ops: ['push','push','push','getMin','pop','top','getMin'], vals: [-2,0,-3] }, expected: [-3,0,-2], functionCall: 'MinStack ops' },
+    ],
+    starterCode: {
+      javascript: `class MinStack {\n  constructor() {}\n  push(val) {}\n  pop() {}\n  top() {}\n  getMin() {}\n}`,
+      python: `class MinStack:\n    def __init__(self): pass\n    def push(self, val): pass\n    def pop(self): pass\n    def top(self): pass\n    def getMin(self): pass`,
+      cpp: `class MinStack {\npublic:\n    MinStack() {}\n    void push(int val) {}\n    void pop() {}\n    int top() { return 0; }\n    int getMin() { return 0; }\n};`,
+      java: `class MinStack {\n    public MinStack() {}\n    public void push(int val) {}\n    public void pop() {}\n    public int top() { return 0; }\n    public int getMin() { return 0; }\n}`,
+    },
+    hints: ['Use two stacks: values and minimums'],
+  },
+
+  // ── MATH ──
+  {
+    slug: 'palindrome-number',
+    title: 'Palindrome Number',
+    difficulty: 'Easy',
+    category: 'Math',
+    companies: ['Amazon', 'Adobe'],
+    acceptance: 53,
+    description: 'Given an integer x, return true if x is a palindrome.',
+    examples: [
+      { input: 'x = 121', output: 'true' },
+      { input: 'x = -121', output: 'false' },
+    ],
+    constraints: ['-2^31 ≤ x ≤ 2^31 - 1'],
+    testCases: [
+      { input: { x: 121 }, expected: true, functionCall: 'isPalindrome(121)' },
+      { input: { x: -121 }, expected: false, functionCall: 'isPalindrome(-121)' },
+      { input: { x: 10 }, expected: false, functionCall: 'isPalindrome(10)' },
+    ],
+    starterCode: {
+      javascript: `function isPalindrome(x) {\n  // Your solution here\n};`,
+      python: `def isPalindrome(x):\n    pass`,
+      cpp: `bool isPalindrome(int x) {\n    return false;\n}`,
+      java: `public boolean isPalindrome(int x) {\n    return false;\n}`,
+    },
+    hints: ['Negative numbers not palindromes', 'Convert to string'],
+  },
+  {
+    slug: 'fizz-buzz',
+    title: 'FizzBuzz',
+    difficulty: 'Easy',
+    category: 'Math',
+    companies: ['Microsoft', 'Apple', 'Adobe'],
+    acceptance: 69,
+    description: 'Given n, return string array where each element is "FizzBuzz", "Fizz", "Buzz", or the number.',
+    examples: [
+      { input: 'n = 3', output: '["1","2","Fizz"]' },
+      { input: 'n = 5', output: '["1","2","Fizz","4","Buzz"]' },
+    ],
+    constraints: ['1 ≤ n ≤ 10⁴'],
+    testCases: [
+      { input: { n: 3 }, expected: ['1','2','Fizz'], functionCall: 'fizzBuzz(3)' },
+      { input: { n: 5 }, expected: ['1','2','Fizz','4','Buzz'], functionCall: 'fizzBuzz(5)' },
+      { input: { n: 15 }, expected: ['1','2','Fizz','4','Buzz','Fizz','7','8','Fizz','Buzz','11','Fizz','13','14','FizzBuzz'], functionCall: 'fizzBuzz(15)' },
+    ],
+    starterCode: {
+      javascript: `function fizzBuzz(n) {\n  // Your solution here\n};`,
+      python: `def fizzBuzz(n):\n    pass`,
+      cpp: `vector<string> fizzBuzz(int n) {\n}`,
+      java: `public List<String> fizzBuzz(int n) {\n    return new ArrayList<>();\n}`,
+    },
+    hints: ['Check 15 first, then 3, then 5'],
+  },
+  {
+    slug: 'missing-number-math',
+    title: 'Missing Number',
+    difficulty: 'Easy',
+    category: 'Math',
+    companies: ['Microsoft', 'Amazon'],
+    acceptance: 62,
+    description: 'Given array containing n distinct numbers in range [0,n], return the missing number.',
+    examples: [
+      { input: 'nums = [3,0,1]', output: '2' },
+    ],
+    constraints: ['1 ≤ n ≤ 10⁴'],
+    testCases: [
+      { input: { nums: [3,0,1] }, expected: 2, functionCall: 'missingNumber([3,0,1])' },
+      { input: { nums: [0,1] }, expected: 2, functionCall: 'missingNumber([0,1])' },
+      { input: { nums: [9,6,4,2,3,5,7,0,1] }, expected: 8, functionCall: 'missingNumber([9,6,4,2,3,5,7,0,1])' },
+    ],
+    starterCode: {
+      javascript: `function missingNumber(nums) {\n  // Your solution here\n};`,
+      python: `def missingNumber(nums):\n    pass`,
+      cpp: `int missingNumber(vector<int>& nums) {\n    return 0;\n}`,
+      java: `public int missingNumber(int[] nums) {\n    return 0;\n}`,
+    },
+    hints: ['Sum formula: n*(n+1)/2'],
+  },
+]
+
+async function seedProblems() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI)
+    console.log('✅ MongoDB Connected')
+
+    await Problem.deleteMany({})
+    console.log('🗑️  Old problems cleared')
+
+    await Problem.insertMany(PROBLEMS)
+    console.log(`✅ ${PROBLEMS.length} problems seeded successfully!`)
+
+    mongoose.disconnect()
+    process.exit(0)
+  } catch (error) {
+    console.error('❌ Seed error:', error)
+    process.exit(1)
+  }
+}
+
+seedProblems()
