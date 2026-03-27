@@ -4,13 +4,14 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true, minlength: 3, maxlength: 20 },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
-  elo: { type: Number, default: 1200 },
-  peakElo: { type: Number, default: 1200 },
+  // ✅ ELO starts at 1000
+  elo: { type: Number, default: 1000 },
+  peakElo: { type: Number, default: 1000 },
+  rank: { type: String, default: 'Bronze' },
   country: { type: String, default: 'IN' },
   isVerified: { type: Boolean, default: false },
   otp: { type: String, select: false },
   otpExpiry: { type: Date, select: false },
-  // ✅ New profile fields
   bio: { type: String, default: '', maxlength: 200 },
   github: { type: String, default: '' },
   linkedin: { type: String, default: '' },
@@ -23,14 +24,16 @@ const userSchema = new mongoose.Schema({
     losses: { type: Number, default: 0 },
     draws: { type: Number, default: 0 },
     totalBattles: { type: Number, default: 0 },
-    streak: { type: Number, default: 0 }
+    streak: { type: Number, default: 0 },
+    maxStreak: { type: Number, default: 0 },
   },
   matchHistory: [{
     opponent: { type: String, default: 'Unknown' },
     problem: { type: String, default: 'Unknown' },
     result: { type: String, enum: ['win', 'loss', 'draw'] },
     eloChange: { type: Number, default: 0 },
-    eloAfter: { type: Number, default: 1200 },
+    eloAfter: { type: Number, default: 1000 },
+    rankAfter: { type: String, default: 'Bronze' },
     difficulty: { type: String, default: 'Medium' },
     timeTaken: { type: Number, default: 0 },
     date: { type: Date, default: Date.now }

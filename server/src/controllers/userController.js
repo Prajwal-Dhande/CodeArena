@@ -1,13 +1,31 @@
 const User = require('../models/User')
 
+// ✅ Rank system — 500 ELO per rank
+const RANKS = [
+  { name: 'Bronze',       minElo: 0,    maxElo: 499,  icon: '🥉', color: '#cd7f32' },
+  { name: 'Silver',       minElo: 500,  maxElo: 999,  icon: '🥈', color: '#94a3b8' },
+  { name: 'Gold',         minElo: 1000, maxElo: 1499, icon: '🥇', color: '#fbbf24' },
+  { name: 'Platinum',     minElo: 1500, maxElo: 1999, icon: '💠', color: '#67e8f9' },
+  { name: 'Diamond',      minElo: 2000, maxElo: 2499, icon: '💎', color: '#60a5fa' },
+  { name: 'Heroic',       minElo: 2500, maxElo: 2999, icon: '⚡', color: '#a855f7' },
+  { name: 'Elite Heroic', minElo: 3000, maxElo: 3499, icon: '🔥', color: '#ef4444' },
+  { name: 'Master',       minElo: 3500, maxElo: 3999, icon: '👑', color: '#ff6b35' },
+  { name: 'Grandmaster',  minElo: 4000, maxElo: Infinity, icon: '🌟', color: '#fff' },
+]
+
+const getRankFromElo = (elo) => {
+  return RANKS.find(r => elo >= r.minElo && elo <= r.maxElo) || RANKS[0]
+}
+
 // ✅ GET Profile
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password -otp -otpExpiry')
     if (!user) return res.status(404).json({ message: 'User not found' })
-    res.json({ user })
+    // Attach rank info
+    const rank = getRankFromElo(user.elo)
+    res.json({ user: { ...user.toObject(), rankInfo: rank } })
   } catch (err) {
-    console.error('getProfile error:', err)
     res.status(500).json({ message: 'Server error' })
   }
 }
@@ -17,42 +35,35 @@ exports.getBattleHistory = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('matchHistory')
     if (!user) return res.status(404).json({ message: 'User not found' })
-    // Latest battles pehle
-    const battles = [...(user.matchHistory || [])].reverse()
-    res.json({ battles })
+    res.json({ battles: [...(user.matchHistory || [])].reverse() })
   } catch (err) {
-    console.error('getBattleHistory error:', err)
     res.status(500).json({ message: 'Server error' })
   }
 }
+
 // ✅ UPDATE Profile
 exports.updateProfile = async (req, res) => {
   try {
     const { username, bio, github, linkedin, website, education, company, languages } = req.body
-
     if (username && username.length < 3)
       return res.status(400).json({ message: 'Username too short' })
-
     if (username) {
       const existing = await User.findOne({ username })
       if (existing && existing._id.toString() !== req.userId)
         return res.status(400).json({ message: 'Username already taken' })
     }
-
     const user = await User.findByIdAndUpdate(
       req.userId,
       { username, bio, github, linkedin, website, education, company, languages },
       { new: true }
     ).select('-password -otp -otpExpiry')
-
     res.json({ message: 'Profile updated', user })
   } catch (err) {
-    console.error('updateProfile error:', err)
     res.status(500).json({ message: 'Server error' })
   }
 }
 
-// ✅ UPDATE Match Result + ELO
+// ✅ UPDATE Match Result + ELO + RANK
 exports.updateMatchResult = async (req, res) => {
   try {
     const { opponentName, result, difficulty, timeTaken, problem } = req.body
@@ -60,29 +71,38 @@ exports.updateMatchResult = async (req, res) => {
     const user = await User.findById(req.userId)
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
 
-    // Opponent ELO find karo
-    let opponentElo = 1200
+    // Find opponent ELO
+    let opponentElo = 1000
     let oppUser = null
-    const isBot = !opponentName || opponentName.startsWith('Bot_')
+    const isBot = !opponentName || opponentName.startsWith('Bot_') || opponentName === 'PracticeBot'
 
     if (!isBot) {
       oppUser = await User.findOne({ username: opponentName })
       if (oppUser) opponentElo = oppUser.elo
     }
 
-    // ELO calculation
+    // ✅ ELO calculation
     const K = 32
     const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - user.elo) / 400))
     const actualScore = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0
     const eloChange = Math.round(K * (actualScore - expectedScore))
 
     const oldElo = user.elo
-    user.elo = Math.max(100, user.elo + eloChange) // minimum 100 ELO
+    const oldRank = getRankFromElo(oldElo)
+    user.elo = Math.max(0, user.elo + eloChange)
 
-    // Stats update
+    // ✅ Peak ELO update
+    if (user.elo > (user.peakElo || 0)) user.peakElo = user.elo
+
+    // ✅ Rank update
+    const newRank = getRankFromElo(user.elo)
+    user.rank = newRank.name
+
+    // ✅ Stats update
     if (result === 'win') {
       user.stats.wins += 1
       user.stats.streak += 1
+      if (user.stats.streak > (user.stats.maxStreak || 0)) user.stats.maxStreak = user.stats.streak
     } else if (result === 'loss') {
       user.stats.losses += 1
       user.stats.streak = 0
@@ -91,13 +111,14 @@ exports.updateMatchResult = async (req, res) => {
     }
     user.stats.totalBattles += 1
 
-    // Match history add karo
+    // ✅ Match history
     user.matchHistory.push({
       opponent: opponentName || 'Unknown',
       problem: problem || 'Unknown',
       result,
       eloChange,
       eloAfter: user.elo,
+      rankAfter: newRank.name,
       difficulty: difficulty || 'Medium',
       timeTaken: timeTaken || 0,
       date: new Date()
@@ -105,44 +126,48 @@ exports.updateMatchResult = async (req, res) => {
 
     await user.save()
 
-    // ✅ Opponent update karo (real player hone pe)
+    // ✅ Rank changed?
+    const rankChanged = oldRank.name !== newRank.name
+
+    // ✅ Update opponent if real player
     if (oppUser) {
+      const oppK = 32
       const oppExpected = 1 / (1 + Math.pow(10, (oldElo - oppUser.elo) / 400))
       const oppActual = 1 - actualScore
-      const oppEloChange = Math.round(K * (oppActual - oppExpected))
+      const oppEloChange = Math.round(oppK * (oppActual - oppExpected))
 
-      oppUser.elo = Math.max(100, oppUser.elo + oppEloChange)
+      oppUser.elo = Math.max(0, oppUser.elo + oppEloChange)
+      if (oppUser.elo > (oppUser.peakElo || 0)) oppUser.peakElo = oppUser.elo
+      oppUser.rank = getRankFromElo(oppUser.elo).name
       oppUser.stats.totalBattles += 1
 
-      if (result === 'win') {
-        oppUser.stats.losses += 1
-        oppUser.stats.streak = 0
-      } else if (result === 'loss') {
-        oppUser.stats.wins += 1
-        oppUser.stats.streak += 1
+      if (result === 'win') { oppUser.stats.losses += 1; oppUser.stats.streak = 0 }
+      else if (result === 'loss') {
+        oppUser.stats.wins += 1; oppUser.stats.streak += 1
+        if (oppUser.stats.streak > (oppUser.stats.maxStreak || 0)) oppUser.stats.maxStreak = oppUser.stats.streak
       }
 
       oppUser.matchHistory.push({
-        opponent: user.username,
-        problem: problem || 'Unknown',
+        opponent: user.username, problem: problem || 'Unknown',
         result: result === 'win' ? 'loss' : result === 'loss' ? 'win' : 'draw',
-        eloChange: oppEloChange,
-        eloAfter: oppUser.elo,
-        difficulty: difficulty || 'Medium',
-        timeTaken: timeTaken || 0,
-        date: new Date()
+        eloChange: oppEloChange, eloAfter: oppUser.elo, rankAfter: oppUser.rank,
+        difficulty: difficulty || 'Medium', timeTaken: timeTaken || 0, date: new Date()
       })
-
       await oppUser.save()
     }
 
     res.json({
       success: true,
       newElo: user.elo,
+      oldElo,
       eloChange,
+      newRank: newRank.name,
+      oldRank: oldRank.name,
+      rankChanged,
+      rankInfo: newRank,
       streak: user.stats.streak,
       wins: user.stats.wins,
-      losses: user.stats.losses
+      losses: user.stats.losses,
     })
 
   } catch (err) {
@@ -151,39 +176,38 @@ exports.updateMatchResult = async (req, res) => {
   }
 }
 
-// ✅ LEADERBOARD
+// ✅ LEADERBOARD with ranks
 exports.getLeaderboard = async (req, res) => {
   try {
     const players = await User.find({ isVerified: true })
-      .sort({ elo: -1 })
-      .limit(100)
-      .select('username elo country stats createdAt')
-
-    if (!players || players.length === 0)
-      return res.json({ success: true, leaderboard: [] })
+      .sort({ elo: -1 }).limit(100)
+      .select('username elo rank stats country createdAt')
 
     const leaderboard = players.map((p, i) => {
+      const rankInfo = getRankFromElo(p.elo)
       const wins = p.stats?.wins || 0
       const losses = p.stats?.losses || 0
-      const total = p.stats?.totalBattles || wins + losses
-      const winRate = total > 0 ? Math.round((wins / total) * 100) : 0
-
+      const total = wins + losses
       return {
         rank: i + 1,
         username: p.username,
         elo: p.elo,
-        wins,
-        losses,
-        winRate,
+        rankName: rankInfo.name,
+        rankIcon: rankInfo.icon,
+        rankColor: rankInfo.color,
+        wins, losses,
+        winRate: total > 0 ? Math.round((wins / total) * 100) : 0,
         streak: p.stats?.streak || 0,
         country: p.country || 'IN',
         badge: i === 0 ? '🏆' : i === 1 ? '🥈' : i === 2 ? '🥉' : null,
       }
     })
-
     res.json({ success: true, leaderboard })
   } catch (err) {
-    console.error('getLeaderboard error:', err)
     res.status(500).json({ success: false, message: 'Server error' })
   }
 }
+
+// ✅ Export rank system for use in other files
+exports.getRankFromElo = getRankFromElo
+exports.RANKS = RANKS

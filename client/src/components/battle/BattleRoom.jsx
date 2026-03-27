@@ -752,9 +752,13 @@ export default function BattleRoom() {
 
       {gameOver && (
         <WinnerScreen
-          result={gameResult} problem={problem}
-          myTests={myTests} totalTests={totalTests}
+          result={gameResult}
+          problem={problem}
+          myTests={myTests}
+          totalTests={totalTests}
           timeTaken={timeTaken}
+          opponentName={opponentName}
+          difficulty={problem?.difficulty}
           onRematch={handleRematch}
           onLobby={() => navigate('/lobby')}
         />
