@@ -1,9 +1,5 @@
-// WinnerScreen.jsx mein import add karo
-import { useEffect, useState } from 'react'
 
-// Props mein yeh add karo:
-// result, problem, myTests, totalTests, timeTaken, onRematch, onLobby,
-// opponentName, difficulty
+import { useEffect, useState } from 'react'
 
 export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty }) {
   const [eloData, setEloData] = useState(null)
@@ -160,15 +156,15 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onRematch} style={{
+          <button onClick={onLobby} style={{
             flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
             color: '#aaa', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s'
-          }}>↺ Rematch</button>
+          }}>🏠 Lobby</button>
           <button onClick={onLobby} style={{
             flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none',
             color: '#fff', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700,
-            cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s'
+            cursor: 'pointer', fontFamily: 'Inter'
           }}>⚔️ Play Again</button>
         </div>
       </div>

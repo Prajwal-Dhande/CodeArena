@@ -4,9 +4,9 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true, minlength: 3, maxlength: 20 },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
-  // ✅ ELO starts at 1000
-  elo: { type: Number, default: 1000 },
-  peakElo: { type: Number, default: 1000 },
+  // ✅ ELO starts at 0
+  elo: { type: Number, default: 0 },
+  peakElo: { type: Number, default: 0 },
   rank: { type: String, default: 'Bronze' },
   country: { type: String, default: 'IN' },
   isVerified: { type: Boolean, default: false },

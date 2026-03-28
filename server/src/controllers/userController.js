@@ -71,103 +71,68 @@ exports.updateMatchResult = async (req, res) => {
     const user = await User.findById(req.userId)
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
 
-    // Find opponent ELO
-    let opponentElo = 1000
-    let oppUser = null
-    const isBot = !opponentName || opponentName.startsWith('Bot_') || opponentName === 'PracticeBot'
-
-    if (!isBot) {
-      oppUser = await User.findOne({ username: opponentName })
-      if (oppUser) opponentElo = oppUser.elo
-    }
-
-    // ✅ ELO calculation
-    const K = 32
-    const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - user.elo) / 400))
-    const actualScore = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0
-    const eloChange = Math.round(K * (actualScore - expectedScore))
+    const difficultyEloMap = { 'Easy': 10, 'Medium': 20, 'Hard': 30 }
+    const baseElo = difficultyEloMap[difficulty] || 10
+    const eloChange = result === 'win' ? baseElo : result === 'loss' ? -Math.floor(baseElo / 2) : 0
 
     const oldElo = user.elo
     const oldRank = getRankFromElo(oldElo)
-    user.elo = Math.max(0, user.elo + eloChange)
+    const newElo = Math.max(0, oldElo + eloChange)
+    const newRank = getRankFromElo(newElo)
+    const newPeakElo = Math.max(user.peakElo || 0, newElo)
 
-    // ✅ Peak ELO update
-    if (user.elo > (user.peakElo || 0)) user.peakElo = user.elo
+    // ✅ Stats calculate
+    const newWins = result === 'win' ? (user.stats.wins || 0) + 1 : (user.stats.wins || 0)
+    const newLosses = result === 'loss' ? (user.stats.losses || 0) + 1 : (user.stats.losses || 0)
+    const newStreak = result === 'win' ? (user.stats.streak || 0) + 1 : result === 'loss' ? 0 : (user.stats.streak || 0)
+    const newMaxStreak = Math.max(user.stats.maxStreak || 0, newStreak)
+    const newTotalBattles = (user.stats.totalBattles || 0) + 1
 
-    // ✅ Rank update
-    const newRank = getRankFromElo(user.elo)
-    user.rank = newRank.name
-
-    // ✅ Stats update
-    if (result === 'win') {
-      user.stats.wins += 1
-      user.stats.streak += 1
-      if (user.stats.streak > (user.stats.maxStreak || 0)) user.stats.maxStreak = user.stats.streak
-    } else if (result === 'loss') {
-      user.stats.losses += 1
-      user.stats.streak = 0
-    } else {
-      user.stats.draws += 1
-    }
-    user.stats.totalBattles += 1
-
-    // ✅ Match history
-    user.matchHistory.push({
+    const newHistoryEntry = {
       opponent: opponentName || 'Unknown',
       problem: problem || 'Unknown',
       result,
       eloChange,
-      eloAfter: user.elo,
+      eloAfter: newElo,
       rankAfter: newRank.name,
-      difficulty: difficulty || 'Medium',
+      difficulty: difficulty || 'Easy',
       timeTaken: timeTaken || 0,
       date: new Date()
-    })
-
-    await user.save()
-
-    // ✅ Rank changed?
-    const rankChanged = oldRank.name !== newRank.name
-
-    // ✅ Update opponent if real player
-    if (oppUser) {
-      const oppK = 32
-      const oppExpected = 1 / (1 + Math.pow(10, (oldElo - oppUser.elo) / 400))
-      const oppActual = 1 - actualScore
-      const oppEloChange = Math.round(oppK * (oppActual - oppExpected))
-
-      oppUser.elo = Math.max(0, oppUser.elo + oppEloChange)
-      if (oppUser.elo > (oppUser.peakElo || 0)) oppUser.peakElo = oppUser.elo
-      oppUser.rank = getRankFromElo(oppUser.elo).name
-      oppUser.stats.totalBattles += 1
-
-      if (result === 'win') { oppUser.stats.losses += 1; oppUser.stats.streak = 0 }
-      else if (result === 'loss') {
-        oppUser.stats.wins += 1; oppUser.stats.streak += 1
-        if (oppUser.stats.streak > (oppUser.stats.maxStreak || 0)) oppUser.stats.maxStreak = oppUser.stats.streak
-      }
-
-      oppUser.matchHistory.push({
-        opponent: user.username, problem: problem || 'Unknown',
-        result: result === 'win' ? 'loss' : result === 'loss' ? 'win' : 'draw',
-        eloChange: oppEloChange, eloAfter: oppUser.elo, rankAfter: oppUser.rank,
-        difficulty: difficulty || 'Medium', timeTaken: timeTaken || 0, date: new Date()
-      })
-      await oppUser.save()
     }
+
+    // ✅ findByIdAndUpdate — VersionError nahi aayega
+    await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: {
+          elo: newElo,
+          peakElo: newPeakElo,
+          rank: newRank.name,
+          'stats.wins': newWins,
+          'stats.losses': newLosses,
+          'stats.streak': newStreak,
+          'stats.maxStreak': newMaxStreak,
+          'stats.totalBattles': newTotalBattles,
+        },
+        $push: { matchHistory: newHistoryEntry }
+      },
+      { new: true }
+    )
+
+    const rankChanged = oldRank.name !== newRank.name
 
     res.json({
       success: true,
-      newElo: user.elo,
+      newElo,
       oldElo,
       eloChange,
       newRank: newRank.name,
       oldRank: oldRank.name,
       rankChanged,
       rankInfo: newRank,
-      streak: user.stats.streak,
-      wins: user.stats.wins,
-      losses: user.stats.losses,
+      streak: newStreak,
+      wins: newWins,
+      losses: newLosses,
     })
 
   } catch (err) {

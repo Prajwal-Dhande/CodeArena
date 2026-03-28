@@ -17,6 +17,7 @@ const codeLines = [
 export default function Hero() {
   const [visibleLines, setVisibleLines] = useState(0)
   const [charIdx, setCharIdx] = useState(0)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 }) // 3D Tilt State
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -35,8 +36,26 @@ export default function Hero() {
     }
   }, [visibleLines, charIdx])
 
+  // 3D Mouse Tracking Logic
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e
+    const { innerWidth, innerHeight } = window
+    // Calculate rotation between -10 and 10 degrees
+    const xPos = ((clientX / innerWidth) - 0.5) * 20 
+    const yPos = ((clientY / innerHeight) - 0.5) * -20
+    setMousePos({ x: xPos, y: yPos })
+  }
+
+  const handleMouseLeave = () => {
+    setMousePos({ x: 0, y: 0 }) // Reset on leave
+  }
+
   return (
-    <section className="hero-section">
+    <section 
+      className="hero-section" 
+      onMouseMove={handleMouseMove} 
+      onMouseLeave={handleMouseLeave}
+    >
       <div className="bg-pattern" />
       <div className="glow-circle-left" />
       <div className="glow-circle-right" />
@@ -77,9 +96,21 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* RIGHT — Terminal */}
-        <div className="terminal-wrapper">
-          <div className="ai-alert">🤖 AI CONSTRAINT INJECTED</div>
+        {/* RIGHT — 3D Terminal */}
+        <div 
+          className="terminal-wrapper"
+          style={{
+            transform: `perspective(1000px) rotateY(${mousePos.x}deg) rotateX(${mousePos.y}deg)`,
+            transition: 'transform 0.1s ease-out' // Smooth tracking
+          }}
+        >
+          {/* Floating AI Alert */}
+          <div 
+            className="ai-alert"
+            style={{ transform: 'translateZ(50px)' }} // Pops out in 3D
+          >
+            🤖 AI CONSTRAINT INJECTED
+          </div>
 
           <div className="terminal-window">
             <div className="terminal-header">
@@ -129,11 +160,36 @@ export default function Hero() {
       </div>
 
       <style>{`
-        .hero-section { min-height: 100vh; display: flex; align-items: center; padding: 8rem 2.5rem 4rem; background: #0d0d0d; position: relative; overflow: hidden; font-family: Inter, sans-serif; }
-        .bg-pattern { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+        .hero-section { min-height: 100vh; display: flex; align-items: center; padding: 8rem 2.5rem 4rem; background: #0d0d0d; position: relative; overflow: hidden; font-family: Inter, sans-serif; perspective: 1200px; }
+        
+        /* NEW 3D GRID BACKGROUND */
+        .bg-pattern { 
+          position: absolute; 
+          bottom: 0; 
+          left: -50%; 
+          width: 200vw; 
+          height: 150vh; 
+          pointer-events: none; 
+          background-image: 
+            linear-gradient(rgba(255, 107, 53, 0.25) 2px, transparent 2px),
+            linear-gradient(90deg, rgba(255, 107, 53, 0.25) 2px, transparent 2px); 
+          background-size: 80px 80px; 
+          transform-origin: bottom center; 
+          transform: perspective(800px) rotateX(75deg); 
+          animation: cyberGridMove 4s linear infinite; 
+          z-index: 0; 
+          mask-image: linear-gradient(to bottom, transparent 20%, black 80%); 
+          -webkit-mask-image: linear-gradient(to bottom, transparent 20%, black 80%); 
+        }
+
+        @keyframes cyberGridMove { 
+          0% { background-position: center 0; } 
+          100% { background-position: center 80px; } 
+        }
+
         .glow-circle-left { position: absolute; top: 30%; left: 5%; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 65%); pointer-events: none; }
         .glow-circle-right { position: absolute; bottom: 10%; right: 10%; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(247,69,29,0.05) 0%, transparent 65%); pointer-events: none; }
-        .hero-container { max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; }
+        .hero-container { max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; transform-style: preserve-3d; }
         
         .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: #ff6b35; border: 1px solid rgba(255,107,53,0.25); background: rgba(255,107,53,0.06); padding: 5px 12px; border-radius: 6px; margin-bottom: 24px; letter-spacing: 1px; }
         .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff6b35; animation: pulse 1.5s infinite; }
@@ -154,9 +210,9 @@ export default function Hero() {
         .stat-val { font-family: Outfit, sans-serif; font-weight: 800; font-size: 22px; }
         .stat-label { font-size: 11px; color: #444; margin-top: 3px; }
         
-        .terminal-wrapper { position: relative; width: 100%; }
-        .ai-alert { position: absolute; top: -14px; right: 16px; z-index: 2; background: #ef4444; color: #fff; font-family: Inter; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 5px; letter-spacing: 0.5px; }
-        .terminal-window { background: #111; border: 1px solid #1f1f1f; border-radius: 10px; overflow: hidden; }
+        .terminal-wrapper { position: relative; width: 100%; transform-style: preserve-3d; will-change: transform; }
+        .ai-alert { position: absolute; top: -14px; right: 16px; z-index: 2; background: #ef4444; color: #fff; font-family: Inter; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 5px; letter-spacing: 0.5px; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
+        .terminal-window { background: #111; border: 1px solid #1f1f1f; border-radius: 10px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .terminal-header { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid #1f1f1f; background: #181818; }
         .terminal-path { font-family: JetBrains Mono, monospace; font-size: 11px; color: #444; margin-left: 8px; flex: 1; }
         .terminal-live { font-family: Inter; font-size: 11px; color: #22c55e; font-weight: 600; }
@@ -175,13 +231,13 @@ export default function Hero() {
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* MOBILE RESPONSIVENESS */
         @media (max-width: 900px) {
           .hero-container { grid-template-columns: 1fr; gap: 3rem; }
           .hero-section { padding: 6rem 1.5rem 3rem; }
           .hero-buttons { flex-direction: column; }
           .stats-box { flex-direction: column; }
           .border-right { border-right: none; border-bottom: 1px solid #1f1f1f; }
+          .terminal-wrapper { transform: none !important; } /* Disable 3D on mobile for better UX */
         }
       `}</style>
     </section>

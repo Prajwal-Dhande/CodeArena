@@ -1,3 +1,6 @@
+/* ========================================= */
+/* UNIVERSAL / GLOBAL STYLES - Corrected Full File */
+/* ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -10,7 +13,7 @@
   --border2: #252525;
   --orange: #ff6b35;
   --orange2: #f7451d;
-  --orange-dim: rgba(255,107,53,0.15);
+  --orange-dim: rgba(255,107,53,0.15); /* Orange for background lines */
   --red: #ef4444;
   --green: #22c55e;
   --text: #e5e5e5;
@@ -25,6 +28,8 @@ body {
   color: var(--text);
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  position: relative; /* Essential for pseudo-element background positioning */
+  min-height: 100vh;
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -34,3 +39,73 @@ body {
 
 select { outline: none; }
 button { outline: none; }
+
+/* ========================================= */
+/* BACKGROUND ANIMATION LAYERS - Fix Section */
+/* ========================================= */
+
+/* CRITICAL: React Root Container MUST be on top */
+/* Ye lines Code Arena ki visual context ke liye main content ko upar laata hai */
+#root {
+  position: relative;
+  z-index: 10; /* Set content above the background effects */
+}
+
+/* LAYER 1: 3D Grid Floor (Orange lines) */
+body::before {
+  content: '';
+  position: fixed; /* Fixed background */
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 1; /* Lowest layering, just above body bg color */
+  pointer-events: none;
+  
+  background-image: 
+    linear-gradient(var(--orange-dim) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--orange-dim) 1.5px, transparent 1.5px);
+  background-size: 80px 80px; /* Adjust size as needed */
+  background-position: center;
+  
+  /* Applying 3D perspective to make it look like a floor/distant grid */
+  transform: perspective(1000px) rotateX(45deg) translateY(-200px) scale(3.5);
+  animation: cyberGridFloat 40s linear infinite;
+  opacity: 0.6; /* Slight transparency for subtleness */
+}
+
+/* LAYER 2: Floating Nodes (Orange stars/dots) */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 2; /* Just above the grid lines, still behind content */
+  pointer-events: none;
+  opacity: 0.4;
+  
+  background-image: 
+    radial-gradient(var(--orange) 1.5px, transparent 1.5px),
+    radial-gradient(var(--text) 0.5px, transparent 0.5px);
+  background-size: 150px 150px;
+  background-position: 0 0, 75px 75px; /* Offset the two dot sizes */
+  
+  animation: dataNodeDrift 60s linear infinite;
+}
+
+/* ========================================= */
+/* BACKGROUND ANIMATION KEYFRAMES            */
+/* ========================================= */
+
+@keyframes cyberGridFloat {
+  0% { 
+    background-position: center 0;
+  }
+  100% { 
+    /* Pattern repeats perfectly if it moves the distance of one background-size (80px) */
+    background-position: center 80px; 
+  }
+}
+
+@keyframes dataNodeDrift {
+  0% { background-position: 0 0, 75px 75px; }
+  100% { background-position: 150px 150px, 225px 225px; }
+}
