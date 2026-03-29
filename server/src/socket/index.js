@@ -1,7 +1,8 @@
 const { Server } = require('socket.io')
 
 let io
-const rooms = new Map()
+// ✅ Naya Structure: rooms.set(roomId, { players: [{username, socketId}], battleStarted: false })
+const rooms = new Map() 
 const matchmakingQueue = [] // ✅ Queue for matchmaking
 
 function initSocket(server) {
@@ -31,10 +32,14 @@ function initSocket(server) {
         socket.join(roomId)
         opponent.socket.join(roomId)
 
-        rooms.set(roomId, new Map([
-          [socket.id, { username, socketId: socket.id }],
-          [opponent.socket.id, { username: opponent.username, socketId: opponent.socket.id }]
-        ]))
+        // ✅ Naya Object based room structure
+        rooms.set(roomId, {
+          players: [
+            { username, socketId: socket.id },
+            { username: opponent.username, socketId: opponent.socket.id }
+          ],
+          battleStarted: true // Matchmaking se 2 log direct aaye hain
+        })
 
         console.log(`⚔️ Match found! ${username} vs ${opponent.username} in room ${roomId}`)
 
@@ -49,6 +54,11 @@ function initSocket(server) {
           roomId,
           problem: sharedProblem,
           opponent: username
+        })
+        
+        // Dono ko start event bhej do
+        io.to(roomId).emit('battle_start', {
+          players: rooms.get(roomId).players
         })
 
       } else {
@@ -73,22 +83,35 @@ function initSocket(server) {
       }
     })
 
-    // Room join (direct)
+    // Room join (direct / practice / lobby invite)
     socket.on('join_room', ({ roomId, username }) => {
       socket.join(roomId)
 
-      if (!rooms.has(roomId)) rooms.set(roomId, new Map())
-      const room = rooms.get(roomId)
-      room.set(socket.id, { username: username || `Player_${socket.id.slice(0, 4)}`, socketId: socket.id })
+      // ✅ Update room structure
+      if (!rooms.has(roomId)) {
+        rooms.set(roomId, { players: [], battleStarted: false })
+      }
+      
+      const roomData = rooms.get(roomId)
+      const existingPlayer = roomData.players.find(p => p.socketId === socket.id)
+      
+      if (!existingPlayer) {
+        roomData.players.push({ 
+          username: username || `Player_${socket.id.slice(0, 4)}`, 
+          socketId: socket.id 
+        })
+      }
 
       io.to(roomId).emit('room_update', {
-        players: Array.from(room.values()),
-        count: room.size
+        players: roomData.players,
+        count: roomData.players.length
       })
 
-      if (room.size === 2) {
+      // ✅ Track battleStarted
+      if (roomData.players.length === 2) {
+        roomData.battleStarted = true  // ✅ Track karo
         io.to(roomId).emit('battle_start', {
-          players: Array.from(room.values())
+          players: roomData.players
         })
       }
     })
@@ -107,28 +130,50 @@ function initSocket(server) {
     socket.on('battle_won', ({ roomId, winner }) => {
       socket.to(roomId).emit('opponent_won', { winner })
       console.log(`🏆 ${winner} won in room: ${roomId}`)
-      rooms.delete(roomId)
+      rooms.delete(roomId) // Clean up room after win
     })
 
-    // Disconnect
+    // ✅ DISCONNECT LOGIC (Updated with your requirements)
     socket.on('disconnect', () => {
-      // Queue se remove karo
-      const idx = matchmakingQueue.findIndex(p => p.socket.id === socket.id)
-      if (idx !== -1) matchmakingQueue.splice(idx, 1)
+      console.log(`❌ Disconnected: ${socket.id}`)
 
-      // Rooms se remove karo
-      rooms.forEach((room, roomId) => {
-        if (room.has(socket.id)) {
-          const player = room.get(socket.id)
-          room.delete(socket.id)
-          io.to(roomId).emit('player_left', {
-            username: player.username,
-            remaining: room.size
-          })
-          if (room.size === 0) rooms.delete(roomId)
+      // Queue se remove karo
+      const qIdx = matchmakingQueue.findIndex(p => p.socket.id === socket.id)
+      if (qIdx !== -1) matchmakingQueue.splice(qIdx, 1)
+
+      // ✅ Find which room this socket was in
+      rooms.forEach((roomData, roomId) => {
+        const playerIndex = roomData.players.findIndex(p => p.socketId === socket.id)
+        
+        if (playerIndex !== -1) {
+          const leavingPlayer = roomData.players[playerIndex]
+          const remainingPlayers = roomData.players.filter(p => p.socketId !== socket.id)
+          
+          // ✅ Agar match chal rahi thi aur ek player bacha hai
+          if (remainingPlayers.length === 1 && roomData.battleStarted) {
+            const winner = remainingPlayers[0]
+            
+            // ✅ Winner ko notify karo
+            io.to(winner.socketId).emit('opponent_left_win', {
+              winner: winner.username,
+              loser: leavingPlayer.username,
+              message: `${leavingPlayer.username} left the battle. You win!`
+            })
+            
+            console.log(`🏆 ${winner.username} wins — ${leavingPlayer.username} left room ${roomId}`)
+          }
+
+          // Update room
+          roomData.players = remainingPlayers
+          if (remainingPlayers.length === 0) {
+            rooms.delete(roomId)
+          } else {
+            // Notify remaining players
+            io.to(roomId).emit('player_left', { username: leavingPlayer.username })
+            io.to(roomId).emit('room_update', { players: remainingPlayers })
+          }
         }
       })
-      console.log(`❌ Disconnected: ${socket.id}`)
     })
   })
 

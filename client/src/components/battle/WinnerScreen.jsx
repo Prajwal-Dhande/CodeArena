@@ -1,11 +1,17 @@
-
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty }) {
   const [eloData, setEloData] = useState(null)
   const [rankUp, setRankUp] = useState(false)
+  
+  // ✅ useRef add kiya
+  const calledRef = useRef(false)
 
   useEffect(() => {
+    // ✅ double call prevent karne ke liye check
+    if (calledRef.current) return  
+    calledRef.current = true
+
     const updateElo = async () => {
       try {
         const token = localStorage.getItem('token')

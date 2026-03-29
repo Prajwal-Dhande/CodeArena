@@ -374,14 +374,13 @@ export default function Profile() {
                 {selectedLangs.map(id => {
                   const l = LANGS.find(x => x.id === id)
                   if (!l) return null
-                  const langWins = battles.filter(b => b.result === 'win').length
                   return (
                     <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
                         <span style={{ fontSize: 13, color: '#aaa' }}>{l.label}</span>
                       </div>
-                      <span style={{ fontSize: 12, color: '#555' }}>{langWins} wins</span>
+                      {/* ✅ Language wins hatao — misleading hai */}
                     </div>
                   )
                 })}

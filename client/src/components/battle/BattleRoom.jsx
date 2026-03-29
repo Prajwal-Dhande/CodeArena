@@ -58,6 +58,9 @@ export default function BattleRoom() {
   const battleStartedRef = useRef(false)
   const startTimeRef = useRef(Date.now())
   const botTimeoutRef = useRef(null)
+  
+  // ✅ Naya ref real player interference prevent karne ke liye
+  const botTypingCancelRef = useRef(false) 
 
   // DB se problem fetch
   useEffect(() => {
@@ -95,10 +98,14 @@ export default function BattleRoom() {
 
   // ✅ Bot typing simulation
   useEffect(() => {
-    const botName = new URLSearchParams(window.location.search).get('bot')
-    if (!botName || !battleStarted) return
+    // Is bot check mein URL params ya randomly assigned botName check hoga
+    const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
+    const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
+    
+    // ✅ Cancel check: Agar real player aa chuka hai toh bot script trigger nahi hogi
+    if (!isBot || !battleStarted || botTypingCancelRef.current) return
 
-    setOpponentName(botName)
+    setOpponentName(botNameFromUrl || opponentName)
 
     const slug = getProblemSlug()
     const botCodes = {
@@ -117,6 +124,8 @@ export default function BattleRoom() {
     let typingTimer
 
     const typeChar = () => {
+      if (botTypingCancelRef.current) return // ✅ Typing ke beech me player aaya toh ruk jao
+      
       if (charIndex < targetCode.length) {
         currentText += targetCode[charIndex]
         setOpponentCode(currentText)
@@ -130,7 +139,9 @@ export default function BattleRoom() {
         typingTimer = setTimeout(typeChar, delay)
       } else {
         setTimeout(() => {
-          setOppTests(Math.floor(Math.random() * 2) + 1)
+          if (!botTypingCancelRef.current) {
+            setOppTests(Math.floor(Math.random() * 2) + 1)
+          }
         }, 2000)
       }
     }
@@ -140,12 +151,15 @@ export default function BattleRoom() {
       clearTimeout(startDelay)
       clearTimeout(typingTimer)
     }
-  }, [battleStarted])
+  }, [battleStarted, opponentName])
 
   // ✅ Socket — sirf ek baar
   useEffect(() => {
     const socket = io('http://localhost:5000')
     socketRef.current = socket
+    
+    // ✅ URL se bot check karo
+    const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
 
     socket.on('connect', () => {
       setConnected(true)
@@ -177,6 +191,15 @@ export default function BattleRoom() {
       if (opp) {
         setOpponentName(opp.username)
         clearTimeout(botTimeoutRef.current)
+        
+        // ✅ Real player join hua — bot typing cancel karo
+        botTypingCancelRef.current = true
+
+        if (!battleStartedRef.current) {
+          battleStartedRef.current = true
+          setBattleStarted(true)
+          startTimeRef.current = Date.now()
+        }
       } else if (players.length === 1) {
         // ✅ Practice mode — seedha battle start, no bot timeout
         if (isPracticeMode()) {
@@ -190,7 +213,9 @@ export default function BattleRoom() {
         } else {
           // Normal mode — 8 sec baad bot
           botTimeoutRef.current = setTimeout(() => {
-            const botName = `Bot_${Math.floor(Math.random() * 999)}`
+            if (botTypingCancelRef.current) return // ✅ Real player aa gaya toh bot mat lao
+            
+            const botName = botNameFromUrl || `Bot_${Math.floor(Math.random() * 999)}`
             setRoomPlayers(prev => [...prev, { username: botName, isBot: true }])
             setOpponentName(botName)
             setOpponentCode(`function solution() {\n  // Thinking...\n}`)
@@ -226,6 +251,18 @@ export default function BattleRoom() {
         setTimeTaken(elapsed)
         setGameResult('loss')
         setGameOver(true)
+      }
+    })
+    
+    // ✅ Opponent left — you win!
+    socket.on('opponent_left_win', ({ winner, loser, message }) => {
+      if (!gameOverRef.current) {
+        gameOverRef.current = true
+        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
+        setTimeTaken(elapsed)
+        setGameResult('win')
+        setGameOver(true)
+        console.log(`🏆 ${message}`)
       }
     })
 
