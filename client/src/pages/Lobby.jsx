@@ -262,17 +262,27 @@ export default function Lobby() {
     navigate(`/battle?problem=${practiceSelected.slug}&room=${roomId}&bot=PracticeBot&practice=true`)
   }
 
-  const handleMatchFound = (bot) => {
-    setShowMatchmaking(false)
-    const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
-    let prob
-    if (matchmakingMode === 'ranked' && rankedSelected) {
-      prob = rankedSelected
-    } else {
-      prob = problems[Math.floor(Date.now() / 30000) % problems.length]
-    }
-    navigate(`/battle?problem=${prob.slug}&room=${roomId}&bot=${bot.name}`)
+  const handleMatchFound = (matchData) => {
+  setShowMatchmaking(false)
+
+  if (matchData.isReal) {
+    const roomId = matchData.roomId
+    // ✅ Problem same honi chahiye jo server ne assign ki
+    const problemSlug = matchData.problemSlug ||
+      problems[Math.floor(Date.now() / 30000) % problems.length]?.slug ||
+      'two-sum'
+    // ✅ bot param nahi — real=true param add karo
+    navigate(`/battle?problem=${problemSlug}&room=${roomId}&real=true`)
+    return
   }
+
+  // Bot match
+  const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
+  let prob = matchmakingMode === 'ranked' && rankedSelected
+    ? rankedSelected
+    : problems[Math.floor(Date.now() / 30000) % problems.length]
+  navigate(`/battle?problem=${prob.slug}&room=${roomId}&bot=${matchData.name}`)
+}
 
   const handleCreateRoom = () => {
     if (!selectedProblem) return

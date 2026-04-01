@@ -23,6 +23,8 @@ const getRoomId = () => new URLSearchParams(window.location.search).get('room') 
 const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
 // ✅ Practice mode check
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
+// ✅ URL se real flag check karo
+const isRealMatch = () => new URLSearchParams(window.location.search).get('real') === 'true'
 
 export default function BattleRoom() {
   const [searchParams] = useSearchParams()
@@ -161,6 +163,7 @@ export default function BattleRoom() {
     // ✅ URL se bot check karo
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
 
+    // Socket useEffect mein — real match ke liye battle seedha start karo
     socket.on('connect', () => {
       setConnected(true)
       const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -170,6 +173,11 @@ export default function BattleRoom() {
         username: user?.username || `Player_${socket.id?.slice(0, 4)}`
       })
       console.log(`✅ Joined room: ${roomId}`)
+
+      // ✅ Real match mein already 2 players hain — matchmaking ne join kiya tha
+      if (isRealMatch()) {
+        console.log('✅ Real match — waiting for battle_start from server')
+      }
     })
 
     socket.on('disconnect', () => setConnected(false))
@@ -184,9 +192,12 @@ export default function BattleRoom() {
     })
 
     socket.on('room_update', ({ players }) => {
-      setRoomPlayers(players)
+      // 🚨 BULLETPROOF FIX 1: Duplicate ghost players ko frontend pe filter karo
+      const uniquePlayers = Array.from(new Map(players.map(p => [p.username, p])).values());
+      setRoomPlayers(uniquePlayers)
+      
       const user = JSON.parse(localStorage.getItem('user') || '{}')
-      const opp = players.find(p => p.username !== user?.username)
+      const opp = uniquePlayers.find(p => p.username !== user?.username)
 
       if (opp) {
         setOpponentName(opp.username)
@@ -200,7 +211,7 @@ export default function BattleRoom() {
           setBattleStarted(true)
           startTimeRef.current = Date.now()
         }
-      } else if (players.length === 1) {
+      } else if (uniquePlayers.length === 1) {
         // ✅ Practice mode — seedha battle start, no bot timeout
         if (isPracticeMode()) {
           setTimeout(() => {
@@ -210,13 +221,20 @@ export default function BattleRoom() {
               startTimeRef.current = Date.now()
             }
           }, 1500)
+        } else if (isRealMatch()) {
+          // ✅ Real match: Bot mat bulao, opponent connect hone ka wait karo
+          console.log('⏳ Real match: waiting for the opponent to reconnect to the room...')
         } else {
           // Normal mode — 8 sec baad bot
           botTimeoutRef.current = setTimeout(() => {
             if (botTypingCancelRef.current) return // ✅ Real player aa gaya toh bot mat lao
             
             const botName = botNameFromUrl || `Bot_${Math.floor(Math.random() * 999)}`
-            setRoomPlayers(prev => [...prev, { username: botName, isBot: true }])
+            setRoomPlayers(prev => {
+              const exists = prev.find(p => p.username === botName)
+              if (exists) return prev;
+              return [...prev, { username: botName, isBot: true }]
+            })
             setOpponentName(botName)
             setOpponentCode(`function solution() {\n  // Thinking...\n}`)
 
@@ -254,7 +272,6 @@ export default function BattleRoom() {
       }
     })
     
-    // ✅ Opponent left — you win!
     socket.on('opponent_left_win', ({ winner, loser, message }) => {
       if (!gameOverRef.current) {
         gameOverRef.current = true
@@ -266,13 +283,19 @@ export default function BattleRoom() {
       }
     })
 
+    // 🚨 BULLETPROOF FIX 2: Agar Server opponent_left_win trigger na kare due to bugs,
+    // toh yeh player_left seedha Win screen laa dega!
     socket.on('player_left', ({ username }) => {
       setOpponentCode(`// ${username} left the battle...`)
-      if (!gameOverRef.current) {
-        battleStartedRef.current = false
-        setBattleStarted(false)
-      }
       clearTimeout(botTimeoutRef.current)
+      
+      if (!gameOverRef.current) {
+        gameOverRef.current = true
+        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
+        setTimeTaken(elapsed)
+        setGameResult('win') // Tum jeet gaye kyuki samne wala bhaag gaya!
+        setGameOver(true)
+      }
     })
 
     return () => {
@@ -519,7 +542,7 @@ export default function BattleRoom() {
             <div className="waiting-card">
               <div className="radar-spinner" style={{ borderTopColor: practiceMode ? '#22c55e' : '#ff6b35' }} />
               <h2 className="wait-title">
-                {practiceMode ? '🧠 Practice Mode' : 'Searching for Opponent'}
+                {practiceMode ? '🧠 Practice Mode' : 'Waiting for Opponent...'}
               </h2>
               <p className="wait-desc">
                 {practiceMode ? (
@@ -528,7 +551,7 @@ export default function BattleRoom() {
                   </>
                 ) : (
                   <>Room: <span style={{ fontFamily: 'monospace', color: '#ff6b35', fontWeight: 700 }}>{roomId}</span>
-                    <br />Share this room ID with your opponent!
+                    <br />Share this room ID or wait for the player to connect!
                   </>
                 )}
               </p>
@@ -557,12 +580,12 @@ export default function BattleRoom() {
                     {practiceMode ? 'AI Bot' : 'Waiting...'}
                   </div>
                   <div style={{ fontSize: 11, color: practiceMode ? '#22c55e' : '#fb923c', fontWeight: 700 }}>
-                    {practiceMode ? 'Ready' : 'Searching'}
+                    {practiceMode ? 'Ready' : 'Connecting'}
                   </div>
                 </div>
               </div>
 
-              {!practiceMode && (
+              {!practiceMode && !isRealMatch() && (
                 <div style={{ marginTop: 24, fontSize: 12, color: '#555' }}>
                   No opponent? A bot will join in 8 seconds...
                 </div>

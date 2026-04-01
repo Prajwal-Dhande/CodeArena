@@ -66,7 +66,8 @@ exports.updateProfile = async (req, res) => {
 // ✅ UPDATE Match Result + ELO + RANK
 exports.updateMatchResult = async (req, res) => {
   try {
-    const { opponentName, result, difficulty, timeTaken, problem } = req.body
+    // ✅ Extract language from req.body
+    const { opponentName, result, difficulty, timeTaken, problem, language } = req.body
 
     const user = await User.findById(req.userId)
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
@@ -96,6 +97,7 @@ exports.updateMatchResult = async (req, res) => {
       eloAfter: newElo,
       rankAfter: newRank.name,
       difficulty: difficulty || 'Easy',
+      language: language || 'javascript',  // ✅ yeh add kiya
       timeTaken: timeTaken || 0,
       date: new Date()
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 
-export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty }) {
+export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language }) {
   const [eloData, setEloData] = useState(null)
   const [rankUp, setRankUp] = useState(false)
   
@@ -23,7 +23,8 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
             result,
             difficulty: difficulty || problem?.difficulty || 'Medium',
             timeTaken: timeTaken || 0,
-            problem: problem?.title || 'Unknown'
+            problem: problem?.title || 'Unknown',
+            language: language || 'javascript'  // ✅ yeh add kiya
           })
         })
         const data = await res.json()

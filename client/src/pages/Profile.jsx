@@ -172,6 +172,14 @@ export default function Profile() {
   const medWins = diffWins['Medium'] || 0
   const hardWins = diffWins['Hard'] || 0
 
+  // ✅ Language wise wins calculate karo battles se
+  const langWinsMap = battles.reduce((acc, b) => {
+    if (b.result === 'win' && b.language) {
+      acc[b.language] = (acc[b.language] || 0) + 1
+    }
+    return acc
+  }, {})
+
   // Heatmap
   const heatmapData = Array(52 * 7).fill(0)
   battles.forEach(b => {
@@ -374,13 +382,16 @@ export default function Profile() {
                 {selectedLangs.map(id => {
                   const l = LANGS.find(x => x.id === id)
                   if (!l) return null
+                  const wins = langWinsMap[id] || 0
                   return (
                     <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
                         <span style={{ fontSize: 13, color: '#aaa' }}>{l.label}</span>
                       </div>
-                      {/* ✅ Language wins hatao — misleading hai */}
+                      {wins > 0 && (
+                        <span style={{ fontSize: 12, color: '#555' }}>{wins} wins</span>
+                      )}
                     </div>
                   )
                 })}
