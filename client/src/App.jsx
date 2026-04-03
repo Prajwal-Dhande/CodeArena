@@ -7,7 +7,12 @@ import Leaderboard from './pages/Leaderboard'
 import PracticeRoadmap from './pages/PracticeRoadmap'
 import Profile from './pages/Profile'
 
-// Ye naya AuthGuard import karna mat bhoolna!
+// ✅ Corrected Imports: We need to go into the 'components' folder, then 'ui'
+import Privacy from './components/ui/Privacy' 
+import Terms from './components/ui/Terms'
+import Contact from './components/ui/Contact'
+
+// AuthGuard ka import
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
@@ -17,6 +22,11 @@ export default function App() {
         {/* 🌐 PUBLIC ROUTES - Bina login ke access honge */}
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
+        
+        {/* ✅ Naye Public Routes yahan add kiye hain */}
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/contact" element={<Contact />} />
 
         {/* 🔒 PROTECTED ROUTES - Sirf login ke baad access honge */}
         <Route element={<AuthGuard />}>

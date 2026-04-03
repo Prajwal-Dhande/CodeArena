@@ -262,6 +262,11 @@ export default function Lobby() {
     navigate(`/battle?problem=${practiceSelected.slug}&room=${roomId}&bot=PracticeBot&practice=true`)
   }
 
+  // ✅ Puzzles - Coming Soon Alert
+  const handlePuzzleClick = () => {
+    alert("🧠 Logic Puzzles are coming very soon! Get ready for daily brain teasers.");
+  }
+
   const handleMatchFound = (matchData) => {
   setShowMatchmaking(false)
 
@@ -442,6 +447,25 @@ export default function Lobby() {
               </button>
             </div>
 
+            {/* ✅ NEW LOGIC PUZZLES CARD ADDED HERE ✅ */}
+            <div className="premium-card">
+              <div className="pc-top">
+                <div className="pc-icon-box bg-cyan"><span>🧩</span></div>
+                <div className="pc-title-area">
+                  <h3 className="pc-title">Logic Puzzles</h3>
+                  <span className="pc-subtitle text-cyan">Brain Teasers</span>
+                </div>
+              </div>
+              <p className="pc-desc">Sharpen your problem-solving skills with logic puzzles and algorithmic riddles. No ticking clock, just pure brain training.</p>
+              <div className="pc-stats">
+                <div className="pc-stat-item"><span className="pc-stat-icon">📅</span><div className="pc-stat-text">Daily Updated<br /><span className="text-xs">Fresh Challenges</span></div></div>
+                <div className="pc-stat-item"><span className="pc-stat-icon">🧠</span><div className="pc-stat-text">No Timer<br /><span className="text-xs">Learn at your pace</span></div></div>
+              </div>
+              <button onClick={handlePuzzleClick} className="pc-btn btn-cyan" style={{ marginTop: 'auto' }}>
+                🧩 Solve Puzzles
+              </button>
+            </div>
+
             <div className="premium-card" style={{ opacity: 0.5 }}>
               <div className="pc-top">
                 <div className="pc-icon-box bg-blue"><span>🏆</span></div>
@@ -530,8 +554,9 @@ export default function Lobby() {
         )}
       </div>
 
+      {/* ✅ CSS me Cyan Theme Add kiya gaya hai */}
       <style>{`
-        :root { --bg: #09090b; --glass-border: rgba(255,255,255,0.06); --orange: #ff6b35; --purple: #a855f7; --green: #22c55e; --blue: #3b82f6; --text-main: #f8fafc; --text-muted: #9ca3af; }
+        :root { --bg: #09090b; --glass-border: rgba(255,255,255,0.06); --orange: #ff6b35; --purple: #a855f7; --green: #22c55e; --blue: #3b82f6; --cyan: #0ea5e9; --text-main: #f8fafc; --text-muted: #9ca3af; }
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
         .lobby-wrapper { min-height: 100vh; background: var(--bg); font-family: Inter, sans-serif; color: var(--text-main); position: relative; overflow-x: hidden; }
@@ -573,9 +598,10 @@ export default function Lobby() {
         .bg-purple { background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(139,92,246,0.05)); border: 1px solid rgba(168,85,247,0.3); }
         .bg-green { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.05)); border: 1px solid rgba(34,197,94,0.3); }
         .bg-blue { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(37,99,235,0.05)); border: 1px solid rgba(59,130,246,0.3); }
+        .bg-cyan { background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(2,132,199,0.05)); border: 1px solid rgba(14,165,233,0.3); }
         .pc-title { font-family: Outfit, sans-serif; font-weight: 800; font-size: 22px; margin: 0; color: #fff; }
         .pc-subtitle { font-size: 13px; font-weight: 600; }
-        .text-orange { color: var(--orange); } .text-purple { color: var(--purple); }
+        .text-orange { color: var(--orange); } .text-purple { color: var(--purple); } .text-cyan { color: var(--cyan); }
         .pc-desc { font-size: 14px; color: #a1a1aa; line-height: 1.7; margin: 0 0 28px 0; flex: 1; }
         .pc-stats { display: flex; justify-content: space-between; margin-bottom: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .pc-stat-item { display: flex; align-items: center; gap: 12px; }
@@ -590,6 +616,8 @@ export default function Lobby() {
         .btn-purple:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(168,85,247,0.5); transform: translateY(-1px); }
         .btn-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
         .btn-green:hover:not(:disabled) { background: rgba(34,197,94,0.2); }
+        .btn-cyan { background: linear-gradient(90deg, #0ea5e9, #0284c7); box-shadow: 0 4px 20px rgba(14,165,233,0.3); }
+        .btn-cyan:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(14,165,233,0.5); transform: translateY(-1px); }
         .btn-disabled { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed; }
         .create-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
         .glass-panel { background: rgba(20,20,25,0.6); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; }
