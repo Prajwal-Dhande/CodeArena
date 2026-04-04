@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import API_URL from '../config/api'
 
 const FLAGS = { IN: '🇮🇳', US: '🇺🇸', CN: '🇨🇳', DE: '🇩🇪', JP: '🇯🇵', BR: '🇧🇷', UK: '🇬🇧', CA: '🇨🇦', KR: '🇰🇷' }
 const TABS = ['Global', 'Weekly', 'Monthly', 'Friends']
@@ -18,7 +19,7 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/users/leaderboard')
+        const res = await fetch(`${API_URL}/api/users/leaderboard`)
         const data = await res.json()
         if (data.success) {
           setPlayers(data.leaderboard)

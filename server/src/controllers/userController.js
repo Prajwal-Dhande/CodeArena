@@ -66,7 +66,6 @@ exports.updateProfile = async (req, res) => {
 // ✅ UPDATE Match Result + ELO + RANK
 exports.updateMatchResult = async (req, res) => {
   try {
-    // ✅ Extract language from req.body
     const { opponentName, result, difficulty, timeTaken, problem, language } = req.body
 
     const user = await User.findById(req.userId)
@@ -97,12 +96,11 @@ exports.updateMatchResult = async (req, res) => {
       eloAfter: newElo,
       rankAfter: newRank.name,
       difficulty: difficulty || 'Easy',
-      language: language || 'javascript',  // ✅ yeh add kiya
+      language: language || 'javascript',
       timeTaken: timeTaken || 0,
       date: new Date()
     }
 
-    // ✅ findByIdAndUpdate — VersionError nahi aayega
     await User.findByIdAndUpdate(
       req.userId,
       {
@@ -143,12 +141,49 @@ exports.updateMatchResult = async (req, res) => {
   }
 }
 
-// ✅ LEADERBOARD with ranks
+// 🔥 NEW: UPDATE Puzzle Result & XP 🔥
+exports.updatePuzzleResult = async (req, res) => {
+  try {
+    const { puzzleId, xpEarned } = req.body;
+    const user = await User.findById(req.userId);
+
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Prevent cheating: Check if user already solved this puzzle
+    if (user.solvedPuzzles && user.solvedPuzzles.includes(puzzleId)) {
+      return res.status(400).json({ success: false, message: 'Puzzle already solved' });
+    }
+
+    const newXp = (user.puzzleXp || 0) + xpEarned;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: { puzzleXp: newXp },
+        $push: { solvedPuzzles: puzzleId }
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'XP Added successfully!',
+      puzzleXp: updatedUser.puzzleXp,
+      solvedPuzzles: updatedUser.solvedPuzzles
+    });
+  } catch (err) {
+    console.error('updatePuzzleResult error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// ✅ LEADERBOARD with ranks & puzzle XP
 exports.getLeaderboard = async (req, res) => {
   try {
     const players = await User.find({ isVerified: true })
-      .sort({ elo: -1 }).limit(100)
-      .select('username elo rank stats country createdAt')
+      .sort({ elo: -1, puzzleXp: -1 }) // Sort by ELO first, then Puzzle XP if tie
+      .limit(100)
+      .select('username elo rank stats country createdAt puzzleXp') // Added puzzleXp here
 
     const leaderboard = players.map((p, i) => {
       const rankInfo = getRankFromElo(p.elo)
@@ -159,6 +194,7 @@ exports.getLeaderboard = async (req, res) => {
         rank: i + 1,
         username: p.username,
         elo: p.elo,
+        puzzleXp: p.puzzleXp || 0, // Sending to frontend
         rankName: rankInfo.name,
         rankIcon: rankInfo.icon,
         rankColor: rankInfo.color,

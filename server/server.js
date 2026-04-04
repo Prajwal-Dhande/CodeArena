@@ -2,6 +2,7 @@ require('dotenv').config()
 const http = require("http");
 const app = require("./src/app");
 const { initSocket } = require("./src/socket/index");
+
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;

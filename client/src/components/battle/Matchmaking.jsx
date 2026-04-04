@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
+import API_URL from '../../config/api'
 
 const FAKE_PLAYERS = [
   { name: 'ByteSlayer99', elo: 1180, avatar: 'BS', country: '🇮🇳' },
@@ -25,7 +26,7 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
   const userElo = user?.elo || 0
 
   useEffect(() => {
-    const socket = io('http://localhost:5000')
+    const socket = io(API_URL)
     socketRef.current = socket
 
     socket.on('connect', () => {

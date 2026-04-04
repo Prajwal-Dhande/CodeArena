@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import API_URL from '../config/api'
 
 const getTier = (elo) => {
   if (elo >= 2000) return { name: 'Grandmaster', icon: '👑', color: '#ff6b35', bg: '#ff6b3520' }
@@ -95,8 +96,8 @@ export default function Profile() {
     const fetchData = async () => {
       try {
         const [pRes, bRes] = await Promise.all([
-          fetch('http://localhost:5000/api/users/profile', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('http://localhost:5000/api/users/battles', { headers: { 'Authorization': `Bearer ${token}` } })
+          fetch(`${API_URL}/api/users/profile`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/users/battles`, { headers: { 'Authorization': `Bearer ${token}` } })
         ])
         const pData = await pRes.json()
         const bData = await bRes.json()
@@ -123,7 +124,7 @@ export default function Profile() {
     setSaving(true)
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch(`${API_URL}/api/users/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ username, bio, github, linkedin, website, education, company, languages: selectedLangs })

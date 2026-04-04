@@ -7,37 +7,40 @@ import Leaderboard from './pages/Leaderboard'
 import PracticeRoadmap from './pages/PracticeRoadmap'
 import Profile from './pages/Profile'
 
-// ✅ Corrected Imports: We need to go into the 'components' folder, then 'ui'
+// ✅ CORRECTED PATHS: 'components/ui' folder se import honge
 import Privacy from './components/ui/Privacy' 
 import Terms from './components/ui/Terms'
 import Contact from './components/ui/Contact'
 
-// AuthGuard ka import
+// ✅ NAYA PUZZLE PAGE IMPORT
+import PuzzleSolve from './pages/PuzzleSolve' 
+
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 🌐 PUBLIC ROUTES - Bina login ke access honge */}
+        {/* 🌐 PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
-        
-        {/* ✅ Naye Public Routes yahan add kiye hain */}
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/contact" element={<Contact />} />
 
-        {/* 🔒 PROTECTED ROUTES - Sirf login ke baad access honge */}
+        {/* 🔒 PROTECTED ROUTES */}
         <Route element={<AuthGuard />}>
           <Route path="/lobby" element={<Lobby />} />
           <Route path="/battle" element={<Battle />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/practice" element={<PracticeRoadmap />} />
           <Route path="/profile" element={<Profile />} />
+          
+          {/* ✅ NAYA PUZZLE ROUTE YAHAN ADD KIYA */}
+          <Route path="/puzzle" element={<PuzzleSolve />} />
         </Route>
 
-        {/* ⚠️ Catch-all route - Agar koi URL type karke aisi jagah jaye jo exist nahi karti, toh wapas Home pe bhej do */}
+        {/* ⚠️ Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

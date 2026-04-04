@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import API_URL from '../config/api'
 
 export default function Auth() {
   const [mode, setMode] = useState('login')
@@ -43,8 +44,8 @@ export default function Auth() {
 
     try {
       const endpoint = mode === 'signup'
-        ? 'http://localhost:5000/api/auth/signup'
-        : 'http://localhost:5000/api/auth/login'
+        ? `${API_URL}/api/auth/signup`
+        : `${API_URL}/api/auth/login`
 
       const body = mode === 'signup'
         ? { username: form.username, email: form.email, password: form.password }
@@ -112,7 +113,7 @@ export default function Auth() {
     setError('')
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/verify-otp', {
+      const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email, otp: code })
@@ -147,7 +148,7 @@ export default function Auth() {
     otpRefs.current[0]?.focus()
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/resend-otp', {
+      const res = await fetch(`${API_URL}/api/auth/resend-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email })

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import API_URL from '../../config/api'
 
 export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language }) {
   const [eloData, setEloData] = useState(null)
@@ -15,7 +16,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
     const updateElo = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await fetch('http://localhost:5000/api/users/match-result', {
+        const res = await fetch(`${API_URL}/api/users/match-result`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({

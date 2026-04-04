@@ -7,6 +7,10 @@ router.get('/profile', authMiddleware, userController.getProfile)
 router.get('/battles', authMiddleware, userController.getBattleHistory)
 router.put('/profile', authMiddleware, userController.updateProfile)
 router.post('/match-result', authMiddleware, userController.updateMatchResult)
+
+// 🔥 NAYA PUZZLE ROUTE YAHAN ADD KIYA 🔥
+router.post('/puzzle-result', authMiddleware, userController.updatePuzzleResult)
+
 router.get('/leaderboard', userController.getLeaderboard)
 
 module.exports = router

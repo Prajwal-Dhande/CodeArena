@@ -5,6 +5,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import Timer from './Timer'
 import WinnerScreen from './WinnerScreen'
 import ConstraintAlert from './ConstraintAlert'
+import API_URL from '../../config/api'
 
 const DIFF_COLOR = {
   Easy: { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
@@ -70,7 +71,7 @@ export default function BattleRoom() {
     const fetchProblem = async () => {
       setProblemLoading(true)
       try {
-        const res = await fetch(`http://localhost:5000/api/problems/${slug}`)
+        const res = await fetch(`${API_URL}/api/problems/${slug}`)
         const data = await res.json()
         if (data.problem) {
           setProblem(data.problem)
@@ -92,7 +93,7 @@ export default function BattleRoom() {
 
   // All problems for picker
   useEffect(() => {
-    fetch('http://localhost:5000/api/problems')
+    fetch(`${API_URL}/api/problems`)
       .then(r => r.json())
       .then(d => setAllProblems(d.problems || []))
       .catch(console.error)
@@ -157,7 +158,7 @@ export default function BattleRoom() {
 
   // ✅ Socket — sirf ek baar
   useEffect(() => {
-    const socket = io('http://localhost:5000')
+    const socket = io(API_URL)
     socketRef.current = socket
     
     // ✅ URL se bot check karo
@@ -316,7 +317,7 @@ export default function BattleRoom() {
     gameOverRef.current = false; constraintTriggered.current = false
     setProblemLoading(true)
     try {
-      const res = await fetch(`http://localhost:5000/api/problems/${slug}`)
+      const res = await fetch(`${API_URL}/api/problems/${slug}`)
       const data = await res.json()
       if (data.problem) {
         setProblem(data.problem)
@@ -340,7 +341,7 @@ export default function BattleRoom() {
       const token = localStorage.getItem('token')
       const roomId = getRoomId()
       const slug = getProblemSlug()
-      const res = await fetch('http://localhost:5000/api/code/ai-constraint', {
+      const res = await fetch(`${API_URL}/api/code/ai-constraint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code: currentCode, problemId: problem?.slug || slug, passed, total, roomId })
@@ -359,7 +360,7 @@ export default function BattleRoom() {
       const token = localStorage.getItem('token')
       const roomId = getRoomId()
       const slug = getProblemSlug()
-      const res = await fetch('http://localhost:5000/api/code/run', {
+      const res = await fetch(`${API_URL}/api/code/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code, language, problemId: problem?.slug || slug })
@@ -390,7 +391,7 @@ export default function BattleRoom() {
       const token = localStorage.getItem('token')
       const roomId = getRoomId()
       const slug = getProblemSlug()
-      const res = await fetch('http://localhost:5000/api/code/run', {
+      const res = await fetch(`${API_URL}/api/code/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code, language, problemId: problem?.slug || slug })

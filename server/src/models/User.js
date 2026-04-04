@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema({
   elo: { type: Number, default: 0 },
   peakElo: { type: Number, default: 0 },
   rank: { type: String, default: 'Bronze' },
+  
+  // 🔥 NEW FIELDS FOR PUZZLES 🔥
+  puzzleXp: { type: Number, default: 0 },
+  solvedPuzzles: [{ type: String }],
+  // ---------------------------
+
   country: { type: String, default: 'IN' },
   isVerified: { type: Boolean, default: false },
   otp: { type: String, select: false },

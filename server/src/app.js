@@ -28,6 +28,9 @@ app.use('/api/problems', problemRoutes)
 // 🔥 NAYI LINE: Yahan /api/users ko apne naye router se connect kar de
 app.use('/api/users', userRoutes)
 
+// 👇 BAAKI ROUTES KE SAATH YE NAYA ROUTE ADD KAR DE 👇
+app.use('/api/puzzles', require('./routes/puzzleRoutes'));
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Algo-Arena server is alive 🔥' })
 })

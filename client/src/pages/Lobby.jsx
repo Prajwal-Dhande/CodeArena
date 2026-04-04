@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Matchmaking from '../components/battle/Matchmaking'
+import API_URL from '../config/api'
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard']
 const TOPICS = ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Dynamic Programming', 'Graphs', 'Binary Search', 'Stack']
@@ -11,7 +12,7 @@ const diffColor = {
   Hard: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' },
 }
 
-// ✅ Lobby function ke BAHAR — top pe paste kiya gaya ProblemModal
+// ✅ ProblemModal Component
 const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, onSelect, diff, setDiff, topic, setTopic, onPlay, onClose, btnLabel, problems }) => {
   const list = problems.filter(p =>
     (diff === 'All' || p.difficulty === diff) &&
@@ -168,7 +169,9 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
 
 export default function Lobby() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('quickplay')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab') || 'quickplay'
+  const [tab, setTab] = useState(initialTab)
   const [problems, setProblems] = useState([])
   const [problemsLoading, setProblemsLoading] = useState(true)
   const [diffFilter, setDiffFilter] = useState('All')
@@ -184,31 +187,60 @@ export default function Lobby() {
   const [showMatchmaking, setShowMatchmaking] = useState(false)
   const [matchmakingMode, setMatchmakingMode] = useState('random')
 
-  // ✅ Ranked states
   const [showRankedList, setShowRankedList] = useState(false)
-  const [rankedDiff, setRankedDiff] = useState('All') // ✅ All — Hard problems nahi hain DB mein
+  const [rankedDiff, setRankedDiff] = useState('All')
   const [rankedTopic, setRankedTopic] = useState('All')
   const [rankedSelected, setRankedSelected] = useState(null)
 
-  // ✅ Practice states
   const [showPracticeList, setShowPracticeList] = useState(false)
   const [practiceDiff, setPracticeDiff] = useState('All')
   const [practiceTopic, setPracticeTopic] = useState('All')
   const [practiceSelected, setPracticeSelected] = useState(null)
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
   const initials = (user?.username || 'PL').slice(0, 2).toUpperCase()
 
+  const [dailyPuzzles, setDailyPuzzles] = useState([]);
+  const [puzzlesLoading, setPuzzlesLoading] = useState(true);
+
+  // Sync tab with URL search params
   useEffect(() => {
-    fetch('http://localhost:5000/api/problems')
+    const urlTab = searchParams.get('tab')
+    if (urlTab && urlTab !== tab) {
+      setTab(urlTab)
+    }
+  }, [searchParams])
+
+  // Sync profile data
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${API_URL}/api/users/profile`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          setUser(data.user);
+        }
+      }).catch(err => console.error(err));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/problems`)
       .then(r => r.json())
       .then(d => setProblems(d.problems || []))
-      .catch(() => setProblems([
-        { _id: '1', slug: 'two-sum', title: 'Two Sum', category: 'Arrays', acceptance: 49, difficulty: 'Easy' },
-        { _id: '2', slug: 'valid-parentheses', title: 'Valid Parentheses', category: 'Stack', acceptance: 60, difficulty: 'Medium' },
-      ]))
+      .catch(() => setProblems([]))
       .finally(() => setProblemsLoading(false))
   }, [])
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/puzzles`) 
+      .then(r => r.json())
+      .then(data => setDailyPuzzles(data))
+      .catch(err => console.error(err))
+      .finally(() => setPuzzlesLoading(false));
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -224,7 +256,6 @@ export default function Lobby() {
     (topic === 'All' || p.category === topic)
   )
 
-  // ✅ Random Battle
   const handleQuickPlay = () => {
     if (!user?.username) { navigate('/auth'); return }
     if (problems.length === 0) return
@@ -232,14 +263,12 @@ export default function Lobby() {
     setShowMatchmaking(true)
   }
 
-  // ✅ Ranked — problem list dikhao
   const handleRankedClick = () => {
     if (!user?.username) { navigate('/auth'); return }
     setRankedSelected(null)
     setShowRankedList(true)
   }
 
-  // ✅ Ranked — matchmaking start
   const handleRankedPlay = () => {
     if (!rankedSelected) return
     setShowRankedList(false)
@@ -247,53 +276,39 @@ export default function Lobby() {
     setShowMatchmaking(true)
   }
 
-  // ✅ Practice — problem list dikhao
   const handlePracticeClick = () => {
     if (!user?.username) { navigate('/auth'); return }
     setPracticeSelected(null)
     setShowPracticeList(true)
   }
 
-  // ✅ Practice — NO matchmaking, seedha battle
   const handlePracticePlay = () => {
     if (!practiceSelected) return
     setShowPracticeList(false)
-    const roomId = `practice-${Date.now()}`
-    navigate(`/battle?problem=${practiceSelected.slug}&room=${roomId}&bot=PracticeBot&practice=true`)
+    navigate(`/battle?problem=${practiceSelected.slug}&room=practice-${Date.now()}&bot=PracticeBot&practice=true`)
   }
 
-  // ✅ Puzzles - Coming Soon Alert
-  const handlePuzzleClick = () => {
-    alert("🧠 Logic Puzzles are coming very soon! Get ready for daily brain teasers.");
+  const handlePuzzleClick = (id) => {
+    navigate(`/puzzle?id=${id}`); 
   }
 
   const handleMatchFound = (matchData) => {
-  setShowMatchmaking(false)
-
-  if (matchData.isReal) {
-    const roomId = matchData.roomId
-    // ✅ Problem same honi chahiye jo server ne assign ki
-    const problemSlug = matchData.problemSlug ||
-      problems[Math.floor(Date.now() / 30000) % problems.length]?.slug ||
-      'two-sum'
-    // ✅ bot param nahi — real=true param add karo
-    navigate(`/battle?problem=${problemSlug}&room=${roomId}&real=true`)
-    return
+    setShowMatchmaking(false)
+    if (matchData.isReal) {
+      const roomId = matchData.roomId
+      const problemSlug = matchData.problemSlug || problems[Math.floor(Date.now() / 30000) % problems.length]?.slug || 'two-sum'
+      navigate(`/battle?problem=${problemSlug}&room=${roomId}&real=true`)
+      return
+    }
+    const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
+    let prob = matchmakingMode === 'ranked' && rankedSelected ? rankedSelected : problems[Math.floor(Date.now() / 30000) % problems.length]
+    navigate(`/battle?problem=${prob.slug}&room=${roomId}&bot=${matchData.name}`)
   }
-
-  // Bot match
-  const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
-  let prob = matchmakingMode === 'ranked' && rankedSelected
-    ? rankedSelected
-    : problems[Math.floor(Date.now() / 30000) % problems.length]
-  navigate(`/battle?problem=${prob.slug}&room=${roomId}&bot=${matchData.name}`)
-}
 
   const handleCreateRoom = () => {
     if (!selectedProblem) return
     setCreating(true)
-    const roomId = `room-${Math.random().toString(36).slice(2, 8)}`
-    setTimeout(() => navigate(`/battle?problem=${selectedProblem.slug}&room=${roomId}`), 1500)
+    setTimeout(() => navigate(`/battle?problem=${selectedProblem.slug}&room=room-${Math.random().toString(36).slice(2, 8)}`), 1500)
   }
 
   const handleJoinRoom = () => {
@@ -302,50 +317,24 @@ export default function Lobby() {
     setTimeout(() => navigate(`/battle?room=${roomCode.trim()}`), 1200)
   }
 
+  // ✅ Calculation for Sprint Progress
+  const solvedCount = dailyPuzzles.filter(p => user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id))).length;
+  const totalPuzzles = dailyPuzzles.length > 0 ? dailyPuzzles.length : 10;
+  const isSprintComplete = dailyPuzzles.length > 0 && solvedCount >= totalPuzzles;
+  
+  // Find the first puzzle they haven't solved yet to resume
+  const nextUnsolvedId = dailyPuzzles.find(p => !user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id)))?._id || dailyPuzzles[0]?._id;
+
   const filteredProblems = filtered(diffFilter, topicFilter)
 
   return (
     <div className="lobby-wrapper">
 
-      {showMatchmaking && (
-        <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} />
-      )}
-
-      {/* ✅ Ranked Problem Modal with problems array prop */}
-      {showRankedList && (
-        <ProblemModal
-          title="🎯 Ranked Arena — Select Problem"
-          subtitle="Choose your battlefield wisely. Higher difficulty = more ELO."
-          borderColor="rgba(168,85,247,0.4)"
-          accentColor="#a855f7"
-          selectedP={rankedSelected}
-          onSelect={setRankedSelected}
-          diff={rankedDiff} setDiff={setRankedDiff}
-          topic={rankedTopic} setTopic={setRankedTopic}
-          onPlay={handleRankedPlay}
-          onClose={() => setShowRankedList(false)}
-          btnLabel="⚔️ Enter Ranked Arena"
-          problems={problems}
-        />
-      )}
-
-      {/* ✅ Practice Problem Modal with problems array prop */}
-      {showPracticeList && (
-        <ProblemModal
-          title="🧠 Practice Mode — Select Problem"
-          subtitle="Solo training against an AI bot. No ELO at stake."
-          borderColor="rgba(34,197,94,0.4)"
-          accentColor="#22c55e"
-          selectedP={practiceSelected}
-          onSelect={setPracticeSelected}
-          diff={practiceDiff} setDiff={setPracticeDiff}
-          topic={practiceTopic} setTopic={setPracticeTopic}
-          onPlay={handlePracticePlay}
-          onClose={() => setShowPracticeList(false)}
-          btnLabel="🧠 Start Practice"
-          problems={problems}
-        />
-      )}
+      {showMatchmaking && <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} />}
+      
+      {showRankedList && <ProblemModal title="🎯 Ranked Arena — Select Problem" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} />}
+      
+      {showPracticeList && <ProblemModal title="🧠 Practice Mode — Select Problem" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.4)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
 
       <div className="bg-glow orange-glow" />
       <div className="bg-glow purple-glow" />
@@ -384,6 +373,7 @@ export default function Lobby() {
           <div className="tab-container">
             {[
               { id: 'quickplay', label: '⚡ Quick Play' },
+              { id: 'puzzles', label: '🧩 Puzzles' },
               { id: 'create', label: '+ Create Room' },
               { id: 'join', label: '🔗 Join Room' },
               { id: 'live', label: '👁 Watch Live' },
@@ -447,25 +437,6 @@ export default function Lobby() {
               </button>
             </div>
 
-            {/* ✅ NEW LOGIC PUZZLES CARD ADDED HERE ✅ */}
-            <div className="premium-card">
-              <div className="pc-top">
-                <div className="pc-icon-box bg-cyan"><span>🧩</span></div>
-                <div className="pc-title-area">
-                  <h3 className="pc-title">Logic Puzzles</h3>
-                  <span className="pc-subtitle text-cyan">Brain Teasers</span>
-                </div>
-              </div>
-              <p className="pc-desc">Sharpen your problem-solving skills with logic puzzles and algorithmic riddles. No ticking clock, just pure brain training.</p>
-              <div className="pc-stats">
-                <div className="pc-stat-item"><span className="pc-stat-icon">📅</span><div className="pc-stat-text">Daily Updated<br /><span className="text-xs">Fresh Challenges</span></div></div>
-                <div className="pc-stat-item"><span className="pc-stat-icon">🧠</span><div className="pc-stat-text">No Timer<br /><span className="text-xs">Learn at your pace</span></div></div>
-              </div>
-              <button onClick={handlePuzzleClick} className="pc-btn btn-cyan" style={{ marginTop: 'auto' }}>
-                🧩 Solve Puzzles
-              </button>
-            </div>
-
             <div className="premium-card" style={{ opacity: 0.5 }}>
               <div className="pc-top">
                 <div className="pc-icon-box bg-blue"><span>🏆</span></div>
@@ -476,6 +447,109 @@ export default function Lobby() {
               </div>
               <p className="pc-desc">Join scheduled tournaments. Bracket-style elimination. Winners take the ultimate prize and badges.</p>
               <button disabled className="pc-btn btn-disabled" style={{ marginTop: 'auto' }}>Coming Soon</button>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ PUZZLES SECTION — REAL PUZZLES FROM DATABASE */}
+        {tab === 'puzzles' && (
+          <div className="puzzles-section animate-fade-in">
+            <div className="puzzles-header">
+              <h2 className="section-title text-cyan">Daily Brain Teasers</h2>
+              <p className="section-subtitle">Test your logic and dry-run skills. New puzzles rotate every 24 hours — solve all {totalPuzzles} to complete today's sprint.</p>
+            </div>
+
+            {/* Sprint Progress Bar */}
+            {!puzzlesLoading && dailyPuzzles.length > 0 && (
+              <div className="sprint-progress-bar">
+                <div className="sprint-progress-info">
+                  <span className="sprint-label">🏃 Sprint Progress</span>
+                  <span className="sprint-count">{solvedCount}/{totalPuzzles}</span>
+                </div>
+                <div className="sprint-track">
+                  <div className="sprint-fill" style={{ width: `${(solvedCount / totalPuzzles) * 100}%` }} />
+                </div>
+                {isSprintComplete && <div className="sprint-complete-msg">🎉 Sprint Complete! Come back tomorrow for new puzzles.</div>}
+              </div>
+            )}
+            
+            <div className="puzzle-grid">
+              {puzzlesLoading ? (
+                 <div style={{ color: '#0ea5e9', padding: '20px' }}>⟳ Loading Brain Teasers...</div>
+              ) : dailyPuzzles.length === 0 ? (
+                 <div style={{ color: '#666', padding: '40px', textAlign: 'center' }}>
+                   <div style={{ fontSize: 40, marginBottom: 12 }}>🧩</div>
+                   <div style={{ fontWeight: 600, marginBottom: 6 }}>No puzzles available</div>
+                   <div style={{ fontSize: 12 }}>Check back soon — new puzzles are being added!</div>
+                 </div>
+              ) : (
+                dailyPuzzles.map((p, idx) => {
+                  const pid = String(p._id || p.id);
+                  const isSolved = user?.solvedPuzzles?.some(id => String(id) === pid);
+                  const catIcons = {
+                    'Code Output': '💻', 'Complexity Analysis': '⏱️', 'Bug Hunt': '🐛',
+                    'Data Structure': '🗂️', 'Algorithm ID': '🎯', 'Logic Puzzle': '🧠',
+                    'Pattern Recognition': '🔍'
+                  };
+                  const catColors = {
+                    'Code Output': { color: '#0ea5e9', bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.3)' },
+                    'Complexity Analysis': { color: '#a855f7', bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.3)' },
+                    'Bug Hunt': { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
+                    'Data Structure': { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.3)' },
+                    'Algorithm ID': { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)' },
+                    'Logic Puzzle': { color: '#e879f9', bg: 'rgba(232,121,249,0.1)', border: 'rgba(232,121,249,0.3)' },
+                    'Pattern Recognition': { color: '#facc15', bg: 'rgba(250,204,21,0.1)', border: 'rgba(250,204,21,0.3)' },
+                  };
+                  const cc = catColors[p.category] || { color: '#0ea5e9', bg: 'rgba(14,165,233,0.1)', border: 'rgba(14,165,233,0.3)' };
+                  const icon = catIcons[p.category] || '🧩';
+                  const diffStyle = p.difficulty === 'Easy'
+                    ? { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.3)' }
+                    : p.difficulty === 'Hard'
+                    ? { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' }
+                    : { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)' };
+
+                  return (
+                    <div key={pid} className={`puzzle-card ${isSolved ? 'solved-card' : ''}`}
+                      onClick={() => !isSolved && handlePuzzleClick(pid)}
+                      style={{ cursor: isSolved ? 'default' : 'pointer' }}
+                    >
+                      <div className="puzzle-top">
+                        <div className="puzzle-icon-box" style={{ background: cc.bg, color: cc.color, border: `1px solid ${cc.border}` }}>{icon}</div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <div className="puzzle-badge" style={{ color: cc.color, background: cc.bg, border: `1px solid ${cc.border}` }}>
+                            {p.category?.toUpperCase()}
+                          </div>
+                          <span style={{
+                            fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 6,
+                            background: diffStyle.bg, color: diffStyle.color,
+                            border: `1px solid ${diffStyle.border}`, textTransform: 'uppercase'
+                          }}>{p.difficulty}</span>
+                        </div>
+                      </div>
+                      <h3 className="puzzle-title" style={{ fontSize: 16 }}>
+                        <span style={{ color: '#555', fontWeight: 400, marginRight: 6 }}>#{idx + 1}</span>
+                        {p.title}
+                      </h3>
+                      <div className="puzzle-meta">
+                        <span className="puzzle-cat">{p.category}</span>
+                        <span className="puzzle-points" style={{ color: cc.color }}>+{p.xp || p.points} XP</span>
+                      </div>
+                      
+                      {isSolved ? (
+                        <button className="btn-puzzle-solved" disabled>
+                          <span style={{ fontSize: 14 }}>✓</span> Solved
+                        </button>
+                      ) : (
+                        <button className="btn-puzzle" onClick={(e) => { e.stopPropagation(); handlePuzzleClick(pid); }}
+                          style={{ borderColor: cc.border, color: cc.color }}
+                        >
+                          Solve Now →
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -554,7 +628,6 @@ export default function Lobby() {
         )}
       </div>
 
-      {/* ✅ CSS me Cyan Theme Add kiya gaya hai */}
       <style>{`
         :root { --bg: #09090b; --glass-border: rgba(255,255,255,0.06); --orange: #ff6b35; --purple: #a855f7; --green: #22c55e; --blue: #3b82f6; --cyan: #0ea5e9; --text-main: #f8fafc; --text-muted: #9ca3af; }
         * { box-sizing: border-box; }
@@ -598,10 +671,9 @@ export default function Lobby() {
         .bg-purple { background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(139,92,246,0.05)); border: 1px solid rgba(168,85,247,0.3); }
         .bg-green { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.05)); border: 1px solid rgba(34,197,94,0.3); }
         .bg-blue { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(37,99,235,0.05)); border: 1px solid rgba(59,130,246,0.3); }
-        .bg-cyan { background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(2,132,199,0.05)); border: 1px solid rgba(14,165,233,0.3); }
         .pc-title { font-family: Outfit, sans-serif; font-weight: 800; font-size: 22px; margin: 0; color: #fff; }
         .pc-subtitle { font-size: 13px; font-weight: 600; }
-        .text-orange { color: var(--orange); } .text-purple { color: var(--purple); } .text-cyan { color: var(--cyan); }
+        .text-orange { color: var(--orange); } .text-purple { color: var(--purple); }
         .pc-desc { font-size: 14px; color: #a1a1aa; line-height: 1.7; margin: 0 0 28px 0; flex: 1; }
         .pc-stats { display: flex; justify-content: space-between; margin-bottom: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .pc-stat-item { display: flex; align-items: center; gap: 12px; }
@@ -616,8 +688,6 @@ export default function Lobby() {
         .btn-purple:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(168,85,247,0.5); transform: translateY(-1px); }
         .btn-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
         .btn-green:hover:not(:disabled) { background: rgba(34,197,94,0.2); }
-        .btn-cyan { background: linear-gradient(90deg, #0ea5e9, #0284c7); box-shadow: 0 4px 20px rgba(14,165,233,0.3); }
-        .btn-cyan:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(14,165,233,0.5); transform: translateY(-1px); }
         .btn-disabled { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: not-allowed; }
         .create-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
         .glass-panel { background: rgba(20,20,25,0.6); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; }
@@ -656,6 +726,45 @@ export default function Lobby() {
         .join-input:focus { border-color: var(--orange); }
         .join-hint { margin-top: 20px; font-size: 12px; color: #555; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; }
         @media (max-width: 800px) { .mode-grid { grid-template-columns: 1fr; } .create-grid { grid-template-columns: 1fr; } .page-title { font-size: 32px; } }
+
+        /* ✅ Puzzles Section CSS */
+        .puzzles-section { width: 100%; margin-top: 10px; animation: fadeIn 0.4s ease-out; }
+        .puzzles-header { margin-bottom: 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px; }
+        .section-title { font-family: Outfit, sans-serif; font-size: 28px; font-weight: 800; margin: 0 0 8px 0; }
+        .section-subtitle { font-size: 14px; color: var(--text-muted); margin: 0; }
+        
+        .puzzle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .puzzle-card { background: rgba(20,20,25,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(14,165,233,0.15); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .puzzle-card:hover:not(.solved-card) { transform: translateY(-4px); border-color: rgba(14,165,233,0.4); box-shadow: 0 15px 35px rgba(14,165,233,0.25); }
+        .solved-card { opacity: 0.5; border-color: rgba(34,197,94,0.2); background: rgba(20,25,20,0.4); filter: grayscale(50%); cursor: default; }
+        
+        .puzzle-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .puzzle-icon-box { width: 48px; height: 48px; background: rgba(255,255,255,0.03); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 20px rgba(255,255,255,0.02); }
+        
+        .puzzle-badge { font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .puzzle-title { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 12px 0; font-family: Outfit, sans-serif; letter-spacing: -0.5px; }
+        
+        .puzzle-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; font-size: 12px; }
+        .puzzle-cat { color: var(--text-muted); font-weight: 600; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; }
+        .puzzle-points { font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        
+        .btn-puzzle { width: 100%; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-top: auto; font-family: Inter, sans-serif; }
+        .btn-puzzle:hover { background: currentColor; color: #fff !important; box-shadow: 0 4px 20px rgba(14,165,233,0.4); transform: translateY(-1px); }
+        
+        .btn-puzzle-solved { width: 100%; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: var(--green); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: not-allowed; margin-top: auto; font-family: Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* Sprint Progress Bar */
+        .sprint-progress-bar { background: rgba(20,20,25,0.6); border: 1px solid rgba(14,165,233,0.15); border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
+        .sprint-progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .sprint-label { font-size: 14px; font-weight: 700; color: #f8fafc; }
+        .sprint-count { font-size: 14px; font-weight: 800; color: #0ea5e9; font-family: 'JetBrains Mono', monospace; }
+        .sprint-track { width: 100%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+        .sprint-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #22c55e); border-radius: 100px; transition: width 0.6s ease; min-width: 2px; }
+        .sprint-complete-msg { text-align: center; color: #22c55e; font-weight: 700; font-size: 13px; margin-top: 12px; }
+
+        .text-cyan { color: var(--cyan); }
       `}</style>
     </div>
   )
