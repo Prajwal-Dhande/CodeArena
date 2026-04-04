@@ -156,8 +156,8 @@ export default function Profile() {
   }
 
   const user = profileData || storedUser
-  const elo = user?.elo || 1200
-  const peakElo = user?.peakElo || elo
+  const elo = user?.elo ?? 0
+  const peakElo = user?.peakElo ?? elo
   const wins = user?.stats?.wins || 0
   const losses = user?.stats?.losses || 0
   const total = wins + losses
@@ -406,6 +406,7 @@ export default function Profile() {
           <div style={{ background: '#13131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '20px 24px' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 14 }}>Arena Stats</div>
             {[
+              { icon: '🧩', label: 'Puzzle XP', val: user?.puzzleXp || 0, color: '#0ea5e9' },
               { icon: '⚔️', label: 'Total Battles', val: total, color: '#ff6b35' },
               { icon: '🏆', label: 'Wins', val: wins, color: '#22c55e' },
               { icon: '💀', label: 'Losses', val: losses, color: '#ef4444' },
@@ -665,6 +666,7 @@ export default function Profile() {
                   { label: 'Status', val: user?.isVerified ? '✓ Verified' : '✗ Unverified' },
                   { label: 'Current ELO', val: `${elo} (${tier.icon} ${tier.name})` },
                   { label: 'Peak ELO', val: `📈 ${Math.max(peakElo, elo)}` },
+                  { label: 'Puzzle XP', val: `🧩 ${user?.puzzleXp || 0}` },
                   { label: 'Win Rate', val: `${winRate}%` },
                   { label: 'Joined', val: new Date(user?.createdAt || Date.now()).toLocaleDateString() },
                 ].map(({ label, val }) => (

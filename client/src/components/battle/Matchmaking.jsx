@@ -47,7 +47,7 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
 
       const realOpponent = {
         name: opponent,
-        elo: elo || 1200, // ELO update here
+        elo: elo ?? 0, // ELO update here
         avatar: opponent.slice(0, 2).toUpperCase(),
         country: '',
         isReal: true,

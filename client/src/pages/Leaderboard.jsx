@@ -165,7 +165,7 @@ export default function Leaderboard() {
 
             <div className="table-container glass-panel">
               <div className="table-header">
-                {['RANK', 'PLAYER', 'ELO', 'WINS', 'WIN RATE', 'STREAK', 'CHANGE'].map(h => <div key={h}>{h}</div>)}
+                {['RANK', 'PLAYER', 'ELO', 'PUZZLE XP', 'WINS', 'WIN RATE', 'STREAK'].map(h => <div key={h}>{h}</div>)}
               </div>
 
               <div className="table-body">
@@ -192,6 +192,9 @@ export default function Leaderboard() {
                     <div className={`col-elo ${player.rank === 1 ? 'gold-text' : player.rank === 2 ? 'silver-text' : player.rank === 3 ? 'bronze-text' : ''}`}>
                       {animatedElos[player.rank] || player.elo}
                     </div>
+                    <div className="col-xp font-bold" style={{ color: '#0ea5e9' }}>
+                      {player.puzzleXp || 0} XP
+                    </div>
                     <div className="col-wins">
                       <span className="text-green font-bold">{player.wins}</span>
                       <span className="total-games"> / {player.wins + player.losses}</span>
@@ -203,7 +206,6 @@ export default function Leaderboard() {
                     <div className={`col-streak ${player.streak >= 5 ? 'text-orange drop-shadow-glow' : player.streak > 0 ? 'text-main' : 'text-muted'}`}>
                       {player.streak > 0 ? `🔥 ${player.streak}` : '—'}
                     </div>
-                    <div className="col-change font-bold text-muted">{player.change === '0' ? '—' : player.change}</div>
                   </div>
                 )})}
               </div>
@@ -325,9 +327,9 @@ export default function Leaderboard() {
 
         /* Table Styles */
         .glass-panel { background: var(--panel-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .table-header { display: grid; grid-template-columns: 70px 1fr 110px 110px 130px 90px 90px; padding: 18px 24px; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--glass-border); font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; }
+        .table-header { display: grid; grid-template-columns: 70px 1fr 110px 110px 110px 130px 90px; padding: 18px 24px; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--glass-border); font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; }
         
-        .table-row { display: grid; grid-template-columns: 70px 1fr 110px 110px 130px 90px 90px; padding: 16px 24px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.02); transition: all 0.2s ease; cursor: pointer; background: transparent; }
+        .table-row { display: grid; grid-template-columns: 70px 1fr 110px 110px 110px 130px 90px; padding: 16px 24px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.02); transition: all 0.2s ease; cursor: pointer; background: transparent; }
         .table-row:hover { background: rgba(255,255,255,0.04); transform: scale(1.01); box-shadow: 0 10px 20px rgba(0,0,0,0.2); z-index: 2; position: relative; border-radius: 8px; border-bottom-color: transparent; }
         .table-row:last-child { border-bottom: none; }
         

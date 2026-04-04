@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import API_URL from '../config/api';
 
@@ -9,7 +9,7 @@ const FALLBACK_PUZZLES = [
 
 export default function PuzzleSolve() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const puzzleId = searchParams.get('id') || '1'; 
   
   const [puzzle, setPuzzle] = useState(null);
@@ -57,9 +57,9 @@ export default function PuzzleSolve() {
     }
   }, [puzzle]);
 
-  if (!puzzle) return <div className="solve-wrapper" style={{color: '#0ea5e9', display:'flex', alignItems:'center', justifyContent:'center'}}>Loading Puzzle...</div>;
+  if (!puzzle) return <div className="solve-wrapper" style={{color: '#0ea5e9', display:'flex', alignItems:'center', justifyContent:'center', minHeight: '100vh', background: '#050507', fontFamily: 'Inter, sans-serif', fontSize: 16}}>Loading Puzzle...</div>;
 
-  const currentPuzzleIndex = allPuzzles.findIndex(p => String(p._id) === String(puzzle._id) || String(p.id) === String(puzzle.id));
+  const currentPuzzleIndex = allPuzzles.findIndex(p => String(p._id || p.id) === String(puzzleId));
   const puzzleNumber = currentPuzzleIndex !== -1 ? currentPuzzleIndex + 1 : 1;
 
   // SERVER-SIDE answer validation
@@ -68,7 +68,6 @@ export default function PuzzleSolve() {
     setStatus('submitting');
     
     try {
-      // Step 1: Check answer on the server
       const checkRes = await fetch(`${API_URL}/api/puzzles/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +87,6 @@ export default function PuzzleSolve() {
       setExplanation(checkData.explanation || '');
 
       if (checkData.isCorrect) {
-        // Step 2: Record the solved puzzle for XP
         const userStr = localStorage.getItem('user');
         const token = localStorage.getItem('token'); 
         
@@ -124,13 +122,14 @@ export default function PuzzleSolve() {
     }
   };
 
-  // Navigate to next unsolved puzzle
+  // Navigate to next unsolved puzzle — USES setSearchParams for reliable switching
   const handleNext = () => {
     const freshUserStr = localStorage.getItem('user');
     const freshSolvedIds = freshUserStr ? (JSON.parse(freshUserStr).solvedPuzzles || []) : [];
     
     let nextId = null;
     
+    // First try to find an unsolved puzzle
     for (let i = 1; i <= allPuzzles.length; i++) {
        const checkIndex = (currentPuzzleIndex + i) % allPuzzles.length;
        const p = allPuzzles[checkIndex];
@@ -143,10 +142,19 @@ export default function PuzzleSolve() {
     }
 
     if (nextId) {
-      navigate(`/puzzle?id=${nextId}`);
+      // Use replace: true so browser back button skips previous puzzles
+      setSearchParams({ id: nextId }, { replace: true });
     } else {
-      navigate('/lobby?tab=puzzles');
+      navigate('/lobby?tab=puzzles', { replace: true });
     }
+  };
+
+  // Navigate to any puzzle (even solved) — just go to next in order
+  const handleSkip = () => {
+    const nextIndex = (currentPuzzleIndex + 1) % allPuzzles.length;
+    const p = allPuzzles[nextIndex];
+    const pIdStr = String(p._id || p.id);
+    setSearchParams({ id: pIdStr }, { replace: true });
   };
 
   // Sprint completion check
@@ -193,7 +201,7 @@ export default function PuzzleSolve() {
               </div>
             )}
 
-            {/* EXPLANATION CARD — Shows after answering */}
+            {/* EXPLANATION CARD */}
             {(status === 'correct' || status === 'wrong') && explanation && (
               <div className="explanation-card" style={{ animationDelay: '0.3s' }}>
                 <div className="explanation-header">
@@ -242,15 +250,20 @@ export default function PuzzleSolve() {
                   <h4>Already Solved!</h4>
                   <p>You already earned +{puzzle.xp || puzzle.points} XP</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                <div className="result-actions">
                   {isSprintComplete ? (
-                    <button className="btn-next" style={{background: '#22c55e', color: '#fff'}} onClick={() => navigate('/lobby?tab=puzzles')}>
-                      Sprint Complete! Return to Lobby
+                    <button className="btn-result sprint-done" onClick={() => navigate('/lobby?tab=puzzles')}>
+                      🎉 Sprint Complete! Return to Lobby
                     </button>
                   ) : (
-                    <button className="btn-next" style={{background: '#0ea5e9', color: '#fff'}} onClick={handleNext}>
-                      Next Puzzle →
-                    </button>
+                    <>
+                      <button className="btn-result btn-next-main" onClick={handleNext}>
+                        Next Unsolved →
+                      </button>
+                      <button className="btn-result btn-skip" onClick={handleSkip}>
+                        Skip →
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -262,13 +275,13 @@ export default function PuzzleSolve() {
                   <p>You earned +{puzzle.xp || puzzle.points} XP</p>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                <div className="result-actions">
                   {isSprintComplete ? (
-                    <button className="btn-next" style={{background: '#22c55e', color: '#fff'}} onClick={() => navigate('/lobby?tab=puzzles')}>
-                      Sprint Complete! Return to Lobby
+                    <button className="btn-result sprint-done" onClick={() => navigate('/lobby?tab=puzzles')}>
+                      🎉 Sprint Complete! Return to Lobby
                     </button>
                   ) : (
-                    <button className="btn-next" style={{background: '#0ea5e9', color: '#fff'}} onClick={handleNext}>
+                    <button className="btn-result btn-next-main" onClick={handleNext}>
                       Next Puzzle →
                     </button>
                   )}
@@ -279,10 +292,10 @@ export default function PuzzleSolve() {
                 <div className="wrong-icon">✗</div>
                 <div className="wrong-text">
                   <h4>Not quite!</h4>
-                  <p>The correct answer is highlighted in green. Study the explanation and try the next one!</p>
+                  <p>The correct answer is highlighted in green. Study the explanation!</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-                  <button className="btn-next" style={{background: '#0ea5e9', color: '#fff'}} onClick={handleNext}>
+                <div className="result-actions">
+                  <button className="btn-result btn-next-main" onClick={handleNext}>
                     Next Puzzle →
                   </button>
                 </div>
@@ -315,7 +328,6 @@ export default function PuzzleSolve() {
         
         .glass-card { background: rgba(15, 15, 20, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         
-        /* Problem Panel */
         .meta-tags { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
         .badge-diff { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
         .badge-diff.medium { color: #fb923c; background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.3); }
@@ -327,7 +339,6 @@ export default function PuzzleSolve() {
         .problem-title { font-family: Outfit, sans-serif; font-size: 32px; margin: 0 0 16px 0; color: #fff; }
         .problem-desc { color: #cbd5e1; line-height: 1.6; margin: 0 0 24px 0; font-size: 15px; }
         
-        /* Code Block */
         .code-block { background: #0f111a; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; }
         .code-header { background: #161925; padding: 10px 16px; display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -336,14 +347,12 @@ export default function PuzzleSolve() {
         .code-block pre { margin: 0; padding: 20px; overflow-x: auto; }
         .code-block code { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #38bdf8; line-height: 1.5; white-space: pre-wrap; }
 
-        /* Explanation Card */
         .explanation-card { margin-top: 20px; background: rgba(14,165,233,0.06); border: 1px solid rgba(14,165,233,0.2); border-radius: 14px; padding: 20px 24px; animation: slideUp 0.5s ease-out both; }
         .explanation-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .explanation-icon { font-size: 22px; }
         .explanation-title { font-family: Outfit, sans-serif; font-weight: 800; font-size: 16px; color: #0ea5e9; }
         .explanation-text { font-size: 14px; color: #cbd5e1; line-height: 1.7; margin: 0; }
         
-        /* Action Panel */
         .panel-heading { font-family: Outfit, sans-serif; font-size: 20px; margin: 0 0 20px 0; color: #fff; }
         .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
         
@@ -364,20 +373,23 @@ export default function PuzzleSolve() {
         .btn-submit:hover:not(.disabled) { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(14,165,233,0.5); }
         .btn-submit.disabled { background: rgba(255,255,255,0.05); color: #64748b; box-shadow: none; cursor: not-allowed; border: 1px solid rgba(255,255,255,0.05); }
         
-        /* Success Banner */
         .success-banner { display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); padding: 24px; border-radius: 12px; text-align: center; animation: slideUp 0.4s ease-out; }
         .success-icon { width: 50px; height: 50px; background: #22c55e; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; box-shadow: 0 0 20px rgba(34,197,94,0.4); }
         .success-text h4 { margin: 0 0 4px 0; color: #fff; font-size: 18px; font-family: Outfit; }
         .success-text p { margin: 0; color: #22c55e; font-weight: 700; font-size: 14px; }
 
-        /* Wrong Banner */
         .wrong-banner { display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); padding: 24px; border-radius: 12px; text-align: center; animation: slideUp 0.4s ease-out; }
         .wrong-icon { width: 50px; height: 50px; background: #ef4444; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; box-shadow: 0 0 20px rgba(239,68,68,0.4); }
         .wrong-text h4 { margin: 0 0 4px 0; color: #fff; font-size: 18px; font-family: Outfit; }
         .wrong-text p { margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.5; }
 
-        .btn-next { background: transparent; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-size: 13px; font-family: Inter; }
-        .btn-next:hover { transform: translateY(-2px); }
+        .result-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+        .btn-result { border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 13px; font-family: Inter; }
+        .btn-result:hover { transform: translateY(-2px); }
+        .btn-next-main { background: #0ea5e9; color: #fff; }
+        .btn-skip { background: rgba(255,255,255,0.08); color: #9ca3af; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-skip:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .sprint-done { background: #22c55e; color: #fff; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
