@@ -237,4 +237,25 @@ router.post('/ai-constraint', authMiddleware, async (req, res) => {
   }
 })
 
+// POST /api/code/ai-debug — Groq AI debug hint
+router.post('/ai-debug', authMiddleware, async (req, res) => {
+  try {
+    const { code, problemId, errorOutput } = req.body
+
+    if (!code) {
+      return res.status(400).json({ message: 'Code is required' })
+    }
+
+    const problem = await getProblem(problemId) || { title: 'DSA Problem' }
+    const { generateDebugHint } = require('../services/aiService')
+    const hint = await generateDebugHint(code, problem, errorOutput)
+
+    res.json({ success: true, hint })
+
+  } catch (error) {
+    console.error('AI debug hint error:', error)
+    res.status(500).json({ message: error.message || 'AI debug hint failed' })
+  }
+})
+
 module.exports = router

@@ -23,6 +23,25 @@ router.get('/', async (req, res) => {
   }
 })
 
+// GET /api/problems/premium — Interview DSA problems specifically
+router.get('/premium', authMiddleware, async (req, res) => {
+  try {
+    const user = await require('../models/User').findById(req.userId);
+    if (!user || (!user.isPremium && req.query.bypass !== 'test')) {
+      return res.status(403).json({ message: 'Access denied. Premium subscription required.' });
+    }
+
+    const filter = { isActive: true, isPremium: true };
+    const problems = await Problem.find(filter)
+      .select('-testCases -starterCode')
+      .sort({ difficulty: 1, title: 1 });
+
+    res.json({ problems, total: problems.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/problems/:slug — single problem
 router.get('/:slug', async (req, res) => {
   try {

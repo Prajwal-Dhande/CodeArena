@@ -25,6 +25,7 @@ const problemSchema = new mongoose.Schema({
   companies: [String],
   acceptance: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
+  isPremium: { type: Boolean, default: false },
 })
 
 module.exports = mongoose.model('Problem', problemSchema)

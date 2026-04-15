@@ -15,6 +15,9 @@ import Contact from './components/ui/Contact'
 // ✅ NAYA PUZZLE PAGE IMPORT
 import PuzzleSolve from './pages/PuzzleSolve' 
 
+// ✅ PREMIUM DSA PAGE IMPORT
+import InterviewDSA from './pages/InterviewDSA'
+
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
@@ -38,6 +41,9 @@ export default function App() {
           
           {/* ✅ NAYA PUZZLE ROUTE YAHAN ADD KIYA */}
           <Route path="/puzzle" element={<PuzzleSolve />} />
+          
+          {/* 🔥 PREMIUM DSA ROUTE */}
+          <Route path="/interview-dsa" element={<InterviewDSA />} />
         </Route>
 
         {/* ⚠️ Catch-all route */}

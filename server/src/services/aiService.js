@@ -52,4 +52,35 @@ Rules:
   }
 }
 
-module.exports = { generateConstraint }
+const generateDebugHint = async (code, problem, errorOutput) => {
+  try {
+    const prompt = `You are "AI Whisperer" - a senior FAANG engineer mentoring a developer.
+The developer is solving: "${problem.title}".
+
+Their code:
+\`\`\`javascript
+${code}
+\`\`\`
+
+Test execution error/output:
+${errorOutput}
+
+Provide one short, glowing, inline tip (maximum 20 words) pointing out exactly where their logic failed or what edge case they missed. Do NOT provide the exact code snippet. Speak directly to them.
+Example: "Check your loop bounds! You're skipping the very last element when n is odd."`;
+
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.6,
+      max_tokens: 50,
+    });
+
+    const hint = completion.choices[0]?.message?.content?.trim();
+    return hint || "Check your base cases! You might be missing an edge condition.";
+  } catch (error) {
+    console.error('Groq AI Hint error:', error.message);
+    return "Make sure you handle edge cases and empty arrays properly!";
+  }
+}
+
+module.exports = { generateConstraint, generateDebugHint }

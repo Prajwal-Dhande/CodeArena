@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
   solvedPuzzles: [{ type: String }],
   // ---------------------------
 
+  // 🔥 PREMIUM STATUS 🔥
+  isPremium: { type: Boolean, default: false },
+
+
   country: { type: String, default: 'IN' },
   isVerified: { type: Boolean, default: false },
   otp: { type: String, select: false },

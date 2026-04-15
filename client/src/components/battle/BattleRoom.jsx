@@ -6,6 +6,42 @@ import Timer from './Timer'
 import WinnerScreen from './WinnerScreen'
 import ConstraintAlert from './ConstraintAlert'
 import API_URL from '../../config/api'
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
+import { synthwaveTheme } from './MonacoThemes';
+import LofiRadio from './LofiRadio';
+import VisualFlowHint from './VisualFlowHint';
+
+const PROBLEM_COMPLEXITY = {
+  'two-sum': 'O(N)',
+  'best-time-to-buy-stock': 'O(N)',
+  'contains-duplicate': 'O(N)',
+  'product-of-array-except-self': 'O(N)',
+  'maximum-subarray': 'O(N)',
+  'valid-parentheses': 'O(N)',
+  'longest-substring-without-repeating': 'O(N)',
+  'longest-substring-without-repeat': 'O(N)',
+  'valid-anagram': 'O(N)',
+  'reverse-linked-list': 'O(N)',
+  'merge-two-sorted-lists': 'O(N + M)',
+  'maximum-depth-binary-tree': 'O(N)',
+  'invert-binary-tree': 'O(N)',
+  'climbing-stairs': 'O(N)',
+  'coin-change': 'O(N * amount)',
+  'house-robber': 'O(N)',
+  'number-of-islands': 'O(M * N)',
+  'merge-intervals': 'O(N log N)',
+  'binary-search': 'O(log N)',
+  'find-minimum-in-rotated-array': 'O(log N)',
+  'min-stack': 'O(1)',
+  'trapping-rain-water': 'O(N)',
+  'lru-cache': 'O(1)',
+  'subarray-sum-equals-k': 'O(N)',
+  'valid-palindrome': 'O(N)',
+  'validate-binary-search-tree': 'O(N)',
+  'kth-smallest-element-in-bst': 'O(N)',
+  'reverse-linked-list-ii': 'O(N)',
+  'merge-k-sorted-lists': 'O(N log K)'
+};
 
 const DIFF_COLOR = {
   Easy: { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
@@ -26,6 +62,7 @@ const getProblemSlug = () => new URLSearchParams(window.location.search).get('pr
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
 // ✅ URL se real flag check karo
 const isRealMatch = () => new URLSearchParams(window.location.search).get('real') === 'true'
+const isPremiumMode = () => new URLSearchParams(window.location.search).get('premium') === 'true'
 
 export default function BattleRoom() {
   const [searchParams] = useSearchParams()
@@ -46,6 +83,9 @@ export default function BattleRoom() {
   const [language, setLanguage] = useState('javascript')
   const [activeTab, setActiveTab] = useState('problem')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiDebugHint, setAiDebugHint] = useState(null)
+  const [aiDebugLoading, setAiDebugLoading] = useState(false)
+  const [zenMode, setZenMode] = useState(false)
   const [showProblemPicker, setShowProblemPicker] = useState(false)
   const [allProblems, setAllProblems] = useState([])
   const [roomPlayers, setRoomPlayers] = useState([])
@@ -307,8 +347,12 @@ export default function BattleRoom() {
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang)
-    setCode(problem?.starterCode?.[lang] || DEFAULT_STARTER[lang] || '')
+    setCode(DEFAULT_STARTER[lang] || '')
   }
+
+  const handleEditorMount = (editor, monaco) => {
+    monaco.editor.defineTheme('synthwave', synthwaveTheme);
+  };
 
   const handleProblemChange = async (slug) => {
     setShowProblemPicker(false)
@@ -385,6 +429,31 @@ export default function BattleRoom() {
     setRunning(false)
   }
 
+  const handleAiDebug = async () => {
+    if (!code || results.length === 0) return
+    setAiDebugLoading(true)
+    setAiDebugHint(null)
+    try {
+      const token = localStorage.getItem('token')
+      const firstError = results.find(r => !r.ok)
+      const errorOutput = firstError 
+        ? `Failed on input: ${firstError.input}. Expected: ${firstError.expected}. Got: ${firstError.result}. Error: ${firstError.error}`
+        : 'Code runs but fails hidden limits.';
+
+      const slug = getProblemSlug()
+      const res = await fetch(`${API_URL}/api/code/ai-debug`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ code, problemId: problem?.slug || slug, errorOutput })
+      })
+      const data = await res.json()
+      if (data.hint) setAiDebugHint(data.hint)
+    } catch (err) {
+      setAiDebugHint('Oops! The AI Whisperer fell asleep. Check your syntax.')
+    }
+    setAiDebugLoading(false)
+  }
+
   const submitCode = async () => {
     setSubmitting(true); setResults([]); setSubmitStatus(null)
     try {
@@ -436,25 +505,34 @@ export default function BattleRoom() {
   const totalTests = problem?.testCases?.length || 3
   const roomId = getRoomId()
   const practiceMode = isPracticeMode()
+  const premiumMode = isPremiumMode()
 
   return (
-    <div className="battle-container">
-      {/* TOP BAR */}
-      <div className="top-nav glass-panel">
+    <div className={`battle-container ${zenMode ? 'zen-active' : ''}`}>
+      {premiumMode && <LofiRadio />}
+
+      <div className="battle-header" style={{ display: zenMode ? 'none' : 'flex' }}>
         <span className="logo" onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35' }}>Code</span>
           <span style={{ color: '#fff' }}>Arena</span>
         </span>
         <div className="divider" />
 
-        {/* Practice Mode Badge */}
-        {practiceMode && (
+        {/* Mode Badge */}
+        {premiumMode ? (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(139,92,246,0.1))', 
+            border: '1px solid rgba(236,72,153,0.3)',
+            color: '#ec4899', fontSize: 11, fontWeight: 800,
+            padding: '4px 12px', borderRadius: 6, letterSpacing: 0.5, boxShadow: '0 0 15px rgba(236,72,153,0.2)'
+          }}>💎 PREMIUM MAANG</div>
+        ) : practiceMode ? (
           <div style={{
             background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
             color: '#22c55e', fontSize: 11, fontWeight: 700,
             padding: '4px 12px', borderRadius: 6, letterSpacing: 0.5
           }}>🧠 PRACTICE MODE</div>
-        )}
+        ) : null}
 
         <div className="picker-wrapper">
           <button onClick={() => setShowProblemPicker(s => !s)} className="problem-btn" disabled={battleStarted}>
@@ -525,17 +603,19 @@ export default function BattleRoom() {
           </span>
         </div>
 
-        <div className="timer-box">
-          <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
-          {battleStarted
-            ? <Timer initialSeconds={600} />
-            : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#666' }}>10:00</span>
-          }
-        </div>
+        {!premiumMode && (
+          <div className="timer-box">
+            <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
+            {battleStarted
+              ? <Timer initialSeconds={600} />
+              : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#666' }}>10:00</span>
+            }
+          </div>
+        )}
       </div>
 
       {/* MAIN GRID */}
-      <div className="main-grid" style={{ gridTemplateColumns: practiceMode ? '300px 1fr' : '300px 1fr 300px' }}>
+      <PanelGroup direction="horizontal" orientation="horizontal" className="main-grid" style={{ flex: 1 }}>
 
         {/* ✅ WAITING OVERLAY */}
         {!battleStarted && !new URLSearchParams(window.location.search).get('bot') && (
@@ -596,7 +676,7 @@ export default function BattleRoom() {
         )}
 
         {/* LEFT — Problem */}
-        <div className="panel problem-panel">
+        <Panel defaultSize={practiceMode ? 40 : 25} minSize={20} className="panel problem-panel">
           <div className="panel-tabs">
             {['problem', 'scores'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
@@ -620,9 +700,18 @@ export default function BattleRoom() {
                     marginBottom: 12, display: 'inline-block'
                   }}>{problem.difficulty}</span>
 
-                  {problem.companies?.length > 0 && (
-                    <div className="tags-row">
-                      {problem.companies.map(c => <span key={c} className="company-tag">{c}</span>)}
+                  {premiumMode && problem.companies?.length > 0 && (
+                    <div style={{ marginBottom: 20 }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: '#888', marginBottom: 8, letterSpacing: 1 }}>FREQUENTLY ASKED BY:</div>
+                      <div className="tags-row" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {problem.companies.map(c => (
+                           <span key={c} style={{ 
+                             background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(236,72,153,0.1))',
+                             border: '1px solid rgba(168,85,247,0.3)', color: '#c084fc',
+                             fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '6px'
+                           }}>🏢 {c}</span>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -654,6 +743,8 @@ export default function BattleRoom() {
                       ))}
                     </div>
                   )}
+
+                  {premiumMode && <VisualFlowHint />}
                 </>
               ) : (
                 <div className="loading-text">Problem not found</div>
@@ -700,11 +791,15 @@ export default function BattleRoom() {
               </div>
             )}
           </div>
-        </div>
+        </Panel>
+
+        <PanelResizeHandle className="resize-handle-h" />
 
         {/* MIDDLE — Editor */}
-        <div className="panel editor-panel">
-          <div className="editor-header glass-panel">
+        <Panel defaultSize={practiceMode ? 60 : 50} minSize={30} className="panel editor-panel">
+          <PanelGroup direction="vertical" orientation="vertical" style={{ height: '100%' }}>
+            <Panel defaultSize={70} minSize={20} style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="editor-header glass-panel">
             <div className="user-indicator">
               <div className="dot-orange" />
               <span>You</span>
@@ -718,6 +813,22 @@ export default function BattleRoom() {
             </select>
 
             <div style={{ flex: 1 }} />
+
+            {/* ✅ VIP Zen Mode Toggle */}
+            {premiumMode && (
+              <button 
+                onClick={() => setZenMode(!zenMode)} 
+                style={{ 
+                  background: zenMode ? 'rgba(34,211,238,0.1)' : 'transparent', 
+                  border: zenMode ? '1px solid rgba(34,211,238,0.4)' : '1px solid transparent',
+                  color: zenMode ? '#22d3ee' : '#aaa',
+                  marginRight: 16, padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              >
+                {zenMode ? '🌌 ZEN ACTIVE' : '🌙 Zen Mode'}
+              </button>
+            )}
 
             <button onClick={runCode} disabled={running || submitting || problemLoading}
               className={`action-btn run-btn ${running ? 'disabled' : ''}`}>
@@ -739,7 +850,8 @@ export default function BattleRoom() {
               language={language === 'cpp' ? 'cpp' : language}
               value={code}
               onChange={handleCodeChange}
-              theme="vs-dark"
+              onMount={handleEditorMount}
+              theme={zenMode ? 'synthwave' : 'vs-dark'}
               options={{
                 minimap: { enabled: false }, fontSize: 13.5,
                 fontFamily: 'JetBrains Mono', padding: { top: 14, bottom: 14 },
@@ -749,9 +861,13 @@ export default function BattleRoom() {
               }}
             />
           </div>
+            </Panel>
 
-          <div className="output-panel">
-            <div className={`output-label ${submitStatus || ''}`}>
+            <PanelResizeHandle className="resize-handle-v" />
+
+            <Panel defaultSize={30} minSize={10} style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="output-panel" style={{ flex: 1, overflowY: 'auto', border: 'none', margin: 0, borderRadius: 0 }}>
+                <div className={`output-label ${submitStatus || ''}`}>
               {submitStatus === 'success' ? '✓ ALL TESTS PASSED'
                 : submitStatus === 'failed' ? '✗ WRONG ANSWER'
                 : 'TEST RESULTS'}
@@ -767,11 +883,44 @@ export default function BattleRoom() {
                 {r.time && <span className="test-time">{r.time}s</span>}
               </div>
             ))}
+
+            {/* 🔥 VIP AI Whisperer Debugger */}
+            {premiumMode && submitStatus === 'failed' && (
+              <div style={{ marginTop: 24, padding: 16, background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: aiDebugHint ? 12 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>🤖</span>
+                    <span style={{ color: '#ec4899', fontWeight: 800, fontFamily: 'Outfit', letterSpacing: 0.5 }}>AI Whisperer</span>
+                  </div>
+                  {!aiDebugHint && (
+                    <button onClick={handleAiDebug} disabled={aiDebugLoading} style={{ 
+                      background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', border: 'none', color: '#fff', 
+                      padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      opacity: aiDebugLoading ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(236,72,153,0.3)'
+                    }}>
+                      {aiDebugLoading ? 'Analyzing code...' : 'Debug My Code'}
+                    </button>
+                  )}
+                </div>
+                {aiDebugHint && (
+                  <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 8, padding: 16, borderLeft: '4px solid #ec4899', animation: 'fadeIn 0.4s ease' }}>
+                    <p style={{ margin: 0, color: '#fbcfe8', fontSize: 14, fontStyle: 'italic', lineHeight: 1.6 }}>"{aiDebugHint}"</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        </Panel>
+      </PanelGroup>
+    </Panel>
+
+        {!practiceMode && (
+          <PanelResizeHandle className="resize-handle-h" />
+        )}
 
         {/* RIGHT — Opponent */}
-        <div className="panel opp-panel" style={{ display: practiceMode ? 'none' : 'flex' }}>
+        {!practiceMode && (
+        <Panel defaultSize={25} minSize={15} className="panel opp-panel">
           <div className="editor-header glass-panel">
             <div className="user-indicator red">
               <div className="dot-red" />
@@ -808,8 +957,9 @@ export default function BattleRoom() {
               }</p>
             </div>
           </div>
-        </div>
-      </div>
+        </Panel>
+        )}
+      </PanelGroup>
 
       {gameOver && (
         <WinnerScreen
@@ -820,6 +970,8 @@ export default function BattleRoom() {
           timeTaken={timeTaken}
           opponentName={opponentName}
           difficulty={problem?.difficulty}
+          premiumMode={premiumMode}
+          timeComplexity={problem?.slug ? PROBLEM_COMPLEXITY[problem.slug] : 'O(N)'}
           onRematch={handleRematch}
           onLobby={() => navigate('/lobby')}
         />
@@ -865,7 +1017,11 @@ export default function BattleRoom() {
         .pulse-dot.orange { background: var(--orange); }
         .pulse-dot.animate { animation: pulse 1s infinite; }
         .timer-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 6px 16px; }
-        .main-grid { flex: 1; display: grid; grid-template-columns: 300px 1fr 300px; overflow: hidden; position: relative; }
+        .main-grid { position: relative; overflow: hidden; background: #0a0a0a; }
+        .resize-handle-h { width: 8px; background: rgba(255,255,255,0.01); cursor: col-resize; transition: background 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .resize-handle-h:hover, .resize-handle-h[data-resize-handle-active] { background: rgba(255,107,53,0.3); }
+        .resize-handle-v { height: 8px; background: rgba(255,255,255,0.01); cursor: row-resize; transition: background 0.2s; position: relative; z-index: 10; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+        .resize-handle-v:hover, .resize-handle-v[data-resize-handle-active] { background: rgba(255,107,53,0.3); }
         .waiting-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.92); backdrop-filter: blur(8px); z-index: 40; display: flex; align-items: center; justify-content: center; }
         .waiting-card { background: rgba(20,20,25,0.98); border: 1px solid rgba(255,107,53,0.25); border-radius: 20px; padding: 40px; text-align: center; max-width: 460px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
         .radar-spinner { width: 56px; height: 56px; margin: 0 auto 20px; border-radius: 50%; border: 2px solid rgba(255,107,53,0.2); border-top-color: var(--orange); animation: spin 1s linear infinite; }
@@ -892,6 +1048,12 @@ export default function BattleRoom() {
         .explain-text { font-size: 12px; color: #777; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
         .info-box { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,107,53,0.15); border-radius: 8px; padding: 12px; }
         .info-label { font-size: 10px; color: #555; font-weight: 700; letter-spacing: 1px; }
+        
+        /* ✅ Zen Mode active overrides */
+        .zen-active { background: #000; }
+        .zen-active .glass-panel { background: rgba(10,5,15,0.9); border-color: rgba(236,72,153,0.1); }
+        .zen-active .panel:not(.editor-panel) { opacity: 0.1; filter: blur(5px); pointer-events: none; transition: all 0.5s; }
+        .zen-active .main-grid { border-top: none; }
         .loading-text { text-align: center; padding: 40px; color: #555; font-size: 13px; }
         .score-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
         .score-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 600; }

@@ -9,6 +9,9 @@ const problemRoutes = require('./routes/problems')
 // 🔥 NAYI LINE: Apna naya userroutes import kar (VS Code ke hisaab se tera file name 'userroutes' hai lowercase mein)
 const userRoutes = require('./routes/userroutes')
 
+// 🔥 PREMIUM PAYMENT ROUTE
+const paymentRoutes = require('./routes/paymentRoutes')
+
 require('dotenv').config()
 
 connectDB()
@@ -30,6 +33,8 @@ app.use('/api/users', userRoutes)
 
 // 👇 BAAKI ROUTES KE SAATH YE NAYA ROUTE ADD KAR DE 👇
 app.use('/api/puzzles', require('./routes/puzzleRoutes'));
+
+app.use('/api/payment', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Algo-Arena server is alive 🔥' })

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import API_URL from '../../config/api'
+import PremiumRadarChart from './PremiumRadarChart'
 
-export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language }) {
+export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language, premiumMode, timeComplexity }) {
   const [eloData, setEloData] = useState(null)
   const [rankUp, setRankUp] = useState(false)
   
@@ -144,6 +145,18 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
                 <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>RANK</div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ✅ Premium Time Complexity Reveal & Analytics */}
+        {premiumMode && isWin && (
+          <div style={{ marginBottom: 24 }}>
+            <PremiumRadarChart 
+              timeTaken={timeTaken} 
+              totalTests={totalTests} 
+              passed={myTests} 
+              language={language}
+            />
           </div>
         )}
 
