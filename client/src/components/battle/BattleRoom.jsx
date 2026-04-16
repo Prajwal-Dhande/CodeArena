@@ -105,6 +105,11 @@ export default function BattleRoom() {
   // ✅ Naya ref real player interference prevent karne ke liye
   const botTypingCancelRef = useRef(false) 
 
+  // ✅ CHECK MATCHMAKING MODE (To Lock Dropdown)
+  const mode = searchParams.get('mode')
+  const isMatchmakingMode = mode === 'random' || mode === 'ranked'
+  const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch()
+
   // DB se problem fetch
   useEffect(() => {
     const slug = getProblemSlug()
@@ -141,11 +146,9 @@ export default function BattleRoom() {
 
   // ✅ Bot typing simulation
   useEffect(() => {
-    // Is bot check mein URL params ya randomly assigned botName check hoga
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
     const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
     
-    // ✅ Cancel check: Agar real player aa chuka hai toh bot script trigger nahi hogi
     if (!isBot || !battleStarted || botTypingCancelRef.current) return
 
     setOpponentName(botNameFromUrl || opponentName)
@@ -167,7 +170,7 @@ export default function BattleRoom() {
     let typingTimer
 
     const typeChar = () => {
-      if (botTypingCancelRef.current) return // ✅ Typing ke beech me player aaya toh ruk jao
+      if (botTypingCancelRef.current) return 
       
       if (charIndex < targetCode.length) {
         currentText += targetCode[charIndex]
@@ -196,15 +199,12 @@ export default function BattleRoom() {
     }
   }, [battleStarted, opponentName])
 
-  // ✅ Socket — sirf ek baar
   useEffect(() => {
     const socket = io(API_URL)
     socketRef.current = socket
     
-    // ✅ URL se bot check karo
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
 
-    // Socket useEffect mein — real match ke liye battle seedha start karo
     socket.on('connect', () => {
       setConnected(true)
       const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -214,11 +214,6 @@ export default function BattleRoom() {
         username: user?.username || `Player_${socket.id?.slice(0, 4)}`
       })
       console.log(`✅ Joined room: ${roomId}`)
-
-      // ✅ Real match mein already 2 players hain — matchmaking ne join kiya tha
-      if (isRealMatch()) {
-        console.log('✅ Real match — waiting for battle_start from server')
-      }
     })
 
     socket.on('disconnect', () => setConnected(false))
@@ -233,7 +228,6 @@ export default function BattleRoom() {
     })
 
     socket.on('room_update', ({ players }) => {
-      // 🚨 BULLETPROOF FIX 1: Duplicate ghost players ko frontend pe filter karo
       const uniquePlayers = Array.from(new Map(players.map(p => [p.username, p])).values());
       setRoomPlayers(uniquePlayers)
       
@@ -243,8 +237,6 @@ export default function BattleRoom() {
       if (opp) {
         setOpponentName(opp.username)
         clearTimeout(botTimeoutRef.current)
-        
-        // ✅ Real player join hua — bot typing cancel karo
         botTypingCancelRef.current = true
 
         if (!battleStartedRef.current) {
@@ -253,7 +245,6 @@ export default function BattleRoom() {
           startTimeRef.current = Date.now()
         }
       } else if (uniquePlayers.length === 1) {
-        // ✅ Practice mode — seedha battle start, no bot timeout
         if (isPracticeMode()) {
           setTimeout(() => {
             if (!battleStartedRef.current) {
@@ -263,12 +254,10 @@ export default function BattleRoom() {
             }
           }, 1500)
         } else if (isRealMatch()) {
-          // ✅ Real match: Bot mat bulao, opponent connect hone ka wait karo
           console.log('⏳ Real match: waiting for the opponent to reconnect to the room...')
         } else {
-          // Normal mode — 8 sec baad bot
           botTimeoutRef.current = setTimeout(() => {
-            if (botTypingCancelRef.current) return // ✅ Real player aa gaya toh bot mat lao
+            if (botTypingCancelRef.current) return 
             
             const botName = botNameFromUrl || `Bot_${Math.floor(Math.random() * 999)}`
             setRoomPlayers(prev => {
@@ -292,7 +281,6 @@ export default function BattleRoom() {
     })
 
     socket.on('battle_start', ({ players }) => {
-      console.log('⚔️ battle_start received!')
       clearTimeout(botTimeoutRef.current)
       if (!battleStartedRef.current) {
         battleStartedRef.current = true
@@ -320,12 +308,9 @@ export default function BattleRoom() {
         setTimeTaken(elapsed)
         setGameResult('win')
         setGameOver(true)
-        console.log(`🏆 ${message}`)
       }
     })
 
-    // 🚨 BULLETPROOF FIX 2: Agar Server opponent_left_win trigger na kare due to bugs,
-    // toh yeh player_left seedha Win screen laa dega!
     socket.on('player_left', ({ username }) => {
       setOpponentCode(`// ${username} left the battle...`)
       clearTimeout(botTimeoutRef.current)
@@ -334,7 +319,7 @@ export default function BattleRoom() {
         gameOverRef.current = true
         const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
         setTimeTaken(elapsed)
-        setGameResult('win') // Tum jeet gaye kyuki samne wala bhaag gaya!
+        setGameResult('win') 
         setGameOver(true)
       }
     })
@@ -535,7 +520,8 @@ export default function BattleRoom() {
         ) : null}
 
         <div className="picker-wrapper">
-          <button onClick={() => setShowProblemPicker(s => !s)} className="problem-btn" disabled={battleStarted}>
+          {/* ✅ DROPDOWN LOCKED IF MATCHMAKING OR BATTLE STARTED */}
+          <button onClick={() => setShowProblemPicker(s => !s)} className="problem-btn" disabled={isProblemLocked}>
             {problemLoading ? <span>Loading...</span> : (
               <>
                 <span className="problem-title">{problem?.title || 'Select Problem'}</span>
@@ -548,10 +534,15 @@ export default function BattleRoom() {
                 )}
               </>
             )}
-            <span style={{ fontSize: 10, color: '#555' }}>▼</span>
+            {/* Show Lock icon if prohibited, otherwise arrow */}
+            {isProblemLocked ? (
+               <span style={{ fontSize: 12, color: '#ef4444', marginLeft: 4 }} title="Problem locked in Matchmaking">🔒</span>
+            ) : (
+               <span style={{ fontSize: 10, color: '#555' }}>▼</span>
+            )}
           </button>
 
-          {showProblemPicker && !battleStarted && (
+          {showProblemPicker && !isProblemLocked && (
             <div className="dropdown-menu">
               {allProblems.map(p => (
                 <div key={p._id} onClick={() => handleProblemChange(p.slug)}
@@ -1064,7 +1055,7 @@ export default function BattleRoom() {
         .alert-green { background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
         .editor-header { height: 46px; display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; }
         .user-indicator { display: flex; align-items: center; gap: 8px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; color: var(--orange); }
-        .user-indicator.red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: var(--red); }
+        .user-indicator.red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--red); }
         .dot-orange { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
         .dot-red { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
         .lang-select { font-family: Inter; font-size: 12px; font-weight: 600; color: #aaa; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; outline: none; }

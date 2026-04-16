@@ -21,13 +21,22 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
 
   const socketRef = useRef(null)
   const botTimerRef = useRef(null)
-  const matchFoundRef = useRef(false) 
+  const matchFoundRef = useRef(false)
+  const cancelledRef = useRef(false) // ✅ Track cancel state
+  const timersRef = useRef([]) // ✅ Store all timeouts to kill them on cancel
 
   const userElo = user?.elo || 0
+
+  const addTimer = (callback, delay) => {
+    const timerId = setTimeout(callback, delay)
+    timersRef.current.push(timerId)
+    return timerId
+  }
 
   useEffect(() => {
     const socket = io(API_URL)
     socketRef.current = socket
+    cancelledRef.current = false
 
     socket.on('connect', () => {
       socket.emit('find_match', {
@@ -37,17 +46,15 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
       })
     })
 
-    // ✅ ELO capture kiya server se
     socket.on('match_found', ({ roomId, problem, opponent, elo }) => {
-      if (matchFoundRef.current) return
+      if (matchFoundRef.current || cancelledRef.current) return
       matchFoundRef.current = true
 
-      console.log(`⚔️ Real match found! vs ${opponent}`)
       clearTimeout(botTimerRef.current)
 
       const realOpponent = {
         name: opponent,
-        elo: elo ?? 0, // ELO update here
+        elo: elo ?? 0, 
         avatar: opponent.slice(0, 2).toUpperCase(),
         country: '',
         isReal: true,
@@ -55,14 +62,16 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
         problemSlug: problem
       }
 
-      // ✅ 3 Seconds ka force delay taaki radar animation dikhe!
-      setTimeout(() => {
+      addTimer(() => {
+        if (cancelledRef.current) return
         setMatchedPlayer(realOpponent)
         setPhase('found')
 
-        setTimeout(() => {
+        addTimer(() => {
+          if (cancelledRef.current) return
           setPhase('starting')
-          setTimeout(() => {
+          addTimer(() => {
+            if (cancelledRef.current) return
             onMatchFound(realOpponent)
           }, 1500)
         }, 2000)
@@ -71,23 +80,31 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
 
     socket.on('waiting_in_queue', ({ position }) => {
       botTimerRef.current = setTimeout(() => {
-        if (matchFoundRef.current) return
+        if (matchFoundRef.current || cancelledRef.current) return
         matchFoundRef.current = true
 
         const bot = FAKE_PLAYERS[Math.floor(Math.random() * FAKE_PLAYERS.length)]
         setMatchedPlayer(bot)
         setPhase('found')
 
-        setTimeout(() => {
+        addTimer(() => {
+          if (cancelledRef.current) return
           setPhase('starting')
-          setTimeout(() => {
+          addTimer(() => {
+            if (cancelledRef.current) return
             onMatchFound(bot)
           }, 1500)
         }, 2000)
       }, 10000)
     })
 
-    return () => { clearTimeout(botTimerRef.current) }
+    // ✅ CRITICAL BUG FIX: Socket disconnects and clears memory on unmount
+    return () => { 
+      cancelledRef.current = true
+      clearTimeout(botTimerRef.current)
+      timersRef.current.forEach(clearTimeout)
+      socket.disconnect() 
+    }
   }, [])
 
   // Animations
@@ -113,8 +130,11 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
     return () => clearInterval(interval)
   }, [])
 
+  // ✅ Cancel button force kills everything instantly
   const handleCancel = () => {
+    cancelledRef.current = true
     clearTimeout(botTimerRef.current)
+    timersRef.current.forEach(clearTimeout)
     socketRef.current?.emit('cancel_match')
     socketRef.current?.disconnect()
     onCancel()
@@ -135,7 +155,9 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
             {[200, 150, 100].map((size, i) => (
               <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: size, height: size, borderRadius: '50%', border: `1px solid rgba(255,107,53,${0.1 + i * 0.08})`, animation: `ping ${2 + i * 0.5}s ease-out infinite`, animationDelay: `${i * 0.3}s` }} />
             ))}
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 160, height: 160, borderRadius: '50%', animation: 'spin 2s linear infinite', background: 'conic-gradient(from 0deg, transparent 70%, rgba(255,107,53,0.3) 100%)' }} />
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 160, height: 160, borderRadius: '50%' }}>
+               <div style={{ width: '100%', height: '100%', borderRadius: '50%', animation: 'spin 2s linear infinite', background: 'conic-gradient(from 0deg, transparent 70%, rgba(255,107,53,0.3) 100%)' }} />
+            </div>
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, borderRadius: '50%', background: '#ff6b35', boxShadow: '0 0 20px #ff6b35, 0 0 40px rgba(255,107,53,0.4)' }} />
             {flashPlayers.map((p, i) => {
               const angle = (i / flashPlayers.length) * Math.PI * 2 + searchTime; const dist = 50 + Math.random() * 30; const x = Math.cos(angle) * dist; const y = Math.sin(angle) * dist
@@ -175,7 +197,7 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
               )}
             </div>
           </div>
-          <button onClick={handleCancel} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 28px', fontSize: 13, fontWeight: 600, color: '#555', cursor: 'pointer', transition: 'all 0.2s' }}>✕ Cancel</button>
+          <button className="cancel-btn" onClick={handleCancel}>✕ Cancel</button>
         </>
       )}
 
@@ -197,30 +219,40 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
             <div style={{ background: matchedPlayer.isReal ? 'rgba(96,165,250,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${matchedPlayer.isReal ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 16, padding: '24px', textAlign: 'center', boxShadow: `0 0 30px ${matchedPlayer.isReal ? 'rgba(96,165,250,0.1)' : 'rgba(239,68,68,0.1)'}` }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px', background: matchedPlayer.isReal ? 'linear-gradient(135deg, #1e3a5f, #1e40af)' : 'linear-gradient(135deg, #374151, #1f2937)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 22, color: '#e5e5e5', boxShadow: `0 0 20px ${matchedPlayer.isReal ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)'}` }}>{matchedPlayer.avatar}</div>
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{matchedPlayer.name}</div>
-              {/* ✅ "Real Player" Text ki jagah ab ELO dikhega */}
               <div style={{ fontSize: 13, color: matchedPlayer.isReal ? '#60a5fa' : '#ef4444', fontWeight: 700 }}>
                 ⭐ {matchedPlayer.elo} ELO
               </div>
             </div>
           </div>
-
-          {phase === 'starting' && (
-            <div style={{ marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff6b35', animation: 'pulse 0.5s infinite' }} />
-              <span style={{ fontSize: 14, color: '#ff6b35', fontWeight: 600, letterSpacing: 1 }}>LOADING BATTLE ROOM...</span>
-            </div>
-          )}
         </div>
       )}
 
       <style>{`
-        @keyframes spin { 100% { transform: translate(-50%,-50%) rotate(360deg); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes ping { 0% { transform: translate(-50%,-50%) scale(0.8); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.3; } }
         @keyframes flash { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
         @keyframes fadeOut { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(2); } }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+
+        .cancel-btn {
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px;
+          padding: 10px 28px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #555;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .cancel-btn:hover {
+          color: #ff6b35;
+          border-color: #ff6b35;
+          background: rgba(255,107,53,0.1);
+          box-shadow: 0 0 15px rgba(255,107,53,0.3);
+        }
       `}</style>
     </div>
   )

@@ -198,13 +198,17 @@ export default function Lobby() {
   const [practiceTopic, setPracticeTopic] = useState('All')
   const [practiceSelected, setPracticeSelected] = useState(null)
 
+  // ✅ Premium States
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [paymentProcessing, setPaymentProcessing] = useState(false)
+  const [hoveredCard, setHoveredCard] = useState(null)
+
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
   const initials = (user?.username || 'PL').slice(0, 2).toUpperCase()
 
   const [dailyPuzzles, setDailyPuzzles] = useState([]);
   const [puzzlesLoading, setPuzzlesLoading] = useState(true);
 
-  // Sync tab with URL search params
   useEffect(() => {
     const urlTab = searchParams.get('tab')
     if (urlTab && urlTab !== tab) {
@@ -212,7 +216,6 @@ export default function Lobby() {
     }
   }, [searchParams])
 
-  // Sync profile data
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -225,6 +228,14 @@ export default function Lobby() {
         }
       }).catch(err => console.error(err));
     }
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script) };
   }, []);
 
   useEffect(() => {
@@ -257,12 +268,58 @@ export default function Lobby() {
     (topic === 'All' || p.category === topic)
   )
 
-  const handleQuickPlay = () => {
-    if (!user?.username) { navigate('/auth'); return }
-    if (problems.length === 0) return
-    setMatchmakingMode('random')
-    setShowMatchmaking(true)
-  }
+  const handlePayment = async (planDetails) => {
+    const token = localStorage.getItem('token');
+    if (!token) { navigate('/auth'); return; }
+    
+    setPaymentProcessing(true);
+    try {
+      const res = await fetch(`${API_URL}/api/payment/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ plan: planDetails.id, amount: planDetails.amount * 100 })
+      });
+      const data = await res.json();
+      
+      if (!data.success) throw new Error('Order creation failed');
+
+      const options = {
+        key: data.key,
+        amount: data.order.amount,
+        currency: 'INR',
+        name: 'CodeArena',
+        description: `${planDetails.name} Premium Subscription`,
+        order_id: data.order.id,
+        handler: async (response) => {
+          const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(response)
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            localStorage.setItem('user', JSON.stringify(verifyData.user));
+            setUser(verifyData.user);
+            setShowPremiumModal(false);
+            alert('🎉 Premium Activated! Welcome to CodeArena Premium!');
+          }
+        },
+        prefill: {
+          name: user?.username || '',
+          email: user?.email || '',
+        },
+        theme: { color: '#ff6b35' },
+        modal: { ondismiss: () => setPaymentProcessing(false) }
+      };
+      
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert('Payment initialization failed. Please try again.');
+    }
+    setPaymentProcessing(false);
+  };
 
   const handleRankedClick = () => {
     if (!user?.username) { navigate('/auth'); return }
@@ -295,15 +352,24 @@ export default function Lobby() {
 
   const handleMatchFound = (matchData) => {
     setShowMatchmaking(false)
+    
+    let finalProblemSlug;
+    if (matchmakingMode === 'ranked' && rankedSelected) {
+      finalProblemSlug = rankedSelected.slug;
+    } else if (matchData.problemSlug) {
+      finalProblemSlug = matchData.problemSlug;
+    } else {
+      const fallbackProb = problems[Math.floor(Date.now() / 30000) % problems.length];
+      finalProblemSlug = fallbackProb ? fallbackProb.slug : 'two-sum';
+    }
+
     if (matchData.isReal) {
       const roomId = matchData.roomId
-      const problemSlug = matchData.problemSlug || problems[Math.floor(Date.now() / 30000) % problems.length]?.slug || 'two-sum'
-      navigate(`/battle?problem=${problemSlug}&room=${roomId}&real=true`)
+      navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&real=true&mode=${matchmakingMode}`)
       return
     }
     const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
-    let prob = matchmakingMode === 'ranked' && rankedSelected ? rankedSelected : problems[Math.floor(Date.now() / 30000) % problems.length]
-    navigate(`/battle?problem=${prob.slug}&room=${roomId}&bot=${matchData.name}`)
+    navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&bot=${matchData.name}&mode=${matchmakingMode}`)
   }
 
   const handleCreateRoom = () => {
@@ -318,14 +384,9 @@ export default function Lobby() {
     setTimeout(() => navigate(`/battle?room=${roomCode.trim()}`), 1200)
   }
 
-  // ✅ Calculation for Sprint Progress
   const solvedCount = dailyPuzzles.filter(p => user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id))).length;
   const totalPuzzles = dailyPuzzles.length > 0 ? dailyPuzzles.length : 10;
   const isSprintComplete = dailyPuzzles.length > 0 && solvedCount >= totalPuzzles;
-  
-  // Find the first puzzle they haven't solved yet to resume
-  const nextUnsolvedId = dailyPuzzles.find(p => !user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id)))?._id || dailyPuzzles[0]?._id;
-
   const filteredProblems = filtered(diffFilter, topicFilter)
 
   return (
@@ -335,9 +396,109 @@ export default function Lobby() {
       
       {showRankedList && <ProblemModal title="🎯 Ranked Arena — Select Problem" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} />}
       
-      {showPracticeList && <ProblemModal title="🧠 Practice Mode — Select Problem" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.4)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
-
       {showPracticeList && <ProblemModal title="🧠 Practice Mode — Select Problem" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
+
+      {/* ✅ 100% FIXED WHITE SAAS MODAL (Pure CSS hovers, No React State Lag) */}
+      {showPremiumModal && (
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="premium-overlay"
+        >
+          <motion.div 
+            initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="premium-modal"
+          >
+            {/* Close Button */}
+            <button onClick={() => setShowPremiumModal(false)} className="close-btn">✕</button>
+
+            {/* Radial Background Glow */}
+            <div className="radial-glow" />
+
+            {/* Left Side Typography */}
+            <div className="modal-left">
+              <div className="icon-box">
+                <span style={{ fontSize: 28 }}>⚡</span>
+              </div>
+              <h2 className="title-bold">Pricing<br/>Cards</h2>
+              <p className="subtitle-gray">By Notes 'n Frames</p>
+            </div>
+
+            {/* Right Side Cards Area */}
+            <div className="modal-right">
+              
+              {/* Card 1: Free Plan */}
+              <div className="saas-card">
+                <div className="card-top-bar" style={{ background: '#500e24' }}>For one person</div>
+                <div className="card-content">
+                  <div style={{ fontSize: 28, marginBottom: 12 }}>⚡</div>
+                  <div className="plan-label">FREE PLAN</div>
+                  <div className="billed-label">Billed annually</div>
+                  <div className="price-text">₹0<span>/Month</span></div>
+                  <p className="desc-text" style={{ padding: '0 10px', marginTop: 12 }}>Design anything and bring your ideas to life.</p>
+                  
+                  {/* No bullets in free plan as requested */}
+                  <div style={{ flex: 1 }}></div>
+                  
+                  <button onClick={() => setShowPremiumModal(false)} className="saas-btn">Get Started</button>
+                </div>
+              </div>
+
+              {/* Card 2: Pro Plan (Highlighted) */}
+              <div className="saas-card saas-card-pro">
+                <div className="card-top-bar" style={{ background: '#f59e0b' }}>For one person | Most Popular</div>
+                <div className="most-popular-badge">MOST POPULAR</div>
+                <div className="card-content">
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
+                  <div className="plan-label">PRO PLAN</div>
+                  <div className="billed-label">Billed annually</div>
+                  <div className="price-text">₹599<span>/Month</span></div>
+                  <div className="strikethrough-text">₹1200/Year</div>
+                  <p className="desc-text" style={{ padding: '0 10px' }}>Unlock more powerful design tools and coding battles.</p>
+                  
+                  <div className="feature-heading">In addition to free, you'll get:</div>
+                  <div className="feature-list">
+                    {['Unlimited premium templates', 'Real-time 1v1 coding battles', 'Live multiplayer matchmaking', 'Global ELO leaderboard', '20 GB of cloud storage'].map(f => (
+                      <div key={f} className="feature-item">
+                        <div className="check-icon">✓</div>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => handlePayment({ id: 'six_months', name: 'Pro Plan', amount: 599 })} disabled={paymentProcessing} className="saas-btn saas-btn-pro">{paymentProcessing ? 'Processing...' : 'Buy Now'}</button>
+                </div>
+              </div>
+
+              {/* Card 3: Yearly Plan */}
+              <div className="saas-card">
+                <div className="card-top-bar" style={{ background: '#500e24' }}>Unbeatable Value</div>
+                <div className="card-content">
+                  <div style={{ fontSize: 28, marginBottom: 12 }}>📅</div>
+                  <div className="plan-label">YEARLY PLAN</div>
+                  <div className="billed-label">Billed annually</div>
+                  <div className="price-text">₹5999<span>/Year</span></div>
+                  <p className="desc-text" style={{ padding: '0 10px', marginTop: 12, marginBottom: 28 }}>For long-term mastery and coding enthusiasts.</p>
+                  
+                  <div className="feature-heading">In addition to pro, you'll get:</div>
+                  <div className="feature-list" style={{ marginBottom: 32 }}>
+                    {['Real-time collaborative editing', 'Live spectator mode (Coming Soon)', 'Priority zero-latency servers', 'Edit, comment and collaborate in real time', '1 TB of cloud storage'].map(f => (
+                      <div key={f} className="feature-item">
+                        <div className="check-icon">✓</div>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div style={{ marginTop: 'auto', width: '100%' }}>
+                    <button onClick={() => handlePayment({ id: 'yearly', name: 'Yearly Plan', amount: 5999 })} disabled={paymentProcessing} className="saas-btn" style={{ marginBottom: 12 }}>{paymentProcessing ? 'Processing...' : 'Buy Now'}</button>
+                    <div className="contact-sales">Contact Sales</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* NAV */}
       <nav className="glass-nav">
@@ -349,11 +510,22 @@ export default function Lobby() {
         <div className="nav-links">
           <span onClick={() => navigate('/')}>Dashboard</span>
           <span className="active">Practice</span>
-          <span onClick={() => navigate('/interview-dsa')}>Practice Interview</span>
+          <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : setShowPremiumModal(true)}>Practice Interview</span>
           <span onClick={() => navigate('/leaderboard')}>Leaderboard</span>
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>
         <div style={{ flex: 1 }} />
+        
+        {!user?.isPremium && (
+          <button onClick={() => setShowPremiumModal(true)} style={{ 
+            background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8, 
+            padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', marginRight: 16,
+            boxShadow: '0 4px 14px rgba(255,107,53,0.3)', transition: 'all 0.2s'
+          }} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-1px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>
+            💎 Premium
+          </button>
+        )}
+
         <div className="online-badge">
           <div className={`status-dot ${pulse ? 'pulse-anim' : ''}`} />
           <span><span className="text-green">{onlineCount}</span> online</span>
@@ -376,15 +548,11 @@ export default function Lobby() {
             {[
               { id: 'quickplay', label: '⚡ Quick Play' },
               { id: 'puzzles', label: '🧩 Puzzles' },
-              { id: 'pro', label: '🔥 Pro Vault' },
               { id: 'create', label: '+ Create Room' },
               { id: 'join', label: '🔗 Join Room' },
               { id: 'live', label: '👁 Watch Live' },
             ].map(t => (
-              <button key={t.id} onClick={() => {
-                if (t.id === 'pro') navigate('/interview-dsa');
-                else setTab(t.id);
-              }} className={`tab-btn ${tab === t.id ? 'active' : ''} ${t.id === 'pro' ? 'text-pink-400 font-black border border-pink-500/30' : ''}`}>
+              <button key={t.id} onClick={() => setTab(t.id)} className={`tab-btn ${tab === t.id ? 'active' : ''}`}>
                 {t.label}
               </button>
             ))}
@@ -396,12 +564,12 @@ export default function Lobby() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bento-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 32 }}
           >
+            {/* Interview Pro Vault Card */}
             <motion.div 
               whileHover={{ y: -2 }}
-              onClick={() => navigate('/interview-dsa')}
-              className="bento-card pro-vault"
+              onClick={() => user?.isPremium ? navigate('/interview-dsa') : setShowPremiumModal(true)}
               style={{
                 gridColumn: 'span 2', gridRow: 'span 2',
                 background: '#16161a',
@@ -411,71 +579,90 @@ export default function Lobby() {
             >
               <div style={{ position: 'relative', zIndex: 2 }}>
                 <div style={{ padding: '6px 12px', background: 'rgba(236,72,153,0.1)', color: '#fbcfe8', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 6, fontSize: 11, fontWeight: 700, width: 'fit-content', marginBottom: 16 }}>MAANG EXCLUSIVE</div>
-                <h3 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12 }}>Interview Pro Vault</h3>
+                <h3 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12 }}>Interview Pro Vault {user?.isPremium && <span style={{fontSize:16, color:'#22c55e'}}>✓ Unlocked</span>}</h3>
                 <p style={{ color: '#a1a1aa', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>Master the exact algorithms asked by top tech companies. Train with precision, zero distractions, and our integrated AI interviewer.</p>
+                
+                <button style={{ 
+                  background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8, 
+                  padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter',
+                  boxShadow: '0 4px 14px rgba(255,107,53,0.3)', width: 'fit-content', marginBottom: 24
+                }}>
+                  {user?.isPremium ? '⚡ Access Pro Vault' : '💎 Unlock Pro Vault'}
+                </button>
+
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
                   {['Google', 'Amazon', 'Meta', 'Netflix', 'Apple'].map(c => (
                     <span key={c} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: '#d1d5db', fontSize: 12, padding: '4px 10px', borderRadius: 6, fontWeight: 500 }}>{c}</span>
                   ))}
                 </div>
               </div>
+              {!user?.isPremium && (
+                 <div style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                   <span style={{fontSize: 16}}>🔒</span> <span style={{fontSize: 12, fontWeight: 700, color: '#aaa'}}>PREMIUM</span>
+                 </div>
+              )}
             </motion.div>
 
+            {/* Random Match Card */}
             <motion.div 
               whileHover={{ y: -2 }}
               onClick={() => { setMatchmakingMode('random'); setRoomType('public'); setShowMatchmaking(true); }}
-              className="bento-card"
               style={{
-                gridColumn: 'span 1', gridRow: 'span 1',
                 background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                justifyContent: 'center'
+                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,107,53,0.1)', color: '#ff6b35', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚡</div>
                 <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Random Match</h3>
               </div>
               <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Find an opponent near your ELO instantly and battle!</p>
+              <button style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.2)', color: '#ff6b35', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
+                ⚡ Start Quick Play
+              </button>
             </motion.div>
 
+            {/* Ranked Match Card */}
             <motion.div 
               whileHover={{ y: -2 }}
               onClick={handleRankedClick}
-              className="bento-card"
               style={{
-                gridColumn: 'span 1', gridRow: 'span 1',
                 background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                justifyContent: 'center'
+                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
-              <div style={{ fontSize: 36, marginBottom: 16 }}>🎯</div>
-              <h3 style={{ fontSize: 24, fontWeight: 900, fontFamily: 'Outfit', color: '#fff' }}>Ranked Match</h3>
-              <p style={{ color: '#888', fontSize: 14, marginTop: 8 }}>Choose a specific problem and fight for global ELO ranking.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(168,85,247,0.1)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎯</div>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Ranked Match</h3>
+              </div>
+              <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Choose a specific problem and fight for global ELO ranking.</p>
+              <button style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#a855f7', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
+                🎯 Join Ranked Queue
+              </button>
             </motion.div>
 
+            {/* Practice Bot Card */}
             <motion.div 
               whileHover={{ y: -2 }}
               onClick={handlePracticeClick}
-              className="bento-card"
               style={{
-                gridColumn: 'span 2', gridRow: 'span 1',
                 background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'row',
-                alignItems: 'center', gap: 24
+                borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(34,197,94,0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🤖</div>
-              <div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: '0 0 4px 0' }}>Practice Bot</h3>
-                <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0 }}>Hone your skills against our AI speed bot. No ELO risk, just pure coding.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(34,197,94,0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🤖</div>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Practice Bot</h3>
               </div>
+              <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Hone your skills against our AI speed bot. No ELO risk, just pure coding.</p>
+              <button style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
+                🤖 Start Practice
+              </button>
             </motion.div>
           </motion.div>
         )}
 
-        {/* ✅ PUZZLES SECTION — REAL PUZZLES FROM DATABASE */}
+        {/* ✅ PUZZLES SECTION */}
         {tab === 'puzzles' && (
           <div className="puzzles-section animate-fade-in">
             <div className="puzzles-header">
@@ -578,6 +765,7 @@ export default function Lobby() {
           </div>
         )}
 
+        {/* RESTORED CREATE ROOM TAB */}
         {tab === 'create' && (
           <div className="create-grid">
             <div className="glass-panel">
@@ -629,6 +817,7 @@ export default function Lobby() {
           </div>
         )}
 
+        {/* RESTORED JOIN ROOM TAB */}
         {tab === 'join' && (
           <div className="join-container glass-panel">
             <div className="join-icon">🔗</div>
@@ -643,10 +832,11 @@ export default function Lobby() {
           </div>
         )}
 
+        {/* RESTORED WATCH LIVE TAB */}
         {tab === 'live' && (
-          <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
+          <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', marginTop: 32 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>👁</div>
-            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Watch Live Battles</h2>
+            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: '#fff' }}>Watch Live Battles</h2>
             <p style={{ color: '#666', fontSize: 13 }}>Live spectating coming soon!</p>
           </div>
         )}
@@ -665,6 +855,90 @@ export default function Lobby() {
           background-size: 40px 40px;
           font-family: Inter, sans-serif; color: var(--text-main); position: relative; overflow-x: hidden;
         }
+
+        /* ✅ 100% PERFECT SAAS MODAL CSS */
+        .premium-overlay {
+          position: fixed; inset: 0; z-index: 9999;
+          background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+          display: flex; align-items: center; justify-content: center; padding: 20px; font-family: Inter, sans-serif;
+        }
+        .premium-modal {
+          width: 100%; max-width: 1050px; background: #fdfdfd; border-radius: 24px;
+          padding: 40px; position: relative; overflow: hidden; display: flex; align-items: center;
+          box-shadow: 0 40px 100px rgba(0,0,0,0.9); color: #111;
+        }
+        .close-btn {
+          position: absolute; top: 20px; right: 20px; background: none; border: none;
+          font-size: 24px; color: #9ca3af; cursor: pointer; z-index: 50; transition: color 0.2s;
+        }
+        .close-btn:hover { color: #111; }
+        .radial-glow {
+          position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+          width: 600px; height: 600px; border-radius: 50%; pointer-events: none;
+          background: radial-gradient(circle, rgba(255,182,193,0.25) 0%, rgba(255,200,150,0.2) 50%, transparent 80%);
+          filter: blur(60px);
+        }
+        .modal-left { width: 35%; position: relative; z-index: 10; padding-right: 40px; }
+        .icon-box { width: 64px; height: 64px; background: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #f3f4f6; margin-bottom: 24px; }
+        .title-bold { font-size: 52px; font-weight: 900; color: #000; line-height: 1.05; margin-bottom: 8px; font-family: Inter, sans-serif; letter-spacing: -1px; }
+        .subtitle-gray { color: #6b7280; font-size: 16px; font-weight: 500; margin: 0; }
+        .modal-right { width: 65%; display: flex; gap: 16px; align-items: stretch; position: relative; z-index: 10; }
+        
+        /* SAAS CARDS */
+        .saas-card {
+          background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+          flex: 1; display: flex; flex-direction: column; cursor: default; min-height: 520px;
+        }
+        .saas-card-pro {
+          background: #fff; border: 1px solid #fb923c; border-radius: 16px; overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 20px 40px rgba(251, 146, 60, 0.15);
+          transform: scale(1.05); z-index: 5; flex: 1.1; display: flex; flex-direction: column; cursor: default; min-height: 560px;
+        }
+        
+        /* HOVER EFFECTS - Controlled via CSS to avoid React Margin Bugs */
+        .saas-card:hover {
+          transform: scale(1.05); box-shadow: 0 20px 40px rgba(244, 63, 94, 0.15); border-color: #f43f5e; z-index: 10;
+        }
+        .saas-card-pro:hover {
+          transform: scale(1.08); box-shadow: 0 25px 50px rgba(251, 146, 60, 0.25); z-index: 10;
+        }
+
+        /* CARD INTERNALS */
+        .card-top-bar { color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
+        .most-popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #ff6b35; color: #fff; font-size: 11px; font-weight: 800; padding: 6px 16px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .card-content { padding: 24px 20px; display: flex; flex-direction: column; flex: 1; align-items: center; text-align: center; }
+        .plan-label { font-size: 10px; font-weight: 800; color: #111; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .billed-label { font-size: 9px; color: #9ca3af; margin-bottom: 16px; }
+        .price-text { font-size: 40px; font-weight: 900; color: #000; margin-bottom: 4px; line-height: 1; }
+        .price-text span { font-size: 14px; font-weight: 600; color: #6b7280; }
+        .strikethrough-text { font-size: 9px; color: #9ca3af; text-decoration: line-through; margin-bottom: 16px; }
+        .desc-text { font-size: 9px; color: #6b7280; margin-bottom: 20px; }
+        .feature-heading { width: 100%; font-size: 9px; font-weight: 800; color: #374151; margin-bottom: 12px; text-align: left; }
+        .feature-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+        .feature-item { display: flex; gap: 8px; align-items: flex-start; text-align: left; }
+        .check-icon { width: 12px; height: 12px; border-radius: 50%; background: #22c55e; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+        .feature-item span { font-size: 10px; color: #4b5563; line-height: 1.4; font-weight: 500; }
+        
+        /* BUTTONS */
+        .saas-btn {
+          width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
+          cursor: pointer; transition: all 0.3s ease; border: 1px solid #d1d5db; background: #fff; color: #374151; font-family: Inter, sans-serif;
+        }
+        .saas-btn-pro {
+          width: 100%; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 13px;
+          cursor: pointer; transition: all 0.3s ease; border: none; background: #f43f5e; color: #fff; font-family: Inter, sans-serif;
+        }
+        /* Make any hovered card's button turn Red/Pink like the Pro button */
+        .saas-card:hover .saas-btn {
+          background: #f43f5e; color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+        }
+        .saas-card-pro:hover .saas-btn-pro {
+          background: #e11d48; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.4);
+        }
+        .contact-sales { font-size: 9px; font-weight: 700; color: #f43f5e; cursor: pointer; transition: color 0.2s; text-align: center; }
+        .contact-sales:hover { color: #e11d48; text-decoration: underline; }
+
         .glass-nav { height: 60px; background: #111113; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
         .logo { font-size: 16px; cursor: pointer; display: flex; align-items: center; margin-right: 32px; }
         .nav-links { display: flex; gap: 24px; margin-right: 32px; }
@@ -690,36 +964,6 @@ export default function Lobby() {
         .tab-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .tab-btn:hover { color: var(--text-main); }
         .tab-btn.active { background: rgba(255,255,255,0.08); color: #fff; }
-        .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .premium-card { background: #16161a; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 28px 24px 24px; display: flex; flex-direction: column; transition: transform 0.2s, background 0.2s; }
-        .premium-card:hover { transform: translateY(-2px); background: #1a1a1e; border-color: rgba(255,255,255,0.08); }
-        .pc-top { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .pc-icon-box { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
-        .bg-orange { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); }
-        .bg-purple { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); }
-        .bg-green { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); }
-        .bg-blue { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); }
-        .pc-title { font-size: 20px; font-weight: 700; margin: 0; color: #fff; }
-        .pc-subtitle { font-size: 13px; font-weight: 600; }
-        .text-orange { color: var(--orange); } .text-purple { color: var(--purple); }
-        .pc-desc { font-size: 14px; color: #a1a1aa; line-height: 1.7; margin: 0 0 28px 0; flex: 1; }
-        .pc-stats { display: flex; justify-content: space-between; margin-bottom: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.04); }
-        .pc-stat-item { display: flex; align-items: center; gap: 12px; }
-        .pc-stat-icon { font-size: 18px; opacity: 0.8; }
-        .pc-stat-text { font-size: 12px; font-weight: 600; color: #d1d5db; line-height: 1.4; }
-        .text-xs { font-size: 11px; color: #6b7280; }
-        .pc-btn { width: 100%; padding: 12px 0; border: none; border-radius: 10px; font-weight: 600; font-size: 13px; color: #fff; cursor: pointer; transition: all 0.2s; font-family: Inter; }
-        .pc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-orange { background: #ff6b35; }
-        .btn-orange:hover:not(:disabled) { background: #e05e2e; }
-        .btn-purple { background: #a855f7; }
-        .btn-purple:hover:not(:disabled) { background: #9333ea; }
-        .btn-green { background: #22c55e; color: #fff; }
-        .btn-green:hover:not(:disabled) { background: #16a34a; }
-        .btn-disabled { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.06); cursor: not-allowed; }
-        .bento-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 32px; }
-        .bento-card { transition: all 0.2s; }
-        .bento-card:hover { border-color: rgba(255,255,255,0.08) !important; background: #1a1a1e !important; }
         
         .create-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-top: 32px; }
         .glass-panel { background: #16161a; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 24px; }
@@ -738,10 +982,10 @@ export default function Lobby() {
         .prob-meta { font-size: 11px; color: var(--text-muted); }
         .prob-diff { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
         .settings-panel { position: sticky; top: 80px; height: fit-content; }
-        .settings-title { font-family: Outfit; font-size: 18px; font-weight: 700; margin: 0 0 24px 0; }
+        .settings-title { font-family: Outfit; font-size: 18px; font-weight: 700; margin: 0 0 24px 0; color: #fff; }
         .label-mini { font-size: 10px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; display: block; }
         .selected-preview { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 16px; margin-bottom: 20px; min-height: 72px; }
-        .prev-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .prev-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #fff; }
         .prev-tags { display: flex; gap: 8px; align-items: center; }
         .setting-group { margin-bottom: 20px; }
         .toggle-group { display: flex; gap: 8px; }
@@ -752,7 +996,7 @@ export default function Lobby() {
         .btn-primary-full.disabled { background: rgba(255,255,255,0.05); color: #555; cursor: not-allowed; transform: none; }
         .join-container { max-width: 460px; margin: 0 auto; padding: 40px; text-align: center; }
         .join-icon { width: 64px; height: 64px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
-        .join-title { font-family: Outfit; font-size: 24px; font-weight: 800; margin: 0 0 8px 0; }
+        .join-title { font-family: Outfit; font-size: 24px; font-weight: 800; margin: 0 0 8px 0; color: #fff; }
         .join-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
         .join-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 14px; font-size: 16px; color: #fff; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: 2px; outline: none; margin-bottom: 20px; transition: border 0.2s; }
         .join-input:focus { border-color: var(--orange); }
@@ -783,7 +1027,9 @@ export default function Lobby() {
         .puzzle-points { font-weight: 800; font-family: 'JetBrains Mono', monospace; }
         
         .btn-puzzle { width: 100%; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-top: auto; font-family: Inter, sans-serif; }
-        .btn-puzzle:hover { background: currentColor; color: #fff !important; box-shadow: 0 4px 20px rgba(14,165,233,0.4); transform: translateY(-1px); }
+        
+        /* ✅ FIX: Hover over Solve Now Button */
+        .btn-puzzle:hover { background: #ff6b35 !important; color: #fff !important; border-color: #ff6b35 !important; box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important; transform: translateY(-2px); }
         
         .btn-puzzle-solved { width: 100%; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: var(--green); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: not-allowed; margin-top: auto; font-family: Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
 

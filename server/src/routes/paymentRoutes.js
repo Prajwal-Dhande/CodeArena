@@ -22,24 +22,36 @@ try {
 router.post('/create-order', authMiddleware, async (req, res) => {
   try {
     if (!razorpay) {
-      return res.status(500).json({ message: "CRITICAL ERROR: Razorpay backend keys missing! Please make sure you have added both RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your server's .env file!" });
+      return res.status(500).json({ success: false, message: "CRITICAL ERROR: Razorpay backend keys missing! Please make sure you have added both RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your server's .env file!" });
+    }
+
+    // Amount aur plan frontend se aayega
+    const { amount, plan } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ success: false, message: "Amount is required" });
     }
 
     const options = {
-      amount: 49900, // ₹499 in paise
+      amount: amount, // Dynamic amount passed from frontend
       currency: "INR",
-      receipt: `rcp_${Date.now()}_${req.userId.substring(18)}` // under 40 chars
+      receipt: `rcp_${Date.now()}_${req.userId.substring(18)}`, // under 40 chars
+      notes: {
+        userId: req.userId,
+        plan: plan || 'monthly' // Storing plan info for verification
+      }
     };
     
     const order = await razorpay.orders.create(options);
     if (!order) {
-      return res.status(500).json({ message: "Failed to create Razorypay order" });
+      return res.status(500).json({ success: false, message: "Failed to create Razorpay order" });
     }
     
-    res.json(order);
+    // Frontend expects success, order, and key
+    res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
@@ -55,15 +67,66 @@ router.post('/verify', authMiddleware, async (req, res) => {
       .digest("hex");
 
     if (razorpay_signature === expectedSign) {
-      // Payment is successful and verified
-      await User.findByIdAndUpdate(req.userId, { isPremium: true });
-      return res.status(200).json({ message: "Payment verified successfully. Welcome to Premium!", isPremium: true });
+      
+      // Order fetch karke pata lagayenge konsa plan tha
+      const orderDetails = await razorpay.orders.fetch(razorpay_order_id);
+      const plan = orderDetails.notes ? orderDetails.notes.plan : 'monthly';
+
+      // Plan ke hisaab se expiry calculate karo
+      const expiry = new Date();
+      if (plan === 'yearly') {
+        expiry.setFullYear(expiry.getFullYear() + 1);
+      } else if (plan === 'six_months') {
+        expiry.setMonth(expiry.getMonth() + 6);
+      } else {
+        expiry.setMonth(expiry.getMonth() + 1); // default 1 month
+      }
+
+      // Update user status
+      await User.findByIdAndUpdate(req.userId, { 
+        isPremium: true,
+        premiumExpiry: expiry,
+        premiumOrderId: razorpay_order_id
+      });
+
+      // Updated user ko frontend bhejo taaki localStorage update ho jaye
+      const user = await User.findById(req.userId).select('-password -otp -otpExpiry');
+
+      return res.status(200).json({ 
+        success: true, 
+        message: "Payment verified successfully. Welcome to Premium!", 
+        user 
+      });
     } else {
-      return res.status(400).json({ message: "Invalid payment signature!" });
+      return res.status(400).json({ success: false, message: "Invalid payment signature!" });
     }
   } catch (error) {
     console.error("Verification error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// GET /api/payment/status (Required by frontend on load)
+router.get('/status', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('isPremium premiumExpiry');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Expiry check karo
+    if (user.isPremium && user.premiumExpiry && new Date() > user.premiumExpiry) {
+      await User.findByIdAndUpdate(req.userId, { isPremium: false });
+      return res.json({ isPremium: false, expired: true });
+    }
+
+    res.json({
+      isPremium: user.isPremium,
+      premiumExpiry: user.premiumExpiry,
+      daysLeft: user.premiumExpiry
+        ? Math.ceil((new Date(user.premiumExpiry) - new Date()) / (1000 * 60 * 60 * 24))
+        : 0
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
