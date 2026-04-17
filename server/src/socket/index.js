@@ -6,8 +6,15 @@ const matchmakingQueue = []
 
 function initSocket(server) {
   io = new Server(server, {
-    cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
+    cors: { 
+      origin: [
+        'http://localhost:5173', 
+        'https://code-arena-virid.vercel.app' // Tera Vercel URL
+      ], 
+      methods: ['GET', 'POST'] 
+    }
   })
+}
 
   io.on('connection', (socket) => {
     console.log(`⚡ Connected: ${socket.id}`)
