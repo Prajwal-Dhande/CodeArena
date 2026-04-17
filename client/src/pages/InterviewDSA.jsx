@@ -221,7 +221,7 @@ export default function InterviewDSA() {
 
   const fetchPremiumProblems = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/problems/premium", {
+      const res = await fetch("https://codearena-njry.onrender.com/api/problems/premium", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
@@ -240,7 +240,7 @@ export default function InterviewDSA() {
 
   const handlePayment = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/payment/create-order", {
+      const res = await fetch("https://codearena-njry.onrender.com/api/payment/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +263,7 @@ export default function InterviewDSA() {
         image: "/favicon.svg",
         order_id: order.order?.id || order.id,
         handler: async function (response) {
-          const verifyRes = await fetch("http://localhost:5000/api/payment/verify", {
+          const verifyRes = await fetch("https://codearena-njry.onrender.com/api/payment/verify", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
