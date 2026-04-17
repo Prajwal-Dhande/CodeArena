@@ -14,7 +14,6 @@ function initSocket(server) {
       methods: ['GET', 'POST'] 
     }
   })
-}
 
   io.on('connection', (socket) => {
     console.log(`⚡ Connected: ${socket.id}`)
@@ -153,10 +152,10 @@ function initSocket(server) {
         }
       })
     })
-  })
+  }) // io.on connection yahan close ho raha hai
 
   return io
-}
+} // initSocket yahan close ho raha hai
 
 function getIO() {
   if (!io) throw new Error('Socket.io not initialized!')
