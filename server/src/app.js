@@ -12,16 +12,21 @@ const userRoutes = require('./routes/userroutes')
 // 🔥 PREMIUM PAYMENT ROUTE
 const paymentRoutes = require('./routes/paymentRoutes')
 
-require('dotenv').config()
-
 connectDB()
 
 const app = express()
 
+// 👇🔥 YAHAN HUA HAI ASLI FIX (CORS UPDATE) 🔥👇
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://code-arena-virid.vercel.app' // Tera Vercel URL yahan allow ho gaya!
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }))
+// 👆🔥 YAHAN HUA HAI ASLI FIX (CORS UPDATE) 🔥👆
+
 app.use(express.json())
 
 app.use('/api/auth', authRoutes)
@@ -37,7 +42,7 @@ app.use('/api/puzzles', require('./routes/puzzleRoutes'));
 app.use('/api/payment', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Algo-Arena server is alive 🔥' })
+  res.json({ status: 'OK', message: 'CodeArena server is alive 🔥' })
 })
 
 module.exports = app
