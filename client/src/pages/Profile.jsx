@@ -249,14 +249,44 @@ export default function Profile() {
   })
   const primaryWeapon = LANGS.find(l => l.id === primaryWeaponKey)
 
-  const heatmapData = Array(52 * 7).fill(0)
+  // ✅ REAL GITHUB-STYLE MATRIX LOGIC
+  const todayDate = new Date()
+  todayDate.setHours(0, 0, 0, 0) // Midnight set kiya taaki accurate din aaye
+
+  const heatmapData = Array(365).fill(0)
+  
   battles.forEach(b => {
-    const daysAgo = Math.floor((Date.now() - new Date(b.date)) / 86400000)
-    if (daysAgo >= 0 && daysAgo < 364) {
-      const idx = 363 - daysAgo
-      if (idx >= 0) heatmapData[idx] = Math.min(4, heatmapData[idx] + 1)
+    if (!b.date) return
+    const bDate = new Date(b.date)
+    bDate.setHours(0, 0, 0, 0)
+    const diffTime = todayDate - bDate
+    const daysAgo = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (daysAgo >= 0 && daysAgo < 365) {
+      const idx = 364 - daysAgo 
+      heatmapData[idx] = Math.min(4, heatmapData[idx] + 1)
     }
   })
+
+  // GitHub ki tarah Grid align karna (Row 0 = Sunday)
+  const oneYearAgo = new Date(todayDate)
+  oneYearAgo.setDate(todayDate.getDate() - 364)
+  const startDayOfWeek = oneYearAgo.getDay() 
+
+  // Shuru mein khaali dabbe daale taaki array Sunday se shuru ho
+  const paddedData = Array(startDayOfWeek).fill(-1).concat(heatmapData)
+  const weeks = []
+  for (let i = 0; i < paddedData.length; i += 7) {
+    weeks.push(paddedData.slice(i, i + 7))
+  }
+
+  // Mahine (Months) ab automatic set honge real date ke hisaab se
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const dynamicMonths = []
+  for(let i = 11; i >= 0; i--) {
+    dynamicMonths.push(monthNames[(todayDate.getMonth() - i + 12) % 12])
+  }
+
   const heatColor = (v) => ['rgba(255,255,255,0.04)', 'rgba(34,197,94,0.3)', 'rgba(34,197,94,0.6)', 'rgba(34,197,94,0.85)', '#22c55e'][v]
 
   const ACHIEVEMENTS = [
@@ -656,19 +686,22 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Dynamic Months Header */}
             <div style={{ display: 'flex', gap: 3, marginBottom: 6, paddingLeft: 2 }}>
-              {['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'].map((m, i) => (
-                <div key={m} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
+              {dynamicMonths.map((m, i) => (
+                <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
               ))}
             </div>
 
+            {/* ✅ Real GitHub Grid Structure */}
             <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 8 }}>
-              {Array.from({ length: 52 }).map((_, week) => (
-                <div key={week} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {Array.from({ length: 7 }).map((_, day) => {
-                    const val = heatmapData[week * 7 + day]
-                    return (
-                      <div key={day} title={`${val} battles`} style={{
+              {weeks.map((weekData, weekIdx) => (
+                <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {weekData.map((val, dayIdx) => (
+                    val === -1 ? (
+                      <div key={dayIdx} style={{ width: 14, height: 14, background: 'transparent' }} /> 
+                    ) : (
+                      <div key={dayIdx} title={val > 0 ? `${val} battles` : 'No battles'} style={{
                         width: 14, height: 14, borderRadius: 3,
                         background: heatColor(val), cursor: 'pointer',
                         transition: 'transform 0.1s, box-shadow 0.2s',
@@ -678,10 +711,11 @@ export default function Profile() {
                       onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                       />
                     )
-                  })}
+                  ))}
                 </div>
               ))}
             </div>
+            
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 16, fontSize: 12, color: '#666', fontFamily: 'JetBrains Mono' }}>
               <span>Less</span>
               {[0,1,2,3,4].map(v => <div key={v} style={{ width: 14, height: 14, borderRadius: 3, background: heatColor(v), boxShadow: v > 0 ? `0 0 8px ${heatColor(v)}40` : 'none' }} />)}
