@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async' // 🔥 SEO Helmet Import
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -9,7 +10,6 @@ if (typeof document !== 'undefined') {
   link.rel = 'stylesheet'
   document.head.appendChild(link)
 }
-
 
 const FLAGS = { IN: '🇮🇳', US: '🇺🇸', CN: '🇨🇳', DE: '🇩🇪', JP: '🇯🇵', BR: '🇧🇷', UK: '🇬🇧', CA: '🇨🇦', KR: '🇰🇷' }
 const TABS = ['Global', 'Weekly', 'Monthly', 'Friends']
@@ -63,6 +63,17 @@ export default function Leaderboard() {
 
   return (
     <div className="lb-wrapper">
+      
+      {/* 👇🔥 DYNAMIC SEO TAGS 🔥👇 */}
+      <Helmet>
+        <title>Global Leaderboard | CodeArena Rankings</title>
+        <meta name="description" content={`Check out the top-ranked coders on CodeArena. Current Grandmasters include ${top3[0]?.username || 'top players'} and more. Compete to get your name on the board!`} />
+        <meta name="keywords" content="coding leaderboard, codearena rankings, top developers, elo rating, coding competition, grandmaster coders" />
+        <meta property="og:title" content="CodeArena Global Leaderboard" />
+        <meta property="og:description" content="See who is leading the coding arena today. Compete in 1v1 battles and climb the ranks!" />
+      </Helmet>
+      {/* 👆🔥 DYNAMIC SEO TAGS 🔥👆 */}
+
       {/* Premium Background Effects */}
       <div className="ambient-grid" />
       <div className="bg-glow orange-glow" />

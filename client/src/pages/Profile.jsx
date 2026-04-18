@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async' // 🔥 SEO ke liye Helmet import kiya
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -321,6 +322,14 @@ export default function Profile() {
 
   return (
     <div className="profile-container" style={{ minHeight: '100vh', background: '#0a0a0c', fontFamily: 'Inter, sans-serif', color: '#e5e5e5', position: 'relative' }}>
+
+      {/* 👇🔥 SEO TAGS START 🔥👇 */}
+      <Helmet>
+        <title>{username ? `${username} | CodeArena Profile` : 'Player Profile | CodeArena'}</title>
+        <meta name="description" content={`Check out ${username || 'this player'}'s CodeArena stats. Current ELO: ${elo} (${tier.name}). Total Battles: ${total}, Win Rate: ${winRate}%.`} />
+        <meta name="keywords" content={`coding profile, ${username}, codearena, competitive programming, 1v1 coding, ${primaryWeapon?.label || 'developer'}`} />
+      </Helmet>
+      {/* 👆🔥 SEO TAGS END 🔥👆 */}
 
       {/* ✅ Enhanced Ambient Glow */}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { Helmet } from 'react-helmet-async' // 🔥 SEO ke liye Helmet import kiya
 import Matchmaking from '../components/battle/Matchmaking'
 import API_URL from '../config/api'
 
@@ -391,6 +392,14 @@ export default function Lobby() {
 
   return (
     <div className="lobby-wrapper">
+      
+      {/* 👇🔥 DYNAMIC SEO TAGS 🔥👇 */}
+      <Helmet>
+        <title>{tab === 'puzzles' ? 'Daily Puzzles | CodeArena' : 'Battle Arena | CodeArena'}</title>
+        <meta name="description" content="Choose your training mode. Master algorithms with structured tracks, solve daily puzzles, or test your speed with live coding battles on CodeArena." />
+        <meta name="keywords" content="coding arena, multiplayer coding, daily coding puzzles, live coding battles, dsa practice, codearena lobby" />
+      </Helmet>
+      {/* 👆🔥 DYNAMIC SEO TAGS 🔥👆 */}
 
       {showMatchmaking && <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} selectedProblem={matchmakingMode === 'ranked' ? rankedSelected : null} mode={matchmakingMode} />}
       
@@ -834,7 +843,7 @@ export default function Lobby() {
 
         {/* RESTORED WATCH LIVE TAB */}
         {tab === 'live' && (
-          <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', marginTop: 32 }}>
+          <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', margin: '32px auto', maxWidth: 600 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>👁</div>
             <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: '#fff' }}>Watch Live Battles</h2>
             <p style={{ color: '#666', fontSize: 13 }}>Live spectating coming soon!</p>
