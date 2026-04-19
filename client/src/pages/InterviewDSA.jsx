@@ -311,7 +311,58 @@ export default function InterviewDSA() {
     navigate(`/battle?problem=${selectedProblem.slug}&room=premium_${Date.now()}&bot=InterviewerBot&practice=true&premium=true`);
   };
 
-  if (loading) return <div className="dsa-loader">Loading parameters...</div>;
+  // ✅ New Premium Holographic Loader (AI words removed, replaced with Premium/Pro terms)
+  if (loading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#060608', flexDirection: 'column', position: 'relative', overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      {/* Background Ambient Glow */}
+      <div style={{ position: 'absolute', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%)', filter: 'blur(60px)', top: '10%', left: '20%' }} />
+      <div style={{ position: 'absolute', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%)', filter: 'blur(60px)', bottom: '10%', right: '20%' }} />
+
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
+        {/* Holographic Spinning Brain UI */}
+        <div style={{ position: 'relative', width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
+          {/* Outer Ring */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+            style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px dashed rgba(255,107,53,0.3)', borderTopColor: '#ff6b35', borderBottomColor: '#ff6b35' }}
+          />
+          {/* Inner Fast Ring */}
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            style={{ position: 'absolute', inset: 12, borderRadius: '50%', border: '2px solid rgba(236,72,153,0.1)', borderLeftColor: '#ec4899', borderRightColor: '#ec4899' }}
+          />
+          {/* Center Brain Icon Pulsing */}
+          <motion.div
+            animate={{ scale: [0.9, 1.1, 0.9], opacity: [0.6, 1, 0.6] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+            style={{ filter: 'drop-shadow(0 0 15px rgba(255,107,53,0.6))' }}
+          >
+            <BrainIcon />
+          </motion.div>
+        </div>
+
+        {/* Loading Text */}
+        <h2 style={{ fontFamily: 'Outfit, sans-serif', color: '#fff', fontSize: 28, margin: '0 0 12px 0', letterSpacing: '-0.5px' }}>
+          Unlocking Pro Vault
+        </h2>
+        
+        <motion.div
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ec4899', boxShadow: '0 0 10px #ec4899' }} />
+          <span style={{ color: '#ec4899', fontSize: 13, fontWeight: 700, letterSpacing: 2, fontFamily: 'JetBrains Mono, monospace' }}>
+            CONNECTING TO CLARA (EXPERT SYSTEM)...
+          </span>
+        </motion.div>
+
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -342,7 +393,7 @@ export default function InterviewDSA() {
       {showSelectionModal && (
         <ProblemModal 
           title="🧠 Pro Interview Vault" 
-          subtitle="Select an exclusive FAANG problem to begin your AI Interview." 
+          subtitle="Select an exclusive FAANG problem to begin your Pro Interview." 
           borderColor="rgba(255, 107, 53, 0.4)" 
           accentColor="#ff6b35" 
           selectedP={selectedProblem} 
@@ -379,11 +430,11 @@ export default function InterviewDSA() {
               <div className="hologram-icon"><BrainIcon /></div>
             </div>
             <h1 className="hero-title gradient-text-silver">
-              AI Interview Practice
+              Elite Interview Session
               <span className="pro-badge-glow">PRO</span>
             </h1>
             <p className="hero-subtitle text-silver">
-              Practice coding problems with Clara, your AI technical interviewer. Get real-time feedback, hints, and guidance tailored to your skill level.
+              Practice coding problems with Clara, your expert technical interviewer. Get real-time feedback, hints, and guidance tailored to your skill level.
             </p>
           </motion.div>
 
@@ -411,7 +462,7 @@ export default function InterviewDSA() {
                   <div className="feat-block-icon" style={{ background: 'rgba(251, 191, 36, 0.1)', borderColor: 'rgba(251, 191, 36, 0.3)' }}>
                     <SparklesIcon />
                   </div>
-                  <h3>AI Guidance</h3>
+                  <h3>Live Expert Feedback</h3>
                   <p>Get hints and feedback from<br/>Clara as you solve</p>
                 </div>
 
@@ -428,14 +479,14 @@ export default function InterviewDSA() {
             {/* ✅ Start Button (Premium Users) */}
             {isPremium && (
                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="action-overlay premium-glass-panel"
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ delay: 0.3 }}
+                 className="action-overlay premium-glass-panel"
                >
-                  <button className="premium-action-btn btn-green" onClick={handleStartInterviewClick}>
-                    ✨ Select Problem & Start
-                  </button>
+                 <button className="premium-action-btn btn-green" onClick={handleStartInterviewClick}>
+                   ✨ Select Problem & Start
+                 </button>
                </motion.div>
             )}
 
@@ -454,7 +505,7 @@ export default function InterviewDSA() {
                      </div>
                   </div>
                   <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12, color: '#fff', letterSpacing: '-0.5px' }}>Pro Feature Locked</h3>
-                  <p style={{ color: '#a1a1aa', lineHeight: 1.6, marginBottom: 24, fontSize: 14 }}>AI Interview Practice requires CodeArena Pro.<br/>Gain access to exclusive FAANG questions and priority matchmaking.</p>
+                  <p style={{ color: '#a1a1aa', lineHeight: 1.6, marginBottom: 24, fontSize: 14 }}>Pro Interview Practice requires CodeArena Pro.<br/>Gain access to exclusive FAANG questions and priority matchmaking.</p>
                   
                   <button className="premium-action-btn btn-pink" onClick={handlePayment}>
                     Unlock Pro Access
@@ -479,7 +530,7 @@ export default function InterviewDSA() {
               </li>
               <li>
                 <div className="step-num">2</div>
-                <span>Start the AI interviewer to get real-time guidance from Clara.</span>
+                <span>Start the session to get real-time guidance from Clara.</span>
               </li>
               <li>
                 <div className="step-num">3</div>

@@ -1,83 +1,148 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 
-export default function VisualFlowHint() {
-  const [step, setStep] = useState(0);
+// 🔥 DYNAMIC DATA MAPPER (Har problem ke liye alag data)
+const PROBLEM_DATA = {
+  'two-sum': ['[2]', '[7]', '[11]', '[15]'],
+  'merge-k-sorted-lists': ['L1:[1,4,5]', 'L2:[1,3,4]', 'L3:[2,6]', 'Min-Heap'],
+  'valid-parentheses': ['(', '{', '[', 'Stack'],
+  'best-time-to-buy-stock': ['[7]', '[1]', '[5]', '[3]'],
+  'contains-duplicate': ['Set()', '1', '2', '1'],
+  'binary-search': ['L=0', 'Mid', 'R=9', 'Target'],
+  'default': ['0x4A', '0x1B', '0x9F', '0x2C'] // Sci-fi fallback for unknown problems
+};
 
-  // Simple two pointer simulation on an array [2, 7, 11, 15] for Two Sum or similar logic
-  const array = [2, 7, 11, 15];
-  const steps = [
-    { i: 0, j: 3, msg: "Initialize left pointer at start, right at end.", match: false },
-    { i: 0, j: 2, msg: "Sum is 17 (too large). Move right pointer left.", match: false },
-    { i: 0, j: 1, msg: "Sum is 9. Target found!", match: true },
-  ];
+export default function VisualFlowHint({ problemSlug }) {
+  // Slug ko clean title mein convert karna
+  const displayTitle = problemSlug 
+    ? problemSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : 'Execution';
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStep((prev) => (prev + 1) % steps.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const current = steps[step];
+  // Problem ke hisaab se data uthao, nahi toh default
+  const nodes = PROBLEM_DATA[problemSlug] || PROBLEM_DATA['default'];
 
   return (
-    <div style={{
-      background: 'rgba(20, 10, 30, 0.6)',
-      border: '1px solid rgba(168,85,247,0.3)',
-      borderRadius: 12,
-      padding: '20px',
-      marginTop: '16px',
-      overflow: 'hidden'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 18 }}>👁️</span>
-        <span style={{ color: '#e879f9', fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>VISUAL EXECUTION (TWO-POINTER)</span>
+    <div className="ai-visualizer-wrapper">
+      
+      {/* HEADER */}
+      <div className="ai-vis-header">
+        <div className="ai-vis-title">⚡ AI VISUAL MAPPING</div>
+        <div className="ai-vis-dots">
+          <div className="dot dot-1" />
+          <div className="dot dot-2" />
+          <div className="dot dot-3" />
+        </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', position: 'relative', height: 60, alignItems: 'center' }}>
-        {array.map((num, idx) => {
-          const isI = current.i === idx;
-          const isJ = current.j === idx;
-          const isMatch = (isI || isJ) && current.match;
-          
-          return (
-            <motion.div
-              key={idx}
-              animate={{
-                scale: isI || isJ ? 1.1 : 1,
-                borderColor: isMatch ? '#22c55e' : (isI ? '#3b82f6' : isJ ? '#ef4444' : 'rgba(255,255,255,0.1)'),
-                boxShadow: isMatch ? '0 0 20px rgba(34,197,94,0.4)' : 'none'
-              }}
-              style={{
-                width: 48, height: 48, background: 'rgba(255,255,255,0.05)',
-                border: '2px solid rgba(255,255,255,0.1)', borderRadius: 8,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'JetBrains Mono',
-                position: 'relative'
-              }}
-            >
-              {num}
-              {isI && (
-                <motion.div layoutId="pointer-i" style={{ position: 'absolute', bottom: -24, color: '#3b82f6', fontSize: 12, fontWeight: 800 }}>
-                  ↑ i
-                </motion.div>
-              )}
-              {isJ && (
-                <motion.div layoutId="pointer-j" style={{ position: 'absolute', top: -24, color: '#ef4444', fontSize: 12, fontWeight: 800 }}>
-                  ↓ j
-                </motion.div>
-              )}
-            </motion.div>
-          );
-        })}
+      {/* ANIMATED TRACK */}
+      <div className="ai-vis-track">
+        {/* Dynamic Nodes */}
+        {nodes.map((data, i) => (
+          <div key={i} className="node-wrapper">
+            <div className={`node-box node-${i}`}>
+              {data}
+            </div>
+            <div className="node-line"></div>
+          </div>
+        ))}
+        
+        {/* 🔴 Cyberpunk Laser Scanner */}
+        <div className="laser-scanner"></div>
       </div>
 
-      <div style={{ marginTop: 24, textAlign: 'center', color: current.match ? '#4ade80' : '#d8b4fe', fontSize: 13, minHeight: 20 }}>
-        <motion.span key={step} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
-          {current.msg}
-        </motion.span>
+      {/* FOOTER */}
+      <div className="ai-vis-footer">
+        <span style={{ fontSize: 16 }}>🤖</span>
+        <div style={{ color: '#aaa', fontSize: 12, lineHeight: 1.4 }}>
+          Analyzing optimal algorithm flow for <strong style={{ color: '#fff' }}>{displayTitle}</strong>...
+        </div>
       </div>
+
+      {/* 🔥 PURE CSS ANIMATIONS */}
+      <style>{`
+        .ai-visualizer-wrapper {
+          background: rgba(15, 15, 20, 0.8);
+          border: 1px solid rgba(168,85,247,0.3);
+          border-radius: 12px;
+          padding: 16px;
+          margin-top: 16px;
+          position: relative;
+          overflow: hidden;
+        }
+        .ai-vis-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+        .ai-vis-title {
+          font-size: 11px;
+          color: #c084fc;
+          font-weight: 800;
+          letter-spacing: 1px;
+        }
+        .ai-vis-dots { display: flex; gap: 4px; }
+        .dot { 
+          width: 6px; height: 6px; border-radius: 50%; 
+          background: #c084fc; animation: blink 1.5s infinite; 
+        }
+        .dot-1 { animation-delay: 0s; }
+        .dot-2 { animation-delay: 0.3s; }
+        .dot-3 { animation-delay: 0.6s; }
+
+        .ai-vis-track {
+          position: relative;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-evenly;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding-bottom: 16px;
+        }
+        .node-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 5; }
+        .node-box {
+          min-width: 40px; height: 32px; border-radius: 8px; 
+          padding: 0 10px;
+          border: 2px solid rgba(255,255,255,0.1);
+          display: flex; align-items: center; justify-content: center;
+          color: #fff; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+          background: rgba(0,0,0,0.7);
+          animation: bounce 2s infinite;
+          white-space: nowrap;
+        }
+        .node-0 { animation-delay: 0s; }
+        .node-1 { animation-delay: 0.3s; }
+        .node-2 { animation-delay: 0.6s; }
+        .node-3 { animation-delay: 0.9s; }
+        
+        .node-line { width: 2px; height: 12px; background: rgba(255,255,255,0.1); }
+
+        .laser-scanner {
+          position: absolute;
+          top: -10px; bottom: 10px; width: 2px;
+          background: #c084fc;
+          box-shadow: 0 0 15px #c084fc, 0 0 30px #c084fc;
+          z-index: 10;
+          animation: scan 2.5s ease-in-out infinite alternate;
+        }
+
+        .ai-vis-footer { margin-top: 12px; display: flex; align-items: center; gap: 8px; }
+
+        /* Keyframes */
+        @keyframes blink {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 1; }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); border-color: rgba(255,255,255,0.1); }
+          50% { transform: translateY(-8px); border-color: #c084fc; box-shadow: 0 0 15px rgba(192,132,252,0.4); }
+        }
+        @keyframes scan {
+          0% { left: 5%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { left: 95%; opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }

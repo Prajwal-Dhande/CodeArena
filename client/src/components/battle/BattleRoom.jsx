@@ -58,9 +58,7 @@ const DEFAULT_STARTER = {
 
 const getRoomId = () => new URLSearchParams(window.location.search).get('room') || 'demo-room-1'
 const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
-// ✅ Practice mode check
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
-// ✅ URL se real flag check karo
 const isRealMatch = () => new URLSearchParams(window.location.search).get('real') === 'true'
 const isPremiumMode = () => new URLSearchParams(window.location.search).get('premium') === 'true'
 
@@ -101,11 +99,8 @@ export default function BattleRoom() {
   const battleStartedRef = useRef(false)
   const startTimeRef = useRef(Date.now())
   const botTimeoutRef = useRef(null)
-  
-  // ✅ Naya ref real player interference prevent karne ke liye
   const botTypingCancelRef = useRef(false) 
 
-  // ✅ CHECK MATCHMAKING MODE (To Lock Dropdown)
   const mode = searchParams.get('mode')
   const isMatchmakingMode = mode === 'random' || mode === 'ranked'
   const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch()
@@ -136,7 +131,6 @@ export default function BattleRoom() {
     fetchProblem()
   }, [searchParams])
 
-  // All problems for picker
   useEffect(() => {
     fetch(`${API_URL}/api/problems`)
       .then(r => r.json())
@@ -144,7 +138,7 @@ export default function BattleRoom() {
       .catch(console.error)
   }, [])
 
-  // ✅ Bot typing simulation
+  // Bot typing simulation
   useEffect(() => {
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
     const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
@@ -177,60 +171,38 @@ export default function BattleRoom() {
         setOpponentCode(currentText)
         charIndex++
         const char = targetCode[charIndex - 1]
-        const delay = char === '\n'
-          ? Math.random() * 600 + 300
-          : char === ' '
-            ? Math.random() * 100 + 30
-            : Math.random() * 120 + 40
+        const delay = char === '\n' ? Math.random() * 600 + 300 : char === ' ' ? Math.random() * 100 + 30 : Math.random() * 120 + 40
         typingTimer = setTimeout(typeChar, delay)
       } else {
         setTimeout(() => {
-          if (!botTypingCancelRef.current) {
-            setOppTests(Math.floor(Math.random() * 2) + 1)
-          }
+          if (!botTypingCancelRef.current) setOppTests(Math.floor(Math.random() * 2) + 1)
         }, 2000)
       }
     }
 
     const startDelay = setTimeout(typeChar, 3000)
-    return () => {
-      clearTimeout(startDelay)
-      clearTimeout(typingTimer)
-    }
+    return () => { clearTimeout(startDelay); clearTimeout(typingTimer); }
   }, [battleStarted, opponentName])
 
   useEffect(() => {
     const socket = io(API_URL)
     socketRef.current = socket
-    
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
 
     socket.on('connect', () => {
       setConnected(true)
       const user = JSON.parse(localStorage.getItem('user') || '{}')
       const roomId = getRoomId()
-      socket.emit('join_room', {
-        roomId,
-        username: user?.username || `Player_${socket.id?.slice(0, 4)}`
-      })
-      console.log(`✅ Joined room: ${roomId}`)
+      socket.emit('join_room', { roomId, username: user?.username || `Player_${socket.id?.slice(0, 4)}` })
     })
 
     socket.on('disconnect', () => setConnected(false))
-
-    socket.on('opponent_code', ({ code }) => {
-      setOpponentCode(code)
-    })
-
-    socket.on('ai_constraint', ({ message }) => {
-      setConstraint(message)
-      setAiLoading(false)
-    })
+    socket.on('opponent_code', ({ code }) => setOpponentCode(code))
+    socket.on('ai_constraint', ({ message }) => { setConstraint(message); setAiLoading(false) })
 
     socket.on('room_update', ({ players }) => {
       const uniquePlayers = Array.from(new Map(players.map(p => [p.username, p])).values());
       setRoomPlayers(uniquePlayers)
-      
       const user = JSON.parse(localStorage.getItem('user') || '{}')
       const opp = uniquePlayers.find(p => p.username !== user?.username)
 
@@ -240,29 +212,21 @@ export default function BattleRoom() {
         botTypingCancelRef.current = true
 
         if (!battleStartedRef.current) {
-          battleStartedRef.current = true
-          setBattleStarted(true)
-          startTimeRef.current = Date.now()
+          battleStartedRef.current = true; setBattleStarted(true); startTimeRef.current = Date.now()
         }
       } else if (uniquePlayers.length === 1) {
         if (isPracticeMode()) {
           setTimeout(() => {
             if (!battleStartedRef.current) {
-              battleStartedRef.current = true
-              setBattleStarted(true)
-              startTimeRef.current = Date.now()
+              battleStartedRef.current = true; setBattleStarted(true); startTimeRef.current = Date.now()
             }
           }, 1500)
-        } else if (isRealMatch()) {
-          console.log('⏳ Real match: waiting for the opponent to reconnect to the room...')
-        } else {
+        } else if (!isRealMatch()) {
           botTimeoutRef.current = setTimeout(() => {
             if (botTypingCancelRef.current) return 
-            
             const botName = botNameFromUrl || `Bot_${Math.floor(Math.random() * 999)}`
             setRoomPlayers(prev => {
-              const exists = prev.find(p => p.username === botName)
-              if (exists) return prev;
+              if (prev.find(p => p.username === botName)) return prev;
               return [...prev, { username: botName, isBot: true }]
             })
             setOpponentName(botName)
@@ -270,9 +234,7 @@ export default function BattleRoom() {
 
             setTimeout(() => {
               if (!battleStartedRef.current) {
-                battleStartedRef.current = true
-                setBattleStarted(true)
-                startTimeRef.current = Date.now()
+                battleStartedRef.current = true; setBattleStarted(true); startTimeRef.current = Date.now()
               }
             }, 1000)
           }, 8000)
@@ -280,54 +242,42 @@ export default function BattleRoom() {
       }
     })
 
-    socket.on('battle_start', ({ players }) => {
+    socket.on('battle_start', () => {
       clearTimeout(botTimeoutRef.current)
       if (!battleStartedRef.current) {
-        battleStartedRef.current = true
-        setBattleStarted(true)
-        startTimeRef.current = Date.now()
+        battleStartedRef.current = true; setBattleStarted(true); startTimeRef.current = Date.now()
       }
     })
 
     socket.on('opponent_tests', ({ passed }) => setOppTests(passed))
 
-    socket.on('opponent_won', ({ winner }) => {
+    socket.on('opponent_won', () => {
       if (!gameOverRef.current) {
         gameOverRef.current = true
-        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-        setTimeTaken(elapsed)
-        setGameResult('loss')
-        setGameOver(true)
+        setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
+        setGameResult('loss'); setGameOver(true)
       }
     })
     
-    socket.on('opponent_left_win', ({ winner, loser, message }) => {
+    socket.on('opponent_left_win', () => {
       if (!gameOverRef.current) {
         gameOverRef.current = true
-        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-        setTimeTaken(elapsed)
-        setGameResult('win')
-        setGameOver(true)
+        setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
+        setGameResult('win'); setGameOver(true)
       }
     })
 
     socket.on('player_left', ({ username }) => {
       setOpponentCode(`// ${username} left the battle...`)
       clearTimeout(botTimeoutRef.current)
-      
       if (!gameOverRef.current) {
         gameOverRef.current = true
-        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-        setTimeTaken(elapsed)
-        setGameResult('win') 
-        setGameOver(true)
+        setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
+        setGameResult('win'); setGameOver(true)
       }
     })
 
-    return () => {
-      socket.disconnect()
-      clearTimeout(botTimeoutRef.current)
-    }
+    return () => { socket.disconnect(); clearTimeout(botTimeoutRef.current) }
   }, [])
 
   const handleLanguageChange = (lang) => {
@@ -464,8 +414,7 @@ export default function BattleRoom() {
       if (data.allPassed && !gameOverRef.current) {
         gameOverRef.current = true
         setSubmitStatus('success')
-        const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000)
-        setTimeTaken(elapsed)
+        setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
         setTimeout(() => { setGameResult('win'); setGameOver(true) }, 600)
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         socketRef.current?.emit('battle_won', { roomId, winner: user?.username || 'Player' })
@@ -520,7 +469,6 @@ export default function BattleRoom() {
         ) : null}
 
         <div className="picker-wrapper">
-          {/* ✅ DROPDOWN LOCKED IF MATCHMAKING OR BATTLE STARTED */}
           <button onClick={() => setShowProblemPicker(s => !s)} className="problem-btn" disabled={isProblemLocked}>
             {problemLoading ? <span>Loading...</span> : (
               <>
@@ -534,7 +482,6 @@ export default function BattleRoom() {
                 )}
               </>
             )}
-            {/* Show Lock icon if prohibited, otherwise arrow */}
             {isProblemLocked ? (
                <span style={{ fontSize: 12, color: '#ef4444', marginLeft: 4 }} title="Problem locked in Matchmaking">🔒</span>
             ) : (
@@ -608,7 +555,7 @@ export default function BattleRoom() {
       {/* MAIN GRID */}
       <PanelGroup direction="horizontal" orientation="horizontal" className="main-grid" style={{ flex: 1 }}>
 
-        {/* ✅ WAITING OVERLAY */}
+        {/* WAITING OVERLAY */}
         {!battleStarted && !new URLSearchParams(window.location.search).get('bot') && (
           <div className="waiting-overlay">
             <div className="waiting-card">
@@ -735,7 +682,7 @@ export default function BattleRoom() {
                     </div>
                   )}
 
-                  {premiumMode && <VisualFlowHint />}
+                  {premiumMode && <VisualFlowHint problemSlug={problem?.slug} />}
                 </>
               ) : (
                 <div className="loading-text">Problem not found</div>
@@ -758,15 +705,17 @@ export default function BattleRoom() {
                   </div>
                 </div>
 
-                <div className="score-card">
-                  <div className="score-header">
-                    <span>{opponentName}</span>
-                    <span style={{ color: '#ef4444' }}>{oppTests} / {totalTests}</span>
+                {!practiceMode && !premiumMode && (
+                  <div className="score-card">
+                    <div className="score-header">
+                      <span>{opponentName}</span>
+                      <span style={{ color: '#ef4444' }}>{oppTests} / {totalTests}</span>
+                    </div>
+                    <div className="progress-bg">
+                      <div className="progress-bar" style={{ width: `${pct(oppTests, totalTests)}%`, background: '#ef4444' }} />
+                    </div>
                   </div>
-                  <div className="progress-bg">
-                    <div className="progress-bar" style={{ width: `${pct(oppTests, totalTests)}%`, background: '#ef4444' }} />
-                  </div>
-                </div>
+                )}
 
                 {!battleStarted ? (
                   <div className="battle-alert alert-orange">
@@ -796,16 +745,17 @@ export default function BattleRoom() {
               <span>You</span>
             </div>
 
-            <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="lang-select">
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="cpp">C++</option>
-              <option value="java">Java</option>
+            {/* ✅ PREMIUM NATIVE LANGUAGE SELECTOR */}
+            <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select">
+              <option value="javascript">JS - JavaScript</option>
+              <option value="python">PY - Python</option>
+              <option value="cpp">C++ - CPlusPlus</option>
+              <option value="java">JAVA - Java</option>
             </select>
 
             <div style={{ flex: 1 }} />
 
-            {/* ✅ VIP Zen Mode Toggle */}
+            {/* VIP Zen Mode Toggle */}
             {premiumMode && (
               <button 
                 onClick={() => setZenMode(!zenMode)} 
@@ -1058,7 +1008,36 @@ export default function BattleRoom() {
         .user-indicator.red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--red); }
         .dot-orange { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
         .dot-red { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
-        .lang-select { font-family: Inter; font-size: 12px; font-weight: 600; color: #aaa; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; outline: none; }
+        
+        /* ✅ PRO NATIVE LANGUAGE SELECTOR STYLES */
+        .pro-lang-select {
+          appearance: none;
+          -webkit-appearance: none;
+          background: rgba(255, 107, 53, 0.05);
+          border: 1px solid rgba(255, 107, 53, 0.3);
+          color: #ff6b35;
+          padding: 6px 28px 6px 12px;
+          border-radius: 8px;
+          font-family: Inter, sans-serif;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          outline: none;
+          transition: all 0.2s;
+          background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20stroke%3D%22%23ff6b35%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+          background-repeat: no-repeat;
+          background-position: right 6px center;
+          background-size: 14px;
+        }
+        .pro-lang-select:hover {
+          background: rgba(255, 107, 53, 0.1);
+          border-color: rgba(255, 107, 53, 0.5);
+        }
+        .pro-lang-select option {
+          background: #1a1a1a;
+          color: #fff;
+        }
+
         .action-btn { font-family: Inter; font-size: 12px; font-weight: 700; border: none; border-radius: 6px; padding: 6px 16px; cursor: pointer; transition: all 0.2s; }
         .run-btn { background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid var(--border); }
         .run-btn:hover:not(.disabled) { background: rgba(255,255,255,0.1); color: #fff; }
