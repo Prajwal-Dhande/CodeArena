@@ -56,6 +56,42 @@ const DEFAULT_STARTER = {
   java: `class Solution {\n    // Your solution here\n}`,
 }
 
+// ✅ REAL LOGOS COMPONENT (SVG)
+const LanguageIcon = ({ lang }) => {
+  switch (lang) {
+    case 'javascript':
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <rect width="24" height="24" rx="4" fill="#F7DF1E"/>
+           <path d="M11.4 17.5C11.4 18.7 10.4 19.5 8.9 19.5C7.7 19.5 6.9 18.9 6.5 18L8.1 17C8.3 17.6 8.7 18 9.1 18C9.5 18 9.8 17.7 9.8 17.2V11H11.5V17.5ZM18.4 19.5C15.9 19.5 14.5 18.2 14.5 16.5H16.2C16.2 17.4 17 18 18.3 18C19.3 18 20 17.6 20 16.9C20 16.3 19.5 15.9 18.5 15.6L17.5 15.3C15.5 14.8 14.7 13.8 14.7 12.3C14.7 10.7 16 9.5 18.2 9.5C20.3 9.5 21.6 10.6 21.8 12.2L20.1 12.6C19.9 11.6 19.2 11 18.2 11C17.3 11 16.5 11.4 16.5 12.1C16.5 12.7 17 13.1 18.1 13.3L19 13.5C21.1 14 21.9 15.1 21.9 16.6C21.8 18.4 20.5 19.5 18.4 19.5Z" fill="black"/>
+        </svg>
+      );
+    case 'python':
+      return (
+         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <path d="M12 2C8 2 8 4 8 4H16V5.5H8C5.5 5.5 5 7 5 10C5 13 5.5 14.5 8 14.5H9.5V12.5C9.5 11 10.5 10 12 10H15.5C17 10 18 9 18 7C18 5 17 2 12 2ZM10.5 3.5C11 3.5 11.5 4 11.5 4.5C11.5 5 11 5.5 10.5 5.5C10 5.5 9.5 5 9.5 4.5C9.5 4 10 3.5 10.5 3.5Z" fill="#3776AB"/>
+           <path d="M12 22C16 22 16 20 16 20H8V18.5H16C18.5 18.5 19 17 19 14C19 11 18.5 9.5 16 9.5H14.5V11.5C14.5 13 13.5 14 12 14H8.5C7 14 6 15 6 17C6 19 7 22 12 22ZM13.5 20.5C13 20.5 12.5 20 12.5 19.5C12.5 19 13 18.5 13.5 18.5C14 18.5 14.5 19 14.5 19.5C14.5 20 14 20.5 13.5 20.5Z" fill="#FFD343"/>
+         </svg>
+      );
+    case 'java':
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.4 18.7c-3.1 1.7-8.2 1.4-10-.6-.5-.5-.4-1.2.1-1.6.4-.3.8-.4 1.3-.2 1.9.7 5.8 1.1 8.8-.4.5-.3 1.1-.1 1.4.3.3.4.1 1-.5 1.3C16 17.8 15.7 18.2 15.4 18.7M16 15.8c-2.4 1.3-6.5 1.4-8.8.2-.5-.2-1.1-.1-1.3.4-.2.5 0 1.1.5 1.3 2.9 1.4 7.6 1.4 10.5-.2.5-.3.6-1 .3-1.4-.4-.5-1-.6-1.5-.3M14.6 2.3c-.6-.7-2-.8-2.6-.2-.6.7-1 1.8.2 2.8 1 1 1 2.3.2 3.6-.5.7-1 1.3-.6 2.1.2.6.8.8 1.4.3.8-.7 1.3-1.5.8-2.6-.5-.9-.5-2.2.3-3 .7-.7.9-2 .3-3zM10.8 4c-.5-.7-1.8-.8-2.5-.2-.5.5-.8 1.6.1 2.5.8.8.8 2 .1 3.2-.4.6-.8 1.2-.5 1.9.2.5.7.7 1.2.3.7-.6 1.1-1.4.7-2.3-.4-.8-.4-2 .2-2.7.6-.7.8-2 .3-2.7zM18.7 5.4c-.4-.5-1.5-.6-2.1-.1-.5.5-.7 1.4.1 2.2.7.7.7 1.8.1 2.9-.3.5-.6 1.1-.4 1.7.2.5.6.6 1 .3.6-.5.9-1.2.6-2.1-.3-.7-.3-1.8.2-2.4.6-.6.7-1.7.3-2.5z" fill="#E76F00"/>
+          <path d="M19.2 14c.7-1 1-2.1.8-3.1-.2-1.2-1-2.1-2.2-2.6-1.3-.5-3.3-.6-5.8-.6H10c-3 0-5.1.2-6.5.6-1.4.4-2.2 1.1-2.5 2.1-.3 1.1-.1 2.3.7 3.3.7 1 1.8 1.8 3 2.4-1.2-.5-1.9-1.2-2.2-2.1-.2-.7 0-1.5.6-2.2.6-.8 1.6-1.4 2.9-1.8 1.3-.4 3.1-.5 5.5-.5h2c2.2 0 4.1.2 5.3.6 1.1.4 1.7 1.1 1.9 1.9.2.8-.1 1.7-.7 2.4-1.2 1.3-3.2 2.3-5.9 2.8 1.7-.2 3.1-.7 4.1-1.4 1-.7 1.4-1.4 1.4-2z" fill="#5382A1"/>
+        </svg>
+      );
+    case 'cpp':
+      return (
+         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <rect width="24" height="24" rx="4" fill="#00599C"/>
+           <path d="M12.4 14.5C12.4 16.5 10.8 18 8.5 18C6.2 18 4.6 16.5 4.6 14.5V9.5C4.6 7.5 6.2 6 8.5 6C10.8 6 12.4 7.5 12.4 9.5H10.6C10.6 8.4 9.7 7.6 8.5 7.6C7.3 7.6 6.4 8.4 6.4 9.5V14.5C6.4 15.6 7.3 16.4 8.5 16.4C9.7 16.4 10.6 15.6 10.6 14.5H12.4ZM15 10.5V8.5H16.5V10.5H18.5V12H16.5V14H15V12H13V10.5H15ZM19 10.5V8.5H20.5V10.5H22.5V12H20.5V14H19V12H17V10.5H19Z" fill="white"/>
+         </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 const getRoomId = () => new URLSearchParams(window.location.search).get('room') || 'demo-room-1'
 const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
@@ -427,6 +463,18 @@ export default function BattleRoom() {
     setSubmitting(false)
   }
 
+  const handleTimeUp = () => {
+    if (!gameOverRef.current) {
+      gameOverRef.current = true;
+      let finalResult = 'draw';
+      if (myTests > oppTests) finalResult = 'win';
+      else if (oppTests > myTests) finalResult = 'loss';
+      setTimeTaken(600);
+      setGameResult(finalResult);
+      setGameOver(true);
+    }
+  };
+
   const handleRematch = () => {
     setGameOver(false); setGameResult(null); gameOverRef.current = false
     setCode(problem?.starterCode?.[language] || DEFAULT_STARTER[language])
@@ -545,7 +593,7 @@ export default function BattleRoom() {
           <div className="timer-box">
             <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
             {battleStarted
-              ? <Timer initialSeconds={600} />
+              ? <Timer initialSeconds={600} onTimeUp={handleTimeUp} />
               : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#666' }}>10:00</span>
             }
           </div>
@@ -745,13 +793,18 @@ export default function BattleRoom() {
               <span>You</span>
             </div>
 
-            {/* ✅ PREMIUM NATIVE LANGUAGE SELECTOR */}
-            <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select">
-              <option value="javascript">JS - JavaScript</option>
-              <option value="python">PY - Python</option>
-              <option value="cpp">C++ - CPlusPlus</option>
-              <option value="java">JAVA - Java</option>
-            </select>
+            {/* ✅ PREMIUM NATIVE LANGUAGE SELECTOR WITH REAL SVG OVERLAY */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>
+                <LanguageIcon lang={language} />
+              </div>
+              <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+              </select>
+            </div>
 
             <div style={{ flex: 1 }} />
 
@@ -1009,29 +1062,29 @@ export default function BattleRoom() {
         .dot-orange { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
         .dot-red { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
         
-        /* ✅ PRO NATIVE LANGUAGE SELECTOR STYLES */
+        /* ✅ PRO NATIVE LANGUAGE SELECTOR STYLES (WHITE TEXT & REAL LOGO HACK) */
         .pro-lang-select {
           appearance: none;
           -webkit-appearance: none;
-          background: rgba(255, 107, 53, 0.05);
-          border: 1px solid rgba(255, 107, 53, 0.3);
-          color: #ff6b35;
-          padding: 6px 28px 6px 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #ffffff; /* ✅ WHITE TEXT */
+          padding: 6px 28px 6px 34px; /* ✅ Extra left padding to make space for absolute SVG logo */
           border-radius: 8px;
           font-family: Inter, sans-serif;
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 13px;
+          font-weight: 600;
           cursor: pointer;
           outline: none;
           transition: all 0.2s;
-          background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20stroke%3D%22%23ff6b35%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+          background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20stroke%3D%22%23aaa%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
           background-repeat: no-repeat;
-          background-position: right 6px center;
+          background-position: right 8px center;
           background-size: 14px;
         }
         .pro-lang-select:hover {
-          background: rgba(255, 107, 53, 0.1);
-          border-color: rgba(255, 107, 53, 0.5);
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
         }
         .pro-lang-select option {
           background: #1a1a1a;

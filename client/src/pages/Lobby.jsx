@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Helmet } from 'react-helmet-async' // 🔥 SEO ke liye Helmet import kiya
+import { Helmet } from 'react-helmet-async'
 import Matchmaking from '../components/battle/Matchmaking'
 import API_URL from '../config/api'
 
@@ -202,7 +202,10 @@ export default function Lobby() {
   // ✅ Premium States
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [paymentProcessing, setPaymentProcessing] = useState(false)
-  const [hoveredCard, setHoveredCard] = useState(null)
+  
+  // 🔥 Search Feature States
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
 
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
   const initials = (user?.username || 'PL').slice(0, 2).toUpperCase()
@@ -268,6 +271,21 @@ export default function Lobby() {
     (diff === 'All' || p.difficulty === diff) &&
     (topic === 'All' || p.category === topic)
   )
+
+  // 🔥 Real-time Search Handler
+  const handleSearch = async (val) => {
+    setSearchQuery(val)
+    if (val.length < 2) { setSearchResults([]); return }
+
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${API_URL}/api/users/search?query=${val}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+      const data = await res.json()
+      setSearchResults(data)
+    } catch (err) { console.error(err) }
+  }
 
   const handlePayment = async (planDetails) => {
     const token = localStorage.getItem('token');
@@ -393,21 +411,18 @@ export default function Lobby() {
   return (
     <div className="lobby-wrapper">
       
-      {/* 👇🔥 DYNAMIC SEO TAGS 🔥👇 */}
       <Helmet>
         <title>{tab === 'puzzles' ? 'Daily Puzzles | CodeArena' : 'Battle Arena | CodeArena'}</title>
         <meta name="description" content="Choose your training mode. Master algorithms with structured tracks, solve daily puzzles, or test your speed with live coding battles on CodeArena." />
-        <meta name="keywords" content="coding arena, multiplayer coding, daily coding puzzles, live coding battles, dsa practice, codearena lobby" />
       </Helmet>
-      {/* 👆🔥 DYNAMIC SEO TAGS 🔥👆 */}
 
       {showMatchmaking && <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} selectedProblem={matchmakingMode === 'ranked' ? rankedSelected : null} mode={matchmakingMode} />}
       
-      {showRankedList && <ProblemModal title="🎯 Ranked Arena — Select Problem" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} />}
+      {showRankedList && <ProblemModal title="🎯 Ranked Arena" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} />}
       
-      {showPracticeList && <ProblemModal title="🧠 Practice Mode — Select Problem" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
+      {showPracticeList && <ProblemModal title="🧠 Practice Mode" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
 
-      {/* ✅ 100% FIXED WHITE SAAS MODAL (Pure CSS hovers, No React State Lag) */}
+      {/* Premium Modal */}
       {showPremiumModal && (
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -417,25 +432,14 @@ export default function Lobby() {
             initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="premium-modal"
           >
-            {/* Close Button */}
             <button onClick={() => setShowPremiumModal(false)} className="close-btn">✕</button>
-
-            {/* Radial Background Glow */}
             <div className="radial-glow" />
-
-            {/* Left Side Typography */}
             <div className="modal-left">
-              <div className="icon-box">
-                <span style={{ fontSize: 28 }}>⚡</span>
-              </div>
+              <div className="icon-box"><span style={{ fontSize: 28 }}>⚡</span></div>
               <h2 className="title-bold">Pricing<br/>Cards</h2>
               <p className="subtitle-gray">By Notes 'n Frames</p>
             </div>
-
-            {/* Right Side Cards Area */}
             <div className="modal-right">
-              
-              {/* Card 1: Free Plan */}
               <div className="saas-card">
                 <div className="card-top-bar" style={{ background: '#500e24' }}>For one person</div>
                 <div className="card-content">
@@ -444,15 +448,11 @@ export default function Lobby() {
                   <div className="billed-label">Billed annually</div>
                   <div className="price-text">₹0<span>/Month</span></div>
                   <p className="desc-text" style={{ padding: '0 10px', marginTop: 12 }}>Design anything and bring your ideas to life.</p>
-                  
-                  {/* No bullets in free plan as requested */}
                   <div style={{ flex: 1 }}></div>
-                  
                   <button onClick={() => setShowPremiumModal(false)} className="saas-btn">Get Started</button>
                 </div>
               </div>
 
-              {/* Card 2: Pro Plan (Highlighted) */}
               <div className="saas-card saas-card-pro">
                 <div className="card-top-bar" style={{ background: '#f59e0b' }}>For one person | Most Popular</div>
                 <div className="most-popular-badge">MOST POPULAR</div>
@@ -463,7 +463,6 @@ export default function Lobby() {
                   <div className="price-text">₹599<span>/Month</span></div>
                   <div className="strikethrough-text">₹1200/Year</div>
                   <p className="desc-text" style={{ padding: '0 10px' }}>Unlock more powerful design tools and coding battles.</p>
-                  
                   <div className="feature-heading">In addition to free, you'll get:</div>
                   <div className="feature-list">
                     {['Unlimited premium templates', 'Real-time 1v1 coding battles', 'Live multiplayer matchmaking', 'Global ELO leaderboard', '20 GB of cloud storage'].map(f => (
@@ -477,7 +476,6 @@ export default function Lobby() {
                 </div>
               </div>
 
-              {/* Card 3: Yearly Plan */}
               <div className="saas-card">
                 <div className="card-top-bar" style={{ background: '#500e24' }}>Unbeatable Value</div>
                 <div className="card-content">
@@ -486,7 +484,6 @@ export default function Lobby() {
                   <div className="billed-label">Billed annually</div>
                   <div className="price-text">₹5999<span>/Year</span></div>
                   <p className="desc-text" style={{ padding: '0 10px', marginTop: 12, marginBottom: 28 }}>For long-term mastery and coding enthusiasts.</p>
-                  
                   <div className="feature-heading">In addition to pro, you'll get:</div>
                   <div className="feature-list" style={{ marginBottom: 32 }}>
                     {['Real-time collaborative editing', 'Live spectator mode (Coming Soon)', 'Priority zero-latency servers', 'Edit, comment and collaborate in real time', '1 TB of cloud storage'].map(f => (
@@ -496,14 +493,12 @@ export default function Lobby() {
                       </div>
                     ))}
                   </div>
-                  
                   <div style={{ marginTop: 'auto', width: '100%' }}>
                     <button onClick={() => handlePayment({ id: 'yearly', name: 'Yearly Plan', amount: 5999 })} disabled={paymentProcessing} className="saas-btn" style={{ marginBottom: 12 }}>{paymentProcessing ? 'Processing...' : 'Buy Now'}</button>
                     <div className="contact-sales">Contact Sales</div>
                   </div>
                 </div>
               </div>
-
             </div>
           </motion.div>
         </motion.div>
@@ -524,6 +519,47 @@ export default function Lobby() {
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>
         <div style={{ flex: 1 }} />
+
+        {/* 🔥 REAL-TIME SEARCH BAR 🔥 */}
+        <div style={{ position: 'relative', width: '220px', marginRight: '16px' }}>
+          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#888' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Search player..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{
+              width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '20px', padding: '8px 12px 8px 32px', color: '#fff', fontSize: '12px', outline: 'none', transition: 'all 0.2s', fontFamily: 'Inter'
+            }}
+            onFocus={(e) => e.target.style.borderColor = 'rgba(255,107,53,0.4)'}
+            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; setTimeout(() => setSearchResults([]), 200) }}
+          />
+          {searchResults.length > 0 && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: '#16161a',
+              borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', zIndex: 100, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
+            }}>
+              {searchResults.map(u => (
+                <div
+                  key={u.username}
+                  onClick={() => { navigate(`/profile/${u.username}`); setSearchResults([]); setSearchQuery(''); }}
+                  style={{ padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #ff6b35, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                    {u.username.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div style={{ overflow: 'hidden' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.username}</div>
+                    <div style={{ fontSize: '10px', color: '#888' }}>{u.rank} · {u.elo} ELO</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         
         {!user?.isPremium && (
           <button onClick={() => setShowPremiumModal(true)} style={{ 
@@ -865,7 +901,7 @@ export default function Lobby() {
           font-family: Inter, sans-serif; color: var(--text-main); position: relative; overflow-x: hidden;
         }
 
-        /* ✅ 100% PERFECT SAAS MODAL CSS */
+        /* SAAS MODAL CSS */
         .premium-overlay {
           position: fixed; inset: 0; z-index: 9999;
           background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
@@ -905,7 +941,6 @@ export default function Lobby() {
           transform: scale(1.05); z-index: 5; flex: 1.1; display: flex; flex-direction: column; cursor: default; min-height: 560px;
         }
         
-        /* HOVER EFFECTS - Controlled via CSS to avoid React Margin Bugs */
         .saas-card:hover {
           transform: scale(1.05); box-shadow: 0 20px 40px rgba(244, 63, 94, 0.15); border-color: #f43f5e; z-index: 10;
         }
@@ -913,7 +948,6 @@ export default function Lobby() {
           transform: scale(1.08); box-shadow: 0 25px 50px rgba(251, 146, 60, 0.25); z-index: 10;
         }
 
-        /* CARD INTERNALS */
         .card-top-bar { color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
         .most-popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #ff6b35; color: #fff; font-size: 11px; font-weight: 800; padding: 6px 16px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
         .card-content { padding: 24px 20px; display: flex; flex-direction: column; flex: 1; align-items: center; text-align: center; }
@@ -929,7 +963,6 @@ export default function Lobby() {
         .check-icon { width: 12px; height: 12px; border-radius: 50%; background: #22c55e; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
         .feature-item span { font-size: 10px; color: #4b5563; line-height: 1.4; font-weight: 500; }
         
-        /* BUTTONS */
         .saas-btn {
           width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
           cursor: pointer; transition: all 0.3s ease; border: 1px solid #d1d5db; background: #fff; color: #374151; font-family: Inter, sans-serif;
@@ -938,7 +971,6 @@ export default function Lobby() {
           width: 100%; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 13px;
           cursor: pointer; transition: all 0.3s ease; border: none; background: #f43f5e; color: #fff; font-family: Inter, sans-serif;
         }
-        /* Make any hovered card's button turn Red/Pink like the Pro button */
         .saas-card:hover .saas-btn {
           background: #f43f5e; color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
         }
@@ -964,6 +996,7 @@ export default function Lobby() {
         .rank-icon { font-size: 11px; color: #d97706; font-weight: 600; padding-right: 8px; border-right: 1px solid rgba(255,255,255,0.1); }
         .avatar { width: 22px; height: 22px; border-radius: 50%; background: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
         .username { font-size: 12px; font-weight: 600; }
+        
         .lobby-container { max-width: 900px; margin: 0 auto; padding: 60px 24px; position: relative; z-index: 10; }
         .lobby-header { text-align: center; margin-bottom: 40px; }
         .page-title { font-size: 32px; font-weight: 700; color: #fff; margin: 0 0 12px 0; letter-spacing: -0.5px; }
@@ -1003,6 +1036,7 @@ export default function Lobby() {
         .btn-primary-full { width: 100%; background: #ff6b35; color: white; border: none; border-radius: 10px; padding: 14px 0; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: Inter; }
         .btn-primary-full:hover:not(.disabled) { background: #ea580c; }
         .btn-primary-full.disabled { background: rgba(255,255,255,0.05); color: #555; cursor: not-allowed; transform: none; }
+        
         .join-container { max-width: 460px; margin: 0 auto; padding: 40px; text-align: center; }
         .join-icon { width: 64px; height: 64px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
         .join-title { font-family: Outfit; font-size: 24px; font-weight: 800; margin: 0 0 8px 0; color: #fff; }
@@ -1010,9 +1044,10 @@ export default function Lobby() {
         .join-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 14px; font-size: 16px; color: #fff; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: 2px; outline: none; margin-bottom: 20px; transition: border 0.2s; }
         .join-input:focus { border-color: var(--orange); }
         .join-hint { margin-top: 20px; font-size: 12px; color: #555; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; }
+        
         @media (max-width: 800px) { .mode-grid { grid-template-columns: 1fr; } .create-grid { grid-template-columns: 1fr; } .page-title { font-size: 32px; } }
 
-        /* ✅ Puzzles Section CSS */
+        /* Puzzles Section CSS */
         .puzzles-section { width: 100%; margin-top: 10px; animation: fadeIn 0.3s ease-out; }
         .puzzles-header { margin-bottom: 24px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px; }
         .section-title { font-size: 20px; font-weight: 600; color: #fff; margin: 0 0 4px 0; }
@@ -1036,13 +1071,9 @@ export default function Lobby() {
         .puzzle-points { font-weight: 800; font-family: 'JetBrains Mono', monospace; }
         
         .btn-puzzle { width: 100%; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-top: auto; font-family: Inter, sans-serif; }
-        
-        /* ✅ FIX: Hover over Solve Now Button */
         .btn-puzzle:hover { background: #ff6b35 !important; color: #fff !important; border-color: #ff6b35 !important; box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important; transform: translateY(-2px); }
-        
         .btn-puzzle-solved { width: 100%; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: var(--green); padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: not-allowed; margin-top: auto; font-family: Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        /* Sprint Progress Bar */
         .sprint-progress-bar { background: #16161a; border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; }
         .sprint-progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .sprint-label { font-size: 14px; font-weight: 700; color: #f8fafc; }

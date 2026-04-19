@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async' // 🔥 SEO Import
+import { useNavigate, useParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async' 
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -36,7 +36,6 @@ const diffColor = {
   Hard: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', stroke: '#ef4444' },
 }
 
-// ✅ Circular progress SVG component
 const CircleChart = ({ wins, losses, total, easyWins, medWins, hardWins }) => {
   const r = 54
   const cx = 70
@@ -59,7 +58,6 @@ const CircleChart = ({ wins, losses, total, easyWins, medWins, hardWins }) => {
 
   return (
     <svg width={140} height={140} style={{ transform: 'rotate(-90deg)' }}>
-      {/* Background circle */}
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={10} />
       {total === 0 ? (
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={10} strokeDasharray={`${circ * 0.98} ${circ * 0.02}`} />
@@ -77,7 +75,6 @@ const CircleChart = ({ wins, losses, total, easyWins, medWins, hardWins }) => {
   )
 }
 
-// ✅ New Topic Mastery Radar Chart Component
 const TopicRadarChart = ({ data }) => {
   const size = 260;
   const center = size / 2;
@@ -92,7 +89,6 @@ const TopicRadarChart = ({ data }) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '10px 0' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Radar Grid */}
         {[0.2, 0.4, 0.6, 0.8, 1].map(scale => (
           <polygon
             key={scale}
@@ -101,18 +97,14 @@ const TopicRadarChart = ({ data }) => {
             stroke="rgba(255,255,255,0.08)" strokeWidth="1"
           />
         ))}
-        {/* Axes */}
         {angles.map((a, i) => (
           <line key={i} x1={center} y1={center} x2={center + maxRadius * Math.cos(a)} y2={center + maxRadius * Math.sin(a)} stroke="rgba(255,255,255,0.06)" />
         ))}
-        {/* Data Shape */}
         <polygon points={points} fill="rgba(255,107,53,0.25)" stroke="#ff6b35" strokeWidth="2" style={{ filter: 'drop-shadow(0 0 10px rgba(255,107,53,0.4))' }} />
-        {/* Points Dots */}
         {data.map((d, i) => {
           const r = (d.val / 100) * maxRadius;
           return <circle key={i} cx={center + r * Math.cos(angles[i])} cy={center + r * Math.sin(angles[i])} r="4" fill="#ff6b35" />
         })}
-        {/* Labels */}
         {data.map((d, i) => {
           const r = maxRadius + 25;
           const x = center + r * Math.cos(angles[i]);
@@ -126,9 +118,11 @@ const TopicRadarChart = ({ data }) => {
 
 export default function Profile() {
   const navigate = useNavigate()
+  const { username: routeUsername } = useParams() 
+  
   const [activeTab, setActiveTab] = useState('battles')
   const [showEditProfile, setShowEditProfile] = useState(false)
-  const [showAppPrefs, setShowAppPrefs] = useState(false) // New state for Gear Icon
+  const [showAppPrefs, setShowAppPrefs] = useState(false) 
   const [profileData, setProfileData] = useState(null)
   const [battles, setBattles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -136,8 +130,14 @@ export default function Profile() {
   const [copied, setCopied] = useState(false)
   const [editingBio, setEditingBio] = useState(false)
 
+  const [globalRank, setGlobalRank] = useState(0)
+  const [isFollowing, setIsFollowing] = useState(false)
+
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const [username, setUsername] = useState(storedUser?.username || 'Player')
+  const isOwnProfile = !routeUsername || routeUsername === storedUser?.username 
+  const targetUsername = routeUsername || storedUser?.username
+
+  const [username, setUsername] = useState(targetUsername || 'Player')
   const [bio, setBio] = useState('')
   const [github, setGithub] = useState('')
   const [linkedin, setLinkedin] = useState('')
@@ -148,16 +148,17 @@ export default function Profile() {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (!token) { navigate('/auth'); return }
+    if (!token && isOwnProfile) { navigate('/auth'); return }
 
     const fetchData = async () => {
+      setLoading(true)
       try {
-        const [pRes, bRes] = await Promise.all([
-          fetch(`${API_URL}/api/users/profile`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_URL}/api/users/battles`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ])
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+        
+        // Fetch Target Profile
+        const pRes = await fetch(`${API_URL}/api/users/profile/${targetUsername}`, { headers })
         const pData = await pRes.json()
-        const bData = await bRes.json()
+        
         if (pData.user) {
           setProfileData(pData.user)
           setUsername(pData.user.username || '')
@@ -168,14 +169,31 @@ export default function Profile() {
           setEducation(pData.user.education || '')
           setCompany(pData.user.company || '')
           setSelectedLangs(pData.user.languages?.length ? pData.user.languages : ['javascript'])
-          localStorage.setItem('user', JSON.stringify(pData.user))
+          
+          setGlobalRank(pData.globalRank || 0)
+
+          const myId = storedUser._id || storedUser.id
+          if (myId && pData.user.followers) {
+            const alreadyFollowing = pData.user.followers.some(f => f._id === myId || f === myId)
+            setIsFollowing(alreadyFollowing)
+          }
+
+          if (isOwnProfile) {
+            localStorage.setItem('user', JSON.stringify(pData.user))
+          }
+
+          // 🔥 FIXED: Extract Battles from the Target User's Profile Data directly!
+          if (pData.user.matchHistory) {
+            setBattles([...pData.user.matchHistory].reverse())
+          } else {
+            setBattles([])
+          }
         }
-        if (bData.battles) setBattles(bData.battles)
       } catch (err) { console.error(err) }
       finally { setLoading(false) }
     }
     fetchData()
-  }, [])
+  }, [targetUsername])
 
   const saveProfile = async () => {
     setSaving(true)
@@ -187,10 +205,39 @@ export default function Profile() {
         body: JSON.stringify({ username, bio, github, linkedin, website, education, company, languages: selectedLangs })
       })
       const data = await res.json()
-      if (data.user) { setProfileData(data.user); localStorage.setItem('user', JSON.stringify(data.user)) }
+      if (data.user) { 
+        setProfileData(data.user); 
+        localStorage.setItem('user', JSON.stringify(data.user)) 
+      }
       setShowEditProfile(false)
     } catch (err) { console.error(err) }
     setSaving(false)
+  }
+
+  const handleFollowToggle = async () => {
+    try {
+      const endpoint = isFollowing ? 'unfollow' : 'follow'
+      const token = localStorage.getItem('token')
+      if (!token) { navigate('/auth'); return; }
+
+      const res = await fetch(`${API_URL}/api/users/${endpoint}/${profileData._id}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (res.ok) {
+        setIsFollowing(!isFollowing)
+        setProfileData(prev => {
+          const myId = storedUser._id || storedUser.id
+          const newFollowers = isFollowing 
+            ? prev.followers.filter(f => (f._id || f) !== myId) 
+            : [...(prev.followers || []), { _id: myId }]
+          return { ...prev, followers: newFollowers }
+        })
+      }
+    } catch (err) {
+      console.error('Follow action failed', err)
+    }
   }
 
   const handleLogout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/auth') }
@@ -222,11 +269,10 @@ export default function Profile() {
   const tier = getTier(elo)
   const tierProgress = tier.nextElo && tier.prevElo ? Math.round(((elo - tier.prevElo) / (tier.nextElo - tier.prevElo)) * 100) : 100
   
-  // Dummy Social/Rank stats if not available in API yet
-  const followers = user?.followersCount || 142
-  const following = user?.followingCount || 38
-  const globalRank = user?.globalRank || 4231
+  const followersCount = user?.followers?.length || 0
+  const followingCount = user?.following?.length || 0
 
+  // Calculation for individual problem difficulties (Easy/Medium/Hard)
   const diffWins = battles.reduce((acc, b) => {
     if (b.result === 'win') acc[b.difficulty] = (acc[b.difficulty] || 0) + 1
     return acc
@@ -242,7 +288,6 @@ export default function Profile() {
     return acc
   }, {})
 
-  // Calculate Primary Weapon
   let primaryWeaponKey = selectedLangs[0] || 'javascript';
   let maxWins = -1;
   Object.entries(langWinsMap).forEach(([lang, w]) => {
@@ -250,9 +295,8 @@ export default function Profile() {
   })
   const primaryWeapon = LANGS.find(l => l.id === primaryWeaponKey)
 
-  // ✅ REAL GITHUB-STYLE MATRIX LOGIC
   const todayDate = new Date()
-  todayDate.setHours(0, 0, 0, 0) // Midnight set kiya taaki accurate din aaye
+  todayDate.setHours(0, 0, 0, 0)
 
   const heatmapData = Array(365).fill(0)
   
@@ -269,19 +313,16 @@ export default function Profile() {
     }
   })
 
-  // GitHub ki tarah Grid align karna (Row 0 = Sunday)
   const oneYearAgo = new Date(todayDate)
   oneYearAgo.setDate(todayDate.getDate() - 364)
   const startDayOfWeek = oneYearAgo.getDay() 
 
-  // Shuru mein khaali dabbe daale taaki array Sunday se shuru ho
   const paddedData = Array(startDayOfWeek).fill(-1).concat(heatmapData)
   const weeks = []
   for (let i = 0; i < paddedData.length; i += 7) {
     weeks.push(paddedData.slice(i, i + 7))
   }
 
-  // Mahine (Months) ab automatic set honge real date ke hisaab se
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const dynamicMonths = []
   for(let i = 11; i >= 0; i--) {
@@ -302,7 +343,6 @@ export default function Profile() {
     { icon: '👑', title: 'Grandmaster', desc: 'Reach 2000 ELO', unlocked: elo >= 2000 },
   ]
 
-  // Dummy data for Radar Chart
   const masteryData = [
     { label: 'Arrays', val: 85 },
     { label: 'Strings', val: 70 },
@@ -323,22 +363,17 @@ export default function Profile() {
   return (
     <div className="profile-container" style={{ minHeight: '100vh', background: '#0a0a0c', fontFamily: 'Inter, sans-serif', color: '#e5e5e5', position: 'relative' }}>
 
-      {/* 👇🔥 SEO TAGS START 🔥👇 */}
       <Helmet>
         <title>{username ? `${username} | CodeArena Profile` : 'Player Profile | CodeArena'}</title>
         <meta name="description" content={`Check out ${username || 'this player'}'s CodeArena stats. Current ELO: ${elo} (${tier.name}). Total Battles: ${total}, Win Rate: ${winRate}%.`} />
-        <meta name="keywords" content={`coding profile, ${username}, codearena, competitive programming, 1v1 coding, ${primaryWeapon?.label || 'developer'}`} />
       </Helmet>
-      {/* 👆🔥 SEO TAGS END 🔥👆 */}
 
-      {/* ✅ Enhanced Ambient Glow */}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
         <div className="ambient-glow-1" style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50vw', height: '50vw', minWidth: '600px', minHeight: '600px', background: 'radial-gradient(circle, rgba(255,107,53,0.22) 0%, transparent 70%)', filter: 'blur(80px)', borderRadius: '50%' }} />
         <div className="ambient-glow-2" style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '60vw', height: '60vw', minWidth: '700px', minHeight: '700px', background: 'radial-gradient(circle, rgba(247,69,29,0.15) 0%, transparent 70%)', filter: 'blur(100px)', borderRadius: '50%' }} />
       </div>
 
-      {/* ✅ Edit Profile Modal */}
-      {showEditProfile && (
+      {showEditProfile && isOwnProfile && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(16px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#13131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '90%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -346,19 +381,16 @@ export default function Profile() {
               <button onClick={() => setShowEditProfile(false)} style={{ background: 'none', border: 'none', color: '#555', fontSize: 20, cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {/* Username */}
               <div>
                 <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>USERNAME</label>
                 <input value={username} onChange={e => setUsername(e.target.value)}
                   style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#fff', outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
               </div>
-              {/* Bio */}
               <div>
                 <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>BIO</label>
                 <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell the arena about yourself..." rows={3}
                   style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#fff', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
               </div>
-              {/* Education & Company */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 {[
                   { label: 'EDUCATION', val: education, set: setEducation, ph: 'e.g. IIT Bombay' },
@@ -371,7 +403,6 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
-              {/* Social Links */}
               <div>
                 <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>SOCIAL LINKS</label>
                 {[
@@ -386,7 +417,6 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
-              {/* Languages */}
               <div>
                 <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>LANGUAGES</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -411,8 +441,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* ✅ Application Settings Modal (From Gear Icon) */}
-      {showAppPrefs && (
+      {showAppPrefs && isOwnProfile && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(16px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#13131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '90%', maxWidth: 440, overflow: 'hidden' }}>
             <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
@@ -458,7 +487,7 @@ export default function Profile() {
         <button onClick={handleShare} style={{ background: copied ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${copied ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`, color: copied ? '#22c55e' : '#a1a1aa', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
           {copied ? '✓ Copied!' : '↗ Share'}
         </button>
-        <button onClick={() => setShowAppPrefs(true)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>
+        {isOwnProfile && <button onClick={() => setShowAppPrefs(true)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>}
         <button onClick={() => navigate('/lobby')} style={{ background: '#ff6b35', color: '#fff', border: 'none', padding: '6px 18px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Battle</button>
       </nav>
 
@@ -467,7 +496,6 @@ export default function Profile() {
         {/* ✅ LEFT SIDEBAR */}
         <div className="profile-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          {/* Avatar + Basic Info */}
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '36px 28px', textAlign: 'center', position: 'relative' }}>
             <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 20px' }}>
               <div style={{
@@ -488,22 +516,22 @@ export default function Profile() {
               <span style={{ fontSize: 12, fontWeight: 700, color: tier.color }}>{tier.name}</span>
             </div>
 
-            {/* ✅ Social Stats / Followers */}
+            {/* ✅ REAL Social Stats */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                <div style={{ cursor: 'pointer' }}>
-                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{followers}</div>
+                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{followersCount}</div>
                  <div style={{ fontSize: 11, color: '#666', fontWeight: 600 }}>Followers</div>
                </div>
                <div style={{ width: 1, background: 'rgba(255,255,255,0.05)' }} />
                <div style={{ cursor: 'pointer' }}>
-                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{following}</div>
+                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{followingCount}</div>
                  <div style={{ fontSize: 11, color: '#666', fontWeight: 600 }}>Following</div>
                </div>
             </div>
 
             {!editingBio ? (
-              <p onClick={() => setEditingBio(true)} style={{ fontSize: 13, color: bio ? '#aaa' : '#555', cursor: 'pointer', marginBottom: 16, lineHeight: 1.5 }}>
-                {bio || '+ Add a bio...'}
+              <p onClick={() => isOwnProfile && setEditingBio(true)} style={{ fontSize: 13, color: bio ? '#aaa' : '#555', cursor: isOwnProfile ? 'pointer' : 'default', marginBottom: 16, lineHeight: 1.5 }}>
+                {bio || (isOwnProfile ? '+ Add a bio...' : 'No bio yet.')}
               </p>
             ) : (
               <textarea value={bio} onChange={e => setBio(e.target.value)}
@@ -512,9 +540,16 @@ export default function Profile() {
                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: 8, padding: '8px', fontSize: 13, color: '#fff', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box', marginBottom: 12 }} />
             )}
 
-            <button onClick={() => setShowEditProfile(true)} style={{ width: '100%', background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)', color: '#ff6b35', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
-              ✏️ Edit Profile
-            </button>
+            {/* 🔥 DYNAMIC BUTTON (EDIT VS FOLLOW) */}
+            {isOwnProfile ? (
+              <button onClick={() => setShowEditProfile(true)} style={{ width: '100%', background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)', color: '#ff6b35', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
+                ✏️ Edit Profile
+              </button>
+            ) : (
+              <button onClick={handleFollowToggle} style={{ width: '100%', background: isFollowing ? 'transparent' : 'rgba(255,107,53,0.15)', border: `1px solid ${isFollowing ? 'rgba(255,255,255,0.2)' : 'rgba(255,107,53,0.4)'}`, color: isFollowing ? '#aaa' : '#ff6b35', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
+                {isFollowing ? 'Unfollow' : 'Follow +'}
+              </button>
+            )}
           </div>
 
           {/* Info Card */}
@@ -536,7 +571,7 @@ export default function Profile() {
                 {linkedin && <a href={`https://${linkedin}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#666', textDecoration: 'none' }}>💼 <span style={{ color: '#60a5fa' }}>{linkedin}</span></a>}
                 {website && <a href={`https://${website}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#666', textDecoration: 'none' }}>🌐 <span style={{ color: '#60a5fa' }}>{website}</span></a>}
               </div>
-            ) : (
+            ) : isOwnProfile && (
               <button onClick={() => setShowEditProfile(true)} style={{ marginTop: 8, fontSize: 12, color: '#444', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add social links</button>
             )}
           </div>
@@ -545,7 +580,6 @@ export default function Profile() {
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '22px 24px' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 14 }}>Languages</div>
             
-            {/* ✅ Primary Weapon Badge */}
             {primaryWeapon && (
                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, marginBottom: 16 }}>
                  <div style={{ fontSize: 20 }}>⚔️</div>
@@ -561,21 +595,21 @@ export default function Profile() {
                 {selectedLangs.map(id => {
                   const l = LANGS.find(x => x.id === id)
                   if (!l) return null
-                  const wins = langWinsMap[id] || 0
+                  const languageWins = langWinsMap[id] || 0
                   return (
                     <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
                         <span style={{ fontSize: 13, color: '#aaa' }}>{l.label}</span>
                       </div>
-                      {wins > 0 && (
-                        <span style={{ fontSize: 12, color: '#555' }}>{wins} wins</span>
+                      {languageWins > 0 && (
+                        <span style={{ fontSize: 12, color: '#555' }}>{languageWins} wins</span>
                       )}
                     </div>
                   )
                 })}
               </div>
-            ) : (
+            ) : isOwnProfile && (
               <button onClick={() => setShowEditProfile(true)} style={{ fontSize: 12, color: '#444', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add languages</button>
             )}
           </div>
@@ -585,7 +619,6 @@ export default function Profile() {
         {/* ✅ RIGHT MAIN CONTENT */}
         <div className="profile-content" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Battle Stats Card */}
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '28px', display: 'grid', gridTemplateColumns: 'min-content 1fr', gap: 32, alignItems: 'center' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -612,10 +645,9 @@ export default function Profile() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Tier Card with Global Rank */}
+              {/* ✅ REAL Global Rank */}
               <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${tier.color}40`, borderRadius: 16, padding: '20px 24px', position: 'relative' }}>
                 
-                {/* Global Rank Position */}
                 <div style={{ position: 'absolute', top: 20, right: 24, textAlign: 'right' }}>
                    <div style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Global Rank</div>
                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 20, fontWeight: 800, color: '#fff' }}>#{globalRank.toLocaleString()}</div>
@@ -639,7 +671,6 @@ export default function Profile() {
                 )}
               </div>
 
-              {/* Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {[
                   { label: 'Win Rate', val: `${winRate}%`, color: '#fb923c' },
@@ -656,7 +687,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Badges preview */}
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px 28px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontWeight: 700, color: '#fff', fontSize: 14 }}>Badges</span>
@@ -678,7 +708,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Heatmap */}
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '28px', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -695,12 +724,8 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* ✅ MAIN GRAPH AREA (WITH LEFT LABELS) */}
             <div style={{ display: 'flex', gap: 10 }}>
-              
-              {/* Left Sidebar for Days (Mon, Wed, Fri) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 20 }}>
-                {/* Array: Sun(0), Mon(1), Tue(2), Wed(3), Thu(4), Fri(5), Sat(6) */}
                 {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((day, idx) => (
                   <div key={idx} style={{ height: 14, width: 24, fontSize: 10, color: '#666', fontFamily: 'Inter', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                     {day}
@@ -708,17 +733,13 @@ export default function Profile() {
                 ))}
               </div>
 
-              {/* Right Side: The Actual Matrix */}
               <div style={{ flex: 1, overflowX: 'auto', paddingBottom: 8 }}>
-                
-                {/* Dynamic Months Header */}
                 <div style={{ display: 'flex', gap: 3, marginBottom: 6, paddingLeft: 2 }}>
                   {dynamicMonths.map((m, i) => (
                     <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
                   ))}
                 </div>
 
-                {/* ✅ Real GitHub Grid Structure */}
                 <div style={{ display: 'flex', gap: 4 }}>
                   {weeks.map((weekData, weekIdx) => (
                     <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -740,7 +761,6 @@ export default function Profile() {
                     </div>
                   ))}
                 </div>
-
               </div>
             </div>
             
@@ -776,7 +796,7 @@ export default function Profile() {
                   <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
                   <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#888' }}>No battles yet!</div>
                   <div style={{ fontSize: 13, color: '#555', marginBottom: 24 }}>Enter the arena and start your coding combat journey</div>
-                  <button onClick={() => navigate('/lobby')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', cursor: 'pointer', fontWeight: 700, fontFamily: 'Inter', fontSize: 14, boxShadow: '0 8px 24px rgba(255,107,53,0.3)', transition: 'all 0.3s' }}>⚡ Enter Arena</button>
+                  {isOwnProfile && <button onClick={() => navigate('/lobby')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', cursor: 'pointer', fontWeight: 700, fontFamily: 'Inter', fontSize: 14, boxShadow: '0 8px 24px rgba(255,107,53,0.3)', transition: 'all 0.3s' }}>⚡ Enter Arena</button>}
                 </div>
               ) : battles.map((b, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 130px 90px 70px 90px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', transition: 'all 0.2s' }}
@@ -797,7 +817,7 @@ export default function Profile() {
                     <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #334155, #0f172a)', border: '1px solid rgba(71,85,105,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>
                       {(b.opponent || 'OP').slice(0, 2).toUpperCase()}
                     </div>
-                    <span style={{ fontSize: 12, color: '#888' }}>{b.opponent || 'Unknown'}</span>
+                    <span onClick={() => navigate(`/profile/${b.opponent}`)} style={{ fontSize: 12, color: '#888', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color='#fff'} onMouseLeave={e => e.currentTarget.style.color='#888'}>{b.opponent || 'Unknown'}</span>
                   </div>
                   <div>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: diffColor[b.difficulty]?.bg, color: diffColor[b.difficulty]?.color, border: `1px solid ${diffColor[b.difficulty]?.color}30` }}>
@@ -842,7 +862,6 @@ export default function Profile() {
           {activeTab === 'stats' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               
-              {/* Topic Mastery Radar Chart */}
               <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '24px 28px', gridColumn: '1 / -1', boxShadow: '0 20px 48px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '30%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,53,0.4), transparent)' }} />
                 <div style={{ fontWeight: 800, color: '#fff', marginBottom: 10, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Topic Mastery</div>
@@ -925,7 +944,6 @@ export default function Profile() {
       </div>
       
       <style>{`
-        /* Background breathing animations */
         @keyframes pulseGlow {
           0% { transform: scale(1) translate(0, 0); opacity: 0.6; }
           50% { transform: scale(1.1) translate(-20px, 20px); opacity: 0.9; }
@@ -938,7 +956,6 @@ export default function Profile() {
           animation: pulseGlow 12s infinite alternate-reverse ease-in-out;
         }
 
-        /* Sidebar card hover */
         .profile-sidebar > div {
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
@@ -947,7 +964,6 @@ export default function Profile() {
           background: rgba(22, 22, 26, 0.75) !important;
         }
 
-        /* Right side cards hover */
         .profile-content > div {
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
@@ -955,7 +971,6 @@ export default function Profile() {
           border-color: rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* Stat cards inner hover */
         .stat-card {
           transition: all 0.2s !important;
         }
@@ -964,7 +979,6 @@ export default function Profile() {
           border-color: rgba(255,255,255,0.1) !important;
         }
 
-        /* Battle history rows */
         .profile-container [style*="borderBottom: '1px solid rgba(255,255,255"] {
           transition: background 0.2s ease;
         }

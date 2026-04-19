@@ -17,10 +17,14 @@ const getRankFromElo = (elo) => {
   return RANKS.find(r => elo >= r.minElo && elo <= r.maxElo) || RANKS[0]
 }
 
-// ✅ GET Profile
+// ✅ GET Own Profile (Logged in user)
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('-password -otp -otpExpiry')
+    const user = await User.findById(req.userId)
+      .select('-password -otp -otpExpiry')
+      .populate('followers', 'username') // Added populate
+      .populate('following', 'username') // Added populate
+
     if (!user) return res.status(404).json({ message: 'User not found' })
     // Attach rank info
     const rank = getRankFromElo(user.elo)
@@ -29,6 +33,82 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+// 🔥 NEW: GET Public Profile & Global Rank (By Username) 🔥
+exports.getPublicProfile = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username })
+      .select('-password -otp -otpExpiry')
+      .populate('followers', 'username')
+      .populate('following', 'username');
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Calculate Global Rank
+    const higherEloCount = await User.countDocuments({ elo: { $gt: user.elo } });
+    const globalRank = higherEloCount + 1;
+    const rankInfo = getRankFromElo(user.elo);
+
+    res.json({ user: { ...user.toObject(), rankInfo }, globalRank });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// 🔥 NEW: Follow User 🔥
+exports.followUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.userId; // Coming from authMiddleware
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself" });
+    }
+
+    await User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: currentUserId } });
+    await User.findByIdAndUpdate(currentUserId, { $addToSet: { following: targetUserId } });
+
+    res.json({ success: true, message: "Successfully followed" });
+  } catch (error) {
+    res.status(500).json({ message: "Follow failed" });
+  }
+};
+
+// 🔥 NEW: Unfollow User 🔥
+exports.unfollowUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.userId;
+
+    await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
+    await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
+
+    res.json({ success: true, message: "Successfully unfollowed" });
+  } catch (error) {
+    res.status(500).json({ message: "Unfollow failed" });
+  }
+};
+
+// 🔥 NEW: Search Users for Frontend Dropdown 🔥
+exports.searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.json([]);
+
+    // 'i' means case-insensitive search
+    const users = await User.find({ 
+      username: { $regex: query, $options: 'i' } 
+    })
+    .limit(5) // Just sending top 5 matches
+    .select('username elo rank');
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Search failed' });
+  }
+};
+
 
 // ✅ GET Battle History
 exports.getBattleHistory = async (req, res) => {
@@ -141,7 +221,7 @@ exports.updateMatchResult = async (req, res) => {
   }
 }
 
-// 🔥 NEW: UPDATE Puzzle Result & XP 🔥
+// 🔥 UPDATE Puzzle Result & XP 🔥
 exports.updatePuzzleResult = async (req, res) => {
   try {
     const { puzzleId, xpEarned } = req.body;
@@ -149,7 +229,6 @@ exports.updatePuzzleResult = async (req, res) => {
 
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Prevent cheating: Check if user already solved this puzzle
     if (user.solvedPuzzles && user.solvedPuzzles.includes(puzzleId)) {
       return res.status(400).json({ success: false, message: 'Puzzle already solved' });
     }
@@ -181,9 +260,9 @@ exports.updatePuzzleResult = async (req, res) => {
 exports.getLeaderboard = async (req, res) => {
   try {
     const players = await User.find({ isVerified: true })
-      .sort({ elo: -1, puzzleXp: -1 }) // Sort by ELO first, then Puzzle XP if tie
+      .sort({ elo: -1, puzzleXp: -1 })
       .limit(100)
-      .select('username elo rank stats country createdAt puzzleXp') // Added puzzleXp here
+      .select('username elo rank stats country createdAt puzzleXp')
 
     const leaderboard = players.map((p, i) => {
       const rankInfo = getRankFromElo(p.elo)
@@ -194,7 +273,7 @@ exports.getLeaderboard = async (req, res) => {
         rank: i + 1,
         username: p.username,
         elo: p.elo,
-        puzzleXp: p.puzzleXp || 0, // Sending to frontend
+        puzzleXp: p.puzzleXp || 0,
         rankName: rankInfo.name,
         rankIcon: rankInfo.icon,
         rankColor: rankInfo.color,
@@ -211,6 +290,6 @@ exports.getLeaderboard = async (req, res) => {
   }
 }
 
-// ✅ Export rank system for use in other files
+// ✅ Export rank system
 exports.getRankFromElo = getRankFromElo
 exports.RANKS = RANKS

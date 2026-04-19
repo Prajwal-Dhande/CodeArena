@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 
-export default function Timer({ initialSeconds = 600 }) {
+export default function Timer({ initialSeconds = 600, onTimeUp }) { // ✅ Added onTimeUp prop
   const [seconds, setSeconds] = useState(initialSeconds)
 
   useEffect(() => {
-    if (seconds <= 0) return
+    if (seconds <= 0) {
+      if (onTimeUp) onTimeUp(); // ✅ Trigger parent function when time is up!
+      return;
+    }
     const t = setInterval(() => setSeconds(s => s - 1), 1000)
     return () => clearInterval(t)
-  }, [seconds])
+  }, [seconds, onTimeUp]) // ✅ Added dependency
 
   const mins = String(Math.floor(seconds / 60)).padStart(2, '0')
   const secs = String(seconds % 60).padStart(2, '0')
-  const urgent = seconds < 60
+  const urgent = seconds < 60 // Aakhiri 60 seconds mein heartbeat animation chalu
 
   return (
     <div className={`timer-display ${urgent ? 'urgent' : 'normal'}`}>

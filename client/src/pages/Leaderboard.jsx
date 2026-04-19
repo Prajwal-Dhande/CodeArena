@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async' // 🔥 SEO Helmet Import
+import { Helmet } from 'react-helmet-async' 
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -24,7 +24,7 @@ export default function Leaderboard() {
   
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
 
-  // 🔥 Fetch Real Leaderboard from Database 🔥
+  // 🔥 Fetch Real Leaderboard from Database
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
@@ -64,15 +64,10 @@ export default function Leaderboard() {
   return (
     <div className="lb-wrapper">
       
-      {/* 👇🔥 DYNAMIC SEO TAGS 🔥👇 */}
       <Helmet>
         <title>Global Leaderboard | CodeArena Rankings</title>
         <meta name="description" content={`Check out the top-ranked coders on CodeArena. Current Grandmasters include ${top3[0]?.username || 'top players'} and more. Compete to get your name on the board!`} />
-        <meta name="keywords" content="coding leaderboard, codearena rankings, top developers, elo rating, coding competition, grandmaster coders" />
-        <meta property="og:title" content="CodeArena Global Leaderboard" />
-        <meta property="og:description" content="See who is leading the coding arena today. Compete in 1v1 battles and climb the ranks!" />
       </Helmet>
-      {/* 👆🔥 DYNAMIC SEO TAGS 🔥👆 */}
 
       {/* Premium Background Effects */}
       <div className="ambient-grid" />
@@ -95,7 +90,7 @@ export default function Leaderboard() {
         <div className="lb-header animate-fade-in">
           <span className="section-tag">HALL OF FAME</span>
           <h1 className="page-title text-gradient">Global Rankings</h1>
-          <p className="page-subtitle">Top coders ranked by ELO rating. Updated after every battle.</p>
+          <p className="page-subtitle">Top coders ranked by ELO rating. Click on a player to view their profile.</p>
         </div>
 
         {loading ? (
@@ -105,11 +100,15 @@ export default function Leaderboard() {
           </div>
         ) : (
           <>
-            {/* ✅ TOP 3 PODIUM (Ab hamesha dikhega, chahe 1 hi player kyun na ho) */}
+            {/* ✅ TOP 3 PODIUM - Now Clickable! */}
             {players.length > 0 && (
               <div className="podium-container">
                 {/* 2nd Place */}
-                <div className="podium-card place-2 animate-float-delay-1">
+                <div 
+                  className="podium-card place-2 animate-float-delay-1" 
+                  onClick={() => top3[1] && navigate(`/profile/${top3[1].username}`)}
+                  style={{ cursor: top3[1] ? 'pointer' : 'default' }}
+                >
                   <div className="medal">🥈</div>
                   <div className="podium-avatar silver-bg">
                     {top3[1] ? top3[1].username.slice(0, 2).toUpperCase() : '?'}
@@ -124,13 +123,17 @@ export default function Leaderboard() {
                         <span className="stat-pill bg-red-dim text-red">L: {top3[1].losses}</span>
                       </>
                     ) : (
-                      <span className="stat-pill text-muted">Waiting for player...</span>
+                      <span className="stat-pill text-muted">Waiting...</span>
                     )}
                   </div>
                 </div>
 
                 {/* 1st Place */}
-                <div className="podium-card place-1 animate-float">
+                <div 
+                  className="podium-card place-1 animate-float"
+                  onClick={() => top3[0] && navigate(`/profile/${top3[0].username}`)}
+                  style={{ cursor: top3[0] ? 'pointer' : 'default' }}
+                >
                   <div className="crown-badge">
                     <span className="crown-icon">👑</span> GRANDMASTER
                   </div>
@@ -149,7 +152,11 @@ export default function Leaderboard() {
                 </div>
 
                 {/* 3rd Place */}
-                <div className="podium-card place-3 animate-float-delay-2">
+                <div 
+                  className="podium-card place-3 animate-float-delay-2"
+                  onClick={() => top3[2] && navigate(`/profile/${top3[2].username}`)}
+                  style={{ cursor: top3[2] ? 'pointer' : 'default' }}
+                >
                   <div className="medal">🥉</div>
                   <div className="podium-avatar bronze-bg">
                     {top3[2] ? top3[2].username.slice(0, 2).toUpperCase() : '?'}
@@ -164,7 +171,7 @@ export default function Leaderboard() {
                         <span className="stat-pill bg-red-dim text-red">L: {top3[2].losses}</span>
                       </>
                     ) : (
-                      <span className="stat-pill text-muted">Waiting for player...</span>
+                      <span className="stat-pill text-muted">Waiting...</span>
                     )}
                   </div>
                 </div>
@@ -196,6 +203,7 @@ export default function Leaderboard() {
                     key={player.rank} 
                     className={`table-row animate-row ${isMe ? 'is-me' : ''}`}
                     style={{ '--delay': `${index * 0.05}s` }}
+                    onClick={() => navigate(`/profile/${player.username}`)} // 🔥 Row is now clickable
                   >
                     <div className="col-rank">
                       {player.rank <= 3 ? <span className="rank-badge-icon">{player.badge}</span> : <span className="rank-num">#{player.rank}</span>}
@@ -231,7 +239,6 @@ export default function Leaderboard() {
               </div>
             </div>
             
-            {/* Logic Fix: Only show if rank > 1 */}
             {myRank && myRank > 1 && (
               <div className="my-rank-callout glass-panel animate-pop-in">
                 <div className="callout-left">
@@ -340,7 +347,7 @@ export default function Leaderboard() {
           background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 40%);
           pointer-events: none;
         }
-        .podium-card:hover { transform: translateY(-12px) scale(1.03) !important; z-index: 10; }
+        .podium-card:hover { transform: translateY(-12px) scale(1.03) !important; z-index: 10; border-color: rgba(255,255,255,0.2); }
         
         .place-1 { 
           padding: 48px 24px; 
@@ -492,7 +499,7 @@ export default function Leaderboard() {
           background: transparent; position: relative;
         }
         .table-row:hover { 
-          background: rgba(255,255,255,0.03); 
+          background: rgba(255,255,255,0.05); 
           z-index: 2; border-bottom-color: transparent; 
         }
         .table-row:last-child { border-bottom: none; }

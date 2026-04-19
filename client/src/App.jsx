@@ -37,7 +37,12 @@ export default function App() {
           <Route path="/battle" element={<Battle />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/practice" element={<PracticeRoadmap />} />
+          
+          {/* ✅ KHUD KI PROFILE */}
           <Route path="/profile" element={<Profile />} />
+          
+          {/* 🔥 NAYA: DOOSRO KI PROFILE DEKHNE KE LIYE 🔥 */}
+          <Route path="/profile/:username" element={<Profile />} />
           
           {/* ✅ NAYA PUZZLE ROUTE YAHAN ADD KIYA */}
           <Route path="/puzzle" element={<PuzzleSolve />} />
