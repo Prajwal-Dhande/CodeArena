@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async' // 🔥 SEO ke liye Helmet import kiya
+import { Helmet } from 'react-helmet-async' // 🔥 SEO Import
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -695,37 +695,56 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Dynamic Months Header */}
-            <div style={{ display: 'flex', gap: 3, marginBottom: 6, paddingLeft: 2 }}>
-              {dynamicMonths.map((m, i) => (
-                <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
-              ))}
-            </div>
+            {/* ✅ MAIN GRAPH AREA (WITH LEFT LABELS) */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              
+              {/* Left Sidebar for Days (Mon, Wed, Fri) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 20 }}>
+                {/* Array: Sun(0), Mon(1), Tue(2), Wed(3), Thu(4), Fri(5), Sat(6) */}
+                {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((day, idx) => (
+                  <div key={idx} style={{ height: 14, width: 24, fontSize: 10, color: '#666', fontFamily: 'Inter', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                    {day}
+                  </div>
+                ))}
+              </div>
 
-            {/* ✅ Real GitHub Grid Structure */}
-            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 8 }}>
-              {weeks.map((weekData, weekIdx) => (
-                <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {weekData.map((val, dayIdx) => (
-                    val === -1 ? (
-                      <div key={dayIdx} style={{ width: 14, height: 14, background: 'transparent' }} /> 
-                    ) : (
-                      <div key={dayIdx} title={val > 0 ? `${val} battles` : 'No battles'} style={{
-                        width: 14, height: 14, borderRadius: 3,
-                        background: heatColor(val), cursor: 'pointer',
-                        transition: 'transform 0.1s, box-shadow 0.2s',
-                        boxShadow: val > 0 ? `0 0 8px ${heatColor(val)}40` : 'none'
-                      }} 
-                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
-                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                      />
-                    )
+              {/* Right Side: The Actual Matrix */}
+              <div style={{ flex: 1, overflowX: 'auto', paddingBottom: 8 }}>
+                
+                {/* Dynamic Months Header */}
+                <div style={{ display: 'flex', gap: 3, marginBottom: 6, paddingLeft: 2 }}>
+                  {dynamicMonths.map((m, i) => (
+                    <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
                   ))}
                 </div>
-              ))}
+
+                {/* ✅ Real GitHub Grid Structure */}
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {weeks.map((weekData, weekIdx) => (
+                    <div key={weekIdx} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {weekData.map((val, dayIdx) => (
+                        val === -1 ? (
+                          <div key={dayIdx} style={{ width: 14, height: 14, background: 'transparent' }} /> 
+                        ) : (
+                          <div key={dayIdx} title={val > 0 ? `${val} battles` : 'No battles'} style={{
+                            width: 14, height: 14, borderRadius: 3,
+                            background: heatColor(val), cursor: 'pointer',
+                            transition: 'transform 0.1s, box-shadow 0.2s',
+                            boxShadow: val > 0 ? `0 0 8px ${heatColor(val)}40` : 'none'
+                          }} 
+                          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                          />
+                        )
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+              </div>
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 16, fontSize: 12, color: '#666', fontFamily: 'JetBrains Mono' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12, color: '#666', fontFamily: 'JetBrains Mono' }}>
               <span>Less</span>
               {[0,1,2,3,4].map(v => <div key={v} style={{ width: 14, height: 14, borderRadius: 3, background: heatColor(v), boxShadow: v > 0 ? `0 0 8px ${heatColor(v)}40` : 'none' }} />)}
               <span>More</span>
