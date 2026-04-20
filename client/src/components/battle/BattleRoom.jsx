@@ -56,7 +56,6 @@ const DEFAULT_STARTER = {
   java: `class Solution {\n    // Your solution here\n}`,
 }
 
-// ✅ REAL LOGOS COMPONENT (SVG)
 const LanguageIcon = ({ lang }) => {
   switch (lang) {
     case 'javascript':
@@ -104,7 +103,17 @@ export default function BattleRoom() {
 
   const [problem, setProblem] = useState(null)
   const [problemLoading, setProblemLoading] = useState(true)
-  const [code, setCode] = useState(DEFAULT_STARTER.javascript)
+  
+  const [language, setLanguage] = useState(() => {
+    const roomId = getRoomId();
+    return localStorage.getItem(`codeArena_lang_${roomId}`) || 'javascript';
+  })
+
+  const [code, setCode] = useState(() => {
+    const roomId = getRoomId();
+    return localStorage.getItem(`codeArena_draft_${roomId}`) || DEFAULT_STARTER[language];
+  })
+  
   const [opponentCode, setOpponentCode] = useState('// Waiting for opponent...')
   const [results, setResults] = useState([])
   const [running, setRunning] = useState(false)
@@ -114,7 +123,6 @@ export default function BattleRoom() {
   const [oppTests, setOppTests] = useState(0)
   const [constraint, setConstraint] = useState(null)
   const [connected, setConnected] = useState(false)
-  const [language, setLanguage] = useState('javascript')
   const [activeTab, setActiveTab] = useState('problem')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiDebugHint, setAiDebugHint] = useState(null)
@@ -129,6 +137,18 @@ export default function BattleRoom() {
   const [gameResult, setGameResult] = useState(null)
   const [timeTaken, setTimeTaken] = useState(0)
 
+  // 🔥 Timer state logic fixed
+  const [timerKey, setTimerKey] = useState(0) 
+  const [remainingTime, setRemainingTime] = useState(() => {
+    const roomId = getRoomId();
+    const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
+    if (savedEndTime) {
+      const timeLeft = Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000);
+      return timeLeft > 0 ? timeLeft : 0;
+    }
+    return 600; // 10 minutes default
+  })
+
   const socketRef = useRef(null)
   const constraintTriggered = useRef(false)
   const gameOverRef = useRef(false)
@@ -141,9 +161,33 @@ export default function BattleRoom() {
   const isMatchmakingMode = mode === 'random' || mode === 'ranked'
   const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch()
 
-  // DB se problem fetch
+  // Initialize and persist Timer when battle starts
+  useEffect(() => {
+    if (battleStarted) {
+      const roomId = getRoomId();
+      const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
+      
+      if (savedEndTime) {
+        const timeLeft = Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000);
+        if (timeLeft > 0) {
+          setRemainingTime(timeLeft);
+          setTimerKey(prev => prev + 1); 
+        } else {
+          setRemainingTime(0);
+          handleTimeUp();
+        }
+      } else {
+        const newEndTime = Date.now() + 600 * 1000;
+        localStorage.setItem(`codeArena_endTime_${roomId}`, newEndTime.toString());
+        setRemainingTime(600);
+        setTimerKey(prev => prev + 1);
+      }
+    }
+  }, [battleStarted])
+
   useEffect(() => {
     const slug = getProblemSlug()
+    const roomId = getRoomId()
     const fetchProblem = async () => {
       setProblemLoading(true)
       try {
@@ -151,7 +195,11 @@ export default function BattleRoom() {
         const data = await res.json()
         if (data.problem) {
           setProblem(data.problem)
-          setCode(data.problem.starterCode?.javascript || DEFAULT_STARTER.javascript)
+          
+          const savedCode = localStorage.getItem(`codeArena_draft_${roomId}`);
+          if (!savedCode) {
+            setCode(data.problem.starterCode?.[language] || DEFAULT_STARTER[language] || DEFAULT_STARTER.javascript)
+          }
         }
       } catch (err) {
         setProblem({
@@ -160,12 +208,11 @@ export default function BattleRoom() {
           examples: [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]', explain: 'nums[0]+nums[1]=9' }],
           constraints: ['2 ≤ nums.length ≤ 10⁴'], starterCode: DEFAULT_STARTER, hints: []
         })
-        setCode(DEFAULT_STARTER.javascript)
       }
       setProblemLoading(false)
     }
     fetchProblem()
-  }, [searchParams])
+  }, [searchParams, language])
 
   useEffect(() => {
     fetch(`${API_URL}/api/problems`)
@@ -229,6 +276,13 @@ export default function BattleRoom() {
       setConnected(true)
       const user = JSON.parse(localStorage.getItem('user') || '{}')
       const roomId = getRoomId()
+      
+      const isReconnecting = !!localStorage.getItem(`codeArena_endTime_${roomId}`)
+      if (isReconnecting) {
+        setBattleStarted(true)
+        battleStartedRef.current = true
+      }
+      
       socket.emit('join_room', { roomId, username: user?.username || `Player_${socket.id?.slice(0, 4)}` })
     })
 
@@ -318,7 +372,11 @@ export default function BattleRoom() {
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang)
-    setCode(DEFAULT_STARTER[lang] || '')
+    const roomId = getRoomId()
+    localStorage.setItem(`codeArena_lang_${roomId}`, lang)
+    const newCode = problem?.starterCode?.[lang] || DEFAULT_STARTER[lang] || ''
+    setCode(newCode)
+    localStorage.setItem(`codeArena_draft_${roomId}`, newCode)
   }
 
   const handleEditorMount = (editor, monaco) => {
@@ -327,10 +385,14 @@ export default function BattleRoom() {
 
   const handleProblemChange = async (slug) => {
     setShowProblemPicker(false)
+    const roomId = getRoomId();
+    localStorage.removeItem(`codeArena_draft_${roomId}`); 
+    
     setResults([]); setMyTests(0); setOppTests(0); setConstraint(null)
     setGameOver(false); setGameResult(null); setSubmitStatus(null)
     gameOverRef.current = false; constraintTriggered.current = false
     setProblemLoading(true)
+    
     try {
       const res = await fetch(`${API_URL}/api/problems/${slug}`)
       const data = await res.json()
@@ -345,6 +407,7 @@ export default function BattleRoom() {
   const handleCodeChange = (val) => {
     setCode(val)
     const roomId = getRoomId()
+    localStorage.setItem(`codeArena_draft_${roomId}`, val)
     socketRef.current?.emit('code_change', { roomId, code: val })
   }
 
@@ -450,7 +513,18 @@ export default function BattleRoom() {
       if (data.allPassed && !gameOverRef.current) {
         gameOverRef.current = true
         setSubmitStatus('success')
-        setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
+        
+        // Calculate total time taken from persistent storage
+        const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
+        let secondsTaken = 0;
+        if (savedEndTime) {
+           const initialStart = parseInt(savedEndTime, 10) - (600 * 1000);
+           secondsTaken = Math.round((Date.now() - initialStart) / 1000);
+        } else {
+           secondsTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
+        }
+        
+        setTimeTaken(secondsTaken)
         setTimeout(() => { setGameResult('win'); setGameOver(true) }, 600)
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         socketRef.current?.emit('battle_won', { roomId, winner: user?.username || 'Player' })
@@ -475,12 +549,27 @@ export default function BattleRoom() {
     }
   };
 
+  // 🔥 CRITICAL: Clean up persistent state when game is fully over
+  useEffect(() => {
+    if (gameOver) {
+      const roomId = getRoomId();
+      localStorage.removeItem(`codeArena_draft_${roomId}`);
+      localStorage.removeItem(`codeArena_endTime_${roomId}`);
+      localStorage.removeItem(`codeArena_lang_${roomId}`);
+    }
+  }, [gameOver])
+
   const handleRematch = () => {
+    const roomId = getRoomId();
+    localStorage.removeItem(`codeArena_draft_${roomId}`);
+    localStorage.removeItem(`codeArena_endTime_${roomId}`);
+    
     setGameOver(false); setGameResult(null); gameOverRef.current = false
     setCode(problem?.starterCode?.[language] || DEFAULT_STARTER[language])
     setResults([]); setMyTests(0); setOppTests(0)
     setConstraint(null); setSubmitStatus(null)
     constraintTriggered.current = false
+    setBattleStarted(false); battleStartedRef.current = false;
   }
 
   const pct = (n, t) => t > 0 ? Math.round((n / t) * 100) : 0
@@ -593,7 +682,7 @@ export default function BattleRoom() {
           <div className="timer-box">
             <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
             {battleStarted
-              ? <Timer initialSeconds={600} onTimeUp={handleTimeUp} />
+              ? <Timer key={timerKey} initialSeconds={remainingTime} onTimeUp={handleTimeUp} />
               : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#666' }}>10:00</span>
             }
           </div>
@@ -701,14 +790,14 @@ export default function BattleRoom() {
                     </div>
                   )}
 
-                  <p className="prob-desc">{problem.description}</p>
+                  <p className="prob-desc" style={{ whiteSpace: 'pre-wrap' }}>{problem.description}</p>
 
                   {problem.examples?.map((ex, i) => (
                     <div key={i} className="example-box">
                       <div className="example-label">EXAMPLE {i + 1}</div>
-                      <div className="code-line" style={{ color: '#fb923c' }}>Input: {ex.input}</div>
-                      <div className="code-line" style={{ color: '#22c55e' }}>Output: {ex.output}</div>
-                      {ex.explain && <div className="explain-text">{ex.explain}</div>}
+                      <div className="code-line" style={{ color: '#fb923c', whiteSpace: 'pre-wrap' }}>Input: {ex.input}</div>
+                      <div className="code-line" style={{ color: '#22c55e', whiteSpace: 'pre-wrap' }}>Output: {ex.output}</div>
+                      {ex.explain && <div className="explain-text" style={{ whiteSpace: 'pre-wrap' }}>{ex.explain}</div>}
                     </div>
                   ))}
 

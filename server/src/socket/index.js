@@ -3,13 +3,15 @@ const { Server } = require('socket.io')
 let io
 const rooms = new Map() 
 const matchmakingQueue = [] 
+// 🔥 Naya Object Disconnect Timers ko track karne ke liye
+const disconnectTimers = new Map()
 
 function initSocket(server) {
   io = new Server(server, {
     cors: { 
       origin: [
         'http://localhost:5173', 
-        'https://code-arena-virid.vercel.app' // Tera Vercel URL
+        'https://code-arena-virid.vercel.app'
       ], 
       methods: ['GET', 'POST'] 
     }
@@ -49,7 +51,6 @@ function initSocket(server) {
           battleStarted: true
         })
 
-        // ✅ Server ab ELO points bhi bhej raha hai
         socket.emit('match_found', {
           roomId, problem: sharedProblemSlug, opponent: opponent.username, elo: opponent.elo 
         })
@@ -70,7 +71,7 @@ function initSocket(server) {
       if (idx !== -1) matchmakingQueue.splice(idx, 1)
     })
 
-    // ✅ ROOM JOIN FIX: Username se check karo, duplicate mat hone do
+    // ✅ ROOM JOIN FIX & RECONNECTION LOGIC
     socket.on('join_room', ({ roomId, username }) => {
       socket.join(roomId)
 
@@ -80,14 +81,19 @@ function initSocket(server) {
       
       const roomData = rooms.get(roomId)
       
-      // Duplicate check using USERNAME, not socket.id
       const existingPlayer = roomData.players.find(p => p.username === username)
       
       if (existingPlayer) {
-        // Agar player same hai bas page load hua, toh naya socket id assign kar do
+        // Player reconnected after refresh!
         existingPlayer.socketId = socket.id
+        
+        // 🔥 Agar koi disconnect timer chal raha tha is user ka, usko radd (clear) kar do
+        if (disconnectTimers.has(username)) {
+          clearTimeout(disconnectTimers.get(username))
+          disconnectTimers.delete(username)
+          console.log(`♻️ Player ${username} reconnected. Timer cancelled.`)
+        }
       } else {
-        // Naya player sirf tab add karo jab limit (2) cross na ho
         if (roomData.players.length < 2) {
           roomData.players.push({ 
             username: username || `Player_${socket.id.slice(0, 4)}`, 
@@ -100,7 +106,7 @@ function initSocket(server) {
         players: roomData.players, count: roomData.players.length
       })
 
-      if (roomData.players.length === 2) {
+      if (roomData.players.length === 2 && !roomData.battleStarted) {
         roomData.battleStarted = true
         io.to(roomId).emit('battle_start', { players: roomData.players })
       }
@@ -130,32 +136,49 @@ function initSocket(server) {
         
         if (playerIndex !== -1) {
           const leavingPlayer = roomData.players[playerIndex]
-          const remainingPlayers = roomData.players.filter(p => p.socketId !== socket.id)
           
-          if (remainingPlayers.length === 1 && roomData.battleStarted) {
-            const winner = remainingPlayers[0]
+          if (roomData.battleStarted) {
+            // 🔥 TURANT MATCH END MAT KARO. 15 SECOND WAIT KARO.
+            console.log(`⏳ Starting 15s grace period for ${leavingPlayer.username}...`)
             
-            io.to(winner.socketId).emit('opponent_left_win', {
-              winner: winner.username,
-              loser: leavingPlayer.username,
-              message: `${leavingPlayer.username} left the battle. You win!`
-            })
-          }
+            const timer = setTimeout(() => {
+              // 15 second baad bhi nahi aaya
+              const finalRoomData = rooms.get(roomId)
+              if (finalRoomData) {
+                const remainingPlayers = finalRoomData.players.filter(p => p.username !== leavingPlayer.username)
+                
+                if (remainingPlayers.length === 1) {
+                  const winner = remainingPlayers[0]
+                  io.to(winner.socketId).emit('opponent_left_win', {
+                    winner: winner.username,
+                    loser: leavingPlayer.username,
+                    message: `${leavingPlayer.username} disconnected and didn't return. You win!`
+                  })
+                }
+                rooms.delete(roomId)
+              }
+              disconnectTimers.delete(leavingPlayer.username)
+            }, 15000) // 15 seconds
 
-          roomData.players = remainingPlayers
-          if (remainingPlayers.length === 0) {
-            rooms.delete(roomId)
+            disconnectTimers.set(leavingPlayer.username, timer)
           } else {
-            io.to(roomId).emit('player_left', { username: leavingPlayer.username })
-            io.to(roomId).emit('room_update', { players: remainingPlayers })
+            // Battle start nahi hui thi, seedha nikal do
+            const remainingPlayers = roomData.players.filter(p => p.socketId !== socket.id)
+            roomData.players = remainingPlayers
+            if (remainingPlayers.length === 0) {
+              rooms.delete(roomId)
+            } else {
+              io.to(roomId).emit('player_left', { username: leavingPlayer.username })
+              io.to(roomId).emit('room_update', { players: remainingPlayers })
+            }
           }
         }
       })
     })
-  }) // io.on connection yahan close ho raha hai
+  })
 
   return io
-} // initSocket yahan close ho raha hai
+}
 
 function getIO() {
   if (!io) throw new Error('Socket.io not initialized!')
