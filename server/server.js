@@ -14,7 +14,7 @@ initSocket(server);
 // 🔥 Self-Ping Function (Render ko jagaye rakhne ke liye) 🔥
 const keepAlive = () => {
   // Tera live Render URL (Health check endpoint)
-  const url = 'https://codearena-njry.onrender.com/api/health';
+  const url = 'https://codearena-1-hqwd.onrender.com/api/health';
   
   // Har 10 minute (10 * 60 * 1000 ms) mein server khud ko ping karega
   setInterval(async () => {
