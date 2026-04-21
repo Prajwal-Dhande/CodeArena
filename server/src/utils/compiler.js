@@ -14,7 +14,8 @@ const executePython = async (code) => {
   fs.writeFileSync(filePath, code);
 
   return new Promise((resolve) => {
-    exec(`python3 "${filePath}"`, { timeout: 3000 }, (error, stdout, stderr) => {
+    // Timeout badha kar 5 seconds kar diya
+    exec(`python3 "${filePath}"`, { timeout: 5000 }, (error, stdout, stderr) => {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       if (error) {
         if (error.killed) return resolve({ success: false, output: "Error: Time Limit Exceeded" });
@@ -31,11 +32,10 @@ const executeJava = async (code) => {
   
   let modifiedCode = code;
 
-  // 🔥 THE SMART FIX: Agar class pehle se hai, toh replace karo. Warna khud wrap kar do!
+  // 🔥 THE SMART FIX: Wrapper for LeetCode style functions
   if (/(public\s+)?class\s+[a-zA-Z0-9_]+/.test(code)) {
     modifiedCode = code.replace(/(public\s+)?class\s+[a-zA-Z0-9_]+/, `public class ${className}`);
   } else {
-    // LeetCode style: Sirf function likha hai, toh khud class aur imports add karo
     modifiedCode = `import java.util.*;\n\npublic class ${className} {\n${code}\n}`;
   }
   
@@ -43,16 +43,25 @@ const executeJava = async (code) => {
   fs.writeFileSync(filePath, modifiedCode);
 
   return new Promise((resolve) => {
-    // Sirf Compile karo (Syntax Check)
-    exec(`javac "${filePath}"`, { timeout: 3000 }, (compileError, _, compileStderr) => {
+    // 🔥 FIX 1: Timeout set to 10 seconds (10000ms) for slow free servers
+    exec(`javac "${filePath}"`, { timeout: 10000 }, (compileError, stdout, compileStderr) => {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       
       const classFilePath = path.join(tempDir, `${className}.class`);
       if (fs.existsSync(classFilePath)) fs.unlinkSync(classFilePath);
 
       if (compileError) {
-        // 🔥 Server ke lambe path ko hide karke clean "Main.java" dikhao
-        const rawError = compileStderr || compileError.message;
+        // 🔥 FIX 2: Backend logs for debugging
+        console.log("--- JAVA ERROR START ---");
+        console.log(compileStderr);
+        console.log("--- JAVA ERROR END ---");
+
+        if (compileError.killed) {
+          return resolve({ success: false, output: "Error: Compilation Time Limit Exceeded (Server is too slow)" });
+        }
+
+        // 🔥 FIX 3: Force stderr to be the primary error message to avoid "Command failed"
+        const rawError = compileStderr ? compileStderr : compileError.message;
         const escapedPath = filePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Regex safety
         const cleanError = rawError.replace(new RegExp(escapedPath, 'g'), 'Main.java');
         
@@ -72,12 +81,13 @@ const executeCpp = async (code) => {
   fs.writeFileSync(filePath, code);
 
   return new Promise((resolve) => {
-    // C++ ko compile-only mode (-c flag) mein chalao
-    exec(`g++ -c "${filePath}" -o "${outPath}"`, { timeout: 4000 }, (compileError, _, compileStderr) => {
+    // Timeout badha kar 5 seconds
+    exec(`g++ -c "${filePath}" -o "${outPath}"`, { timeout: 5000 }, (compileError, _, compileStderr) => {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       if (fs.existsSync(outPath)) fs.unlinkSync(outPath);
 
       if (compileError) {
+        if (compileError.killed) return resolve({ success: false, output: "Error: Compilation Time Limit Exceeded" });
         return resolve({ success: false, output: compileStderr || compileError.message });
       }
       resolve({ success: true, output: "Syntax is perfectly valid!" });
