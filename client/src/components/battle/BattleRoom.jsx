@@ -51,6 +51,7 @@ const DIFF_COLOR = {
 
 const DEFAULT_STARTER = {
   javascript: `function solution() {\n  // Your solution here\n\n};`,
+  typescript: `function solution(): any {\n  // Your TS solution here\n\n};`,
   python: `def solution():\n    # Your solution here\n    pass`,
   cpp: `#include <bits/stdc++.h>\nusing namespace std;\n\n// Your solution here`,
   java: `class Solution {\n    // Your solution here\n}`,
@@ -63,6 +64,13 @@ const LanguageIcon = ({ lang }) => {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
            <rect width="24" height="24" rx="4" fill="#F7DF1E"/>
            <path d="M11.4 17.5C11.4 18.7 10.4 19.5 8.9 19.5C7.7 19.5 6.9 18.9 6.5 18L8.1 17C8.3 17.6 8.7 18 9.1 18C9.5 18 9.8 17.7 9.8 17.2V11H11.5V17.5ZM18.4 19.5C15.9 19.5 14.5 18.2 14.5 16.5H16.2C16.2 17.4 17 18 18.3 18C19.3 18 20 17.6 20 16.9C20 16.3 19.5 15.9 18.5 15.6L17.5 15.3C15.5 14.8 14.7 13.8 14.7 12.3C14.7 10.7 16 9.5 18.2 9.5C20.3 9.5 21.6 10.6 21.8 12.2L20.1 12.6C19.9 11.6 19.2 11 18.2 11C17.3 11 16.5 11.4 16.5 12.1C16.5 12.7 17 13.1 18.1 13.3L19 13.5C21.1 14 21.9 15.1 21.9 16.6C21.8 18.4 20.5 19.5 18.4 19.5Z" fill="black"/>
+        </svg>
+      );
+    case 'typescript':
+      return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="4" fill="#3178C6"/>
+          <path d="M12.9231 16.7115C12.9231 18.3269 11.5385 19.5 9.23077 19.5C6.92308 19.5 5.53846 18.3269 5.53846 16.7115V11.5H10.1538V16.7115H8.30769C8.30769 15.7885 9.23077 15.1154 10.1538 15.1154V11.5H5.53846C5.53846 12.6538 6.46154 13.5 7.38462 13.5H12.9231V16.7115ZM18.4615 16.7115V11.5H20.3077V13.5H16.6154V11.5H14.7692V16.7115C14.7692 17.85 15.6923 18.6923 16.6154 18.6923H20.3077V16.7115H18.4615Z" fill="white"/>
         </svg>
       );
     case 'python':
@@ -137,7 +145,6 @@ export default function BattleRoom() {
   const [gameResult, setGameResult] = useState(null)
   const [timeTaken, setTimeTaken] = useState(0)
 
-  // 🔥 Timer state logic fixed
   const [timerKey, setTimerKey] = useState(0) 
   const [remainingTime, setRemainingTime] = useState(() => {
     const roomId = getRoomId();
@@ -146,7 +153,7 @@ export default function BattleRoom() {
       const timeLeft = Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000);
       return timeLeft > 0 ? timeLeft : 0;
     }
-    return 600; // 10 minutes default
+    return 600;
   })
 
   const socketRef = useRef(null)
@@ -161,7 +168,6 @@ export default function BattleRoom() {
   const isMatchmakingMode = mode === 'random' || mode === 'ranked'
   const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch()
 
-  // Initialize and persist Timer when battle starts
   useEffect(() => {
     if (battleStarted) {
       const roomId = getRoomId();
@@ -221,7 +227,6 @@ export default function BattleRoom() {
       .catch(console.error)
   }, [])
 
-  // Bot typing simulation
   useEffect(() => {
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
     const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
@@ -514,7 +519,6 @@ export default function BattleRoom() {
         gameOverRef.current = true
         setSubmitStatus('success')
         
-        // Calculate total time taken from persistent storage
         const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
         let secondsTaken = 0;
         if (savedEndTime) {
@@ -549,7 +553,6 @@ export default function BattleRoom() {
     }
   };
 
-  // 🔥 CRITICAL: Clean up persistent state when game is fully over
   useEffect(() => {
     if (gameOver) {
       const roomId = getRoomId();
@@ -589,7 +592,6 @@ export default function BattleRoom() {
         </span>
         <div className="divider" />
 
-        {/* Mode Badge */}
         {premiumMode ? (
           <div style={{
             background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(139,92,246,0.1))', 
@@ -689,10 +691,8 @@ export default function BattleRoom() {
         )}
       </div>
 
-      {/* MAIN GRID */}
       <PanelGroup direction="horizontal" orientation="horizontal" className="main-grid" style={{ flex: 1 }}>
 
-        {/* WAITING OVERLAY */}
         {!battleStarted && !new URLSearchParams(window.location.search).get('bot') && (
           <div className="waiting-overlay">
             <div className="waiting-card">
@@ -750,7 +750,6 @@ export default function BattleRoom() {
           </div>
         )}
 
-        {/* LEFT — Problem */}
         <Panel defaultSize={practiceMode ? 40 : 25} minSize={20} className="panel problem-panel">
           <div className="panel-tabs">
             {['problem', 'scores'].map(tab => (
@@ -872,7 +871,6 @@ export default function BattleRoom() {
 
         <PanelResizeHandle className="resize-handle-h" />
 
-        {/* MIDDLE — Editor */}
         <Panel defaultSize={practiceMode ? 60 : 50} minSize={30} className="panel editor-panel">
           <PanelGroup direction="vertical" orientation="vertical" style={{ height: '100%' }}>
             <Panel defaultSize={70} minSize={20} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -882,13 +880,13 @@ export default function BattleRoom() {
               <span>You</span>
             </div>
 
-            {/* ✅ PREMIUM NATIVE LANGUAGE SELECTOR WITH REAL SVG OVERLAY */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>
                 <LanguageIcon lang={language} />
               </div>
               <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select">
                 <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
                 <option value="java">Java</option>
@@ -897,7 +895,6 @@ export default function BattleRoom() {
 
             <div style={{ flex: 1 }} />
 
-            {/* VIP Zen Mode Toggle */}
             {premiumMode && (
               <button 
                 onClick={() => setZenMode(!zenMode)} 
@@ -967,7 +964,6 @@ export default function BattleRoom() {
               </div>
             ))}
 
-            {/* 🔥 VIP AI Whisperer Debugger */}
             {premiumMode && submitStatus === 'failed' && (
               <div style={{ marginTop: 24, padding: 16, background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: aiDebugHint ? 12 : 0 }}>
@@ -1001,7 +997,6 @@ export default function BattleRoom() {
           <PanelResizeHandle className="resize-handle-h" />
         )}
 
-        {/* RIGHT — Opponent */}
         {!practiceMode && (
         <Panel defaultSize={25} minSize={15} className="panel opp-panel">
           <div className="editor-header glass-panel">
@@ -1132,7 +1127,6 @@ export default function BattleRoom() {
         .info-box { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,107,53,0.15); border-radius: 8px; padding: 12px; }
         .info-label { font-size: 10px; color: #555; font-weight: 700; letter-spacing: 1px; }
         
-        /* ✅ Zen Mode active overrides */
         .zen-active { background: #000; }
         .zen-active .glass-panel { background: rgba(10,5,15,0.9); border-color: rgba(236,72,153,0.1); }
         .zen-active .panel:not(.editor-panel) { opacity: 0.1; filter: blur(5px); pointer-events: none; transition: all 0.5s; }
@@ -1151,14 +1145,13 @@ export default function BattleRoom() {
         .dot-orange { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
         .dot-red { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
         
-        /* ✅ PRO NATIVE LANGUAGE SELECTOR STYLES (WHITE TEXT & REAL LOGO HACK) */
         .pro-lang-select {
           appearance: none;
           -webkit-appearance: none;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #ffffff; /* ✅ WHITE TEXT */
-          padding: 6px 28px 6px 34px; /* ✅ Extra left padding to make space for absolute SVG logo */
+          color: #ffffff; 
+          padding: 6px 28px 6px 34px; 
           border-radius: 8px;
           font-family: Inter, sans-serif;
           font-size: 13px;
