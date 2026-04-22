@@ -90,17 +90,24 @@ const executeJava = async (code) => {
   const jobId = crypto.randomUUID().replace(/-/g, '');
   const className = `Main_${jobId}`;
   
-  let modifiedCode = code;
+  // 1. Extract all user imports and remove them from the main code
+  const userImports = (code.match(/import\s+[\w\.\*]+;/g) || []).join('\n');
+  const codeWithoutImports = code.replace(/import\s+[\w\.\*]+;/g, '');
 
-  // Smart Wrapper + Java Structures Inject
-  if (/(public\s+)?class\s+[a-zA-Z0-9_]+/.test(code)) {
-    modifiedCode = `import java.util.*;\n${javaStructures}\n` + code.replace(/(public\s+)?class\s+[a-zA-Z0-9_]+/, `public class ${className}`);
+  let modifiedCode = codeWithoutImports;
+
+  // 2. Smart Wrapper (Only wraps the code without imports)
+  if (/(public\s+)?class\s+[a-zA-Z0-9_]+/.test(codeWithoutImports)) {
+    modifiedCode = codeWithoutImports.replace(/(public\s+)?class\s+[a-zA-Z0-9_]+/, `public class ${className}`);
   } else {
-    modifiedCode = `import java.util.*;\n${javaStructures}\npublic class ${className} {\n${code}\n}`;
+    modifiedCode = `public class ${className} {\n${codeWithoutImports}\n}`;
   }
   
+  // 3. Assemble perfectly: Imports at the very top -> Hidden Classes -> User Code
+  const finalFileContent = `import java.util.*;\n${userImports}\n${javaStructures}\n${modifiedCode}`;
+  
   const filePath = path.join(tempDir, `${className}.java`);
-  fs.writeFileSync(filePath, modifiedCode);
+  fs.writeFileSync(filePath, finalFileContent);
 
   return new Promise((resolve) => {
     exec(`javac "${filePath}"`, { timeout: 10000 }, (compileError, stdout, compileStderr) => {
