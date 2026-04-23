@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import API_URL from "../config/api";
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard'];
 const TOPICS = ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Dynamic Programming', 'Graphs', 'Binary Search', 'Stack'];
@@ -221,7 +222,7 @@ export default function InterviewDSA() {
 
   const fetchPremiumProblems = async () => {
     try {
-      const res = await fetch("https://codearena-1-hqwd.onrender.com/api/problems/premium", {
+      const res = await fetch(`${API_URL}/api/problems/premium`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
@@ -240,7 +241,7 @@ export default function InterviewDSA() {
 
   const handlePayment = async () => {
     try {
-      const res = await fetch("https://codearena-1-hqwd.onrender.com/api/payment/create-order", {
+      const res = await fetch(`${API_URL}/api/payment/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,7 +264,7 @@ export default function InterviewDSA() {
         image: "/favicon.svg",
         order_id: order.order?.id || order.id,
         handler: async function (response) {
-          const verifyRes = await fetch("https://codearena-1-hqwd.onrender.com/api/payment/verify", {
+          const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

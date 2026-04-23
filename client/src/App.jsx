@@ -18,6 +18,9 @@ import PuzzleSolve from './pages/PuzzleSolve'
 // ✅ PREMIUM DSA PAGE IMPORT
 import InterviewDSA from './pages/InterviewDSA'
 
+// 💎 PREMIUM SUBSCRIPTION PAGE
+import Premium from './pages/Premium'
+
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
@@ -49,6 +52,9 @@ export default function App() {
           
           {/* 🔥 PREMIUM DSA ROUTE */}
           <Route path="/interview-dsa" element={<InterviewDSA />} />
+
+          {/* 💎 PREMIUM SUBSCRIPTION PAGE */}
+          <Route path="/premium" element={<Premium />} />
         </Route>
 
         {/* ⚠️ Catch-all route */}

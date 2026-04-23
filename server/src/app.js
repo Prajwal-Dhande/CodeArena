@@ -35,6 +35,7 @@ app.use('/api/problems', problemRoutes)
 
 // 🔥 NAYI LINE: Yahan /api/users ko apne naye router se connect kar de
 app.use('/api/users', userRoutes)
+app.use('/api/ai', require('./routes/aiRoutes'))
 
 // 👇 BAAKI ROUTES KE SAATH YE NAYA ROUTE ADD KAR DE 👇
 app.use('/api/puzzles', require('./routes/puzzleRoutes'));

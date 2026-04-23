@@ -2,10 +2,14 @@ import { useEffect, useState, useRef } from 'react'
 import API_URL from '../../config/api'
 import PremiumRadarChart from './PremiumRadarChart'
 
-export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language, premiumMode, timeComplexity, complexity }) {
+export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language, premiumMode, userCode, timeComplexity, complexity }) {
   const [eloData, setEloData] = useState(null)
   const [rankUp, setRankUp] = useState(false)
   
+  // Clara AI state
+  const [aiFeedback, setAiFeedback] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+
   // ✅ useRef add kiya
   const calledRef = useRef(false)
 
@@ -51,6 +55,34 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
       }
     }
     updateElo()
+
+    // 🔥 Clara AI Feedback Fetch
+    if (premiumMode && userCode && result === 'win') {
+      setAiLoading(true);
+      fetch(`${API_URL}/api/ai/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({
+          problemTitle: problem?.title || 'Unknown',
+          userCode,
+          language: language || 'javascript',
+          timeComplexity: complexity?.time || timeComplexity || 'O(N)',
+          spaceComplexity: complexity?.space || 'O(N)',
+          timeTaken,
+          passedTests: myTests,
+          totalTests
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setAiFeedback(data.feedback);
+        }
+      })
+      .catch(err => console.error('AI Error:', err))
+      .finally(() => setAiLoading(false));
+    }
+
   }, [])
 
   const isWin = result === 'win'
@@ -81,12 +113,19 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
         </div>
       )}
 
+      {/* Container for split view if premium AI feedback is available */}
       <div style={{
-        background: '#13131a', border: `1px solid ${isWin ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-        borderRadius: 24, padding: '40px', textAlign: 'center',
-        maxWidth: 480, width: '90%',
-        boxShadow: `0 30px 80px ${isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`
+        display: 'flex', gap: '20px', alignItems: 'stretch',
+        maxWidth: premiumMode && isWin ? 1000 : 480, width: '95%',
+        maxHeight: '90vh', margin: '0 auto'
       }}>
+        {/* Left Panel: Original Winner Screen */}
+        <div style={{
+          background: '#13131a', border: `1px solid ${isWin ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+          borderRadius: 24, padding: '40px', textAlign: 'center',
+          flex: 1, overflowY: 'auto',
+          boxShadow: `0 30px 80px ${isWin ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`
+        }}>
 
         {/* Result Icon */}
         <div style={{ fontSize: 64, marginBottom: 16, animation: 'bounce 0.6s ease' }}>
@@ -220,12 +259,70 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
             cursor: 'pointer', fontFamily: 'Inter'
           }}>⚔️ Play Again</button>
         </div>
+        </div>
+
+        {/* Right Panel: Clara AI Feedback (Only Premium Winners) */}
+        {premiumMode && isWin && (
+          <div style={{
+          background: 'linear-gradient(180deg, rgba(236,72,153,0.05) 0%, rgba(10,10,12,0.95) 100%)',
+          border: '1px solid rgba(236,72,153,0.3)',
+          borderRadius: 24, padding: '32px', textAlign: 'left',
+          flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          boxShadow: '0 30px 80px rgba(236,72,153,0.1)'
+        }}>
+           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexShrink: 0 }}>
+             <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #ec4899, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 4px 14px rgba(236,72,153,0.4)' }}>🤖</div>
+             <div>
+               <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', fontFamily: 'Outfit' }}>Clara AI Review</div>
+               <div style={{ fontSize: 12, color: '#ec4899', fontWeight: 600, letterSpacing: 1 }}>MAANG EXPERT INTERVIEWER</div>
+             </div>
+           </div>
+
+           {aiLoading ? (
+             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#ec4899' }}>
+               <div className="ai-spinner" style={{ fontSize: 40, marginBottom: 16, animation: 'pulse 1s infinite' }}>✨</div>
+               <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'Inter', letterSpacing: 1 }}>ANALYZING CODE STRUCTURE...</div>
+             </div>
+           ) : aiFeedback ? (
+             <div className="custom-scroll" style={{ flex: 1, overflowY: 'auto', paddingRight: 12, display: 'flex', flexDirection: 'column', gap: 20 }}>
+               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', padding: 16, borderRadius: 12 }}>
+                 <h3 style={{ fontSize: 14, color: '#22c55e', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: 16}}>✓</span> Strengths</h3>
+                 <ul style={{ margin: 0, paddingLeft: 20, color: '#d1d5db', fontSize: 13, lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                   {aiFeedback.strengths?.map((s, i) => <li key={i}>{s}</li>)}
+                 </ul>
+               </div>
+               
+               <div style={{ background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.2)', padding: 16, borderRadius: 12 }}>
+                 <h3 style={{ fontSize: 14, color: '#ff6b35', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: 16}}>⚠️</span> Areas for Improvement</h3>
+                 <ul style={{ margin: 0, paddingLeft: 20, color: '#d1d5db', fontSize: 13, lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                   {aiFeedback.improvements?.map((s, i) => <li key={i}>{s}</li>)}
+                 </ul>
+               </div>
+               
+               <div style={{ background: 'rgba(96,165,250,0.05)', border: '1px solid rgba(96,165,250,0.2)', padding: 16, borderRadius: 12 }}>
+                 <h3 style={{ fontSize: 14, color: '#60a5fa', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: 16}}>💡</span> Optimal Approach</h3>
+                 <pre style={{ background: 'rgba(0,0,0,0.6)', padding: 16, borderRadius: 8, fontSize: 13, overflowX: 'auto', border: '1px solid rgba(255,255,255,0.05)', color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace', margin: 0 }}>
+                   <code>{aiFeedback.optimalCode}</code>
+                 </pre>
+               </div>
+             </div>
+           ) : (
+             <div style={{ color: '#888', fontSize: 13, textAlign: 'center', marginTop: 40 }}>Feedback unavailable.</div>
+           )}
+        </div>
+      )}
+      
       </div>
 
       <style>{`
         @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
         @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(236,72,153,0.3); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(236,72,153,0.5); }
       `}</style>
     </div>
   )

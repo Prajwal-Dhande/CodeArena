@@ -125,56 +125,57 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
             const isSolved = checkIsSolved(user, p);
 
             return (
-            <div key={p._id || idx} onClick={() => onSelect(p)} style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '14px 18px',
-              background: selectedP?._id === p._id ? `${accentColor}10` : 'rgba(255,255,255,0.02)',
-              border: `1px solid ${selectedP?._id === p._id ? accentColor + '50' : 'rgba(255,255,255,0.06)'}`,
-              borderRadius: 14, cursor: 'pointer', transition: 'all 0.15s',
-              transform: selectedP?._id === p._id ? 'translateX(4px)' : 'none'
-            }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: dColor[p.difficulty]?.bg,
-                border: `1px solid ${dColor[p.difficulty]?.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, fontWeight: 800, color: dColor[p.difficulty]?.color, fontFamily: 'Outfit'
-              }}>{idx + 1}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {p.title}
-                  {isSolved && (
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)',
-                      padding: '2px 6px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3
-                    }}>
-                      ✓ Solved
-                    </span>
+              <div key={p._id || idx} onClick={() => onSelect(p)} style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '14px 18px',
+                background: selectedP?._id === p._id ? `${accentColor}10` : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${selectedP?._id === p._id ? accentColor + '50' : 'rgba(255,255,255,0.06)'}`,
+                borderRadius: 14, cursor: 'pointer', transition: 'all 0.15s',
+                transform: selectedP?._id === p._id ? 'translateX(4px)' : 'none'
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: dColor[p.difficulty]?.bg,
+                  border: `1px solid ${dColor[p.difficulty]?.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, fontWeight: 800, color: dColor[p.difficulty]?.color, fontFamily: 'Outfit'
+                }}>{idx + 1}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {p.title}
+                    {isSolved && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)',
+                        padding: '2px 6px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3
+                      }}>
+                        ✓ Solved
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ fontSize: 11, color: '#555', display: 'flex', gap: 8 }}>
+                    <span>{p.category}</span><span>·</span>
+                    <span>{p.acceptance}% acceptance</span>
+                    {p.companies?.[0] && <><span>·</span><span style={{ color: '#444' }}>{p.companies[0]}</span></>}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
+                    background: dColor[p.difficulty]?.bg, color: dColor[p.difficulty]?.color,
+                    border: `1px solid ${dColor[p.difficulty]?.border}`
+                  }}>{p.difficulty}</span>
+                  {selectedP?._id === p._id && (
+                    <div style={{
+                      width: 22, height: 22, borderRadius: '50%', background: accentColor,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, color: '#fff', fontWeight: 800
+                    }}>✓</div>
                   )}
                 </div>
-
-                <div style={{ fontSize: 11, color: '#555', display: 'flex', gap: 8 }}>
-                  <span>{p.category}</span><span>·</span>
-                  <span>{p.acceptance}% acceptance</span>
-                  {p.companies?.[0] && <><span>·</span><span style={{ color: '#444' }}>{p.companies[0]}</span></>}
-                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6,
-                  background: dColor[p.difficulty]?.bg, color: dColor[p.difficulty]?.color,
-                  border: `1px solid ${dColor[p.difficulty]?.border}`
-                }}>{p.difficulty}</span>
-                {selectedP?._id === p._id && (
-                  <div style={{
-                    width: 22, height: 22, borderRadius: '50%', background: accentColor,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, color: '#fff', fontWeight: 800
-                  }}>✓</div>
-                )}
-              </div>
-            </div>
-          )})}
+            )
+          })}
         </div>
 
         {/* Footer */}
@@ -193,13 +194,13 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
           ) : (
             <div style={{ flex: 1, fontSize: 13, color: '#444' }}>Select a problem to continue</div>
           )}
-          
+
           <button onClick={onClose} className="modal-cancel-btn">Cancel</button>
 
           <button onClick={onPlay} disabled={isPlayDisabled} style={{
             background: !isPlayDisabled ? accentColor : 'rgba(255,255,255,0.04)',
             color: !isPlayDisabled ? '#fff' : '#666',
-            border: isRanked && selectedIsSolved ? '1px solid rgba(255,255,255,0.1)' : 'none', 
+            border: isRanked && selectedIsSolved ? '1px solid rgba(255,255,255,0.1)' : 'none',
             borderRadius: 12, padding: '12px 28px',
             cursor: !isPlayDisabled ? 'pointer' : 'not-allowed',
             fontSize: 13, fontWeight: 700, fontFamily: 'Inter',
@@ -219,12 +220,12 @@ export default function Lobby() {
   const [tab, setTab] = useState(initialTab)
   const [problems, setProblems] = useState([])
   const [problemsLoading, setProblemsLoading] = useState(true)
-  
+
   // Create Room Filters
   const [diffFilter, setDiffFilter] = useState('All')
   const [topicFilter, setTopicFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All') // 🔥 Status filter for Create Room
-  const [createSearchQuery, setCreateSearchQuery] = useState('') 
+  const [createSearchQuery, setCreateSearchQuery] = useState('')
 
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [roomCode, setRoomCode] = useState('')
@@ -253,7 +254,7 @@ export default function Lobby() {
 
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [paymentProcessing, setPaymentProcessing] = useState(false)
-  
+
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
 
@@ -274,13 +275,13 @@ export default function Lobby() {
     const token = localStorage.getItem('token');
     if (token) {
       fetch(`${API_URL}/api/users/profile`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          setUser(data.user);
-        }
-      }).catch(err => console.error(err));
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+          }
+        }).catch(err => console.error(err));
     }
   }, []);
 
@@ -312,7 +313,7 @@ export default function Lobby() {
   }, [])
 
   useEffect(() => {
-    fetch(`${API_URL}/api/puzzles`) 
+    fetch(`${API_URL}/api/puzzles`)
       .then(r => r.json())
       .then(data => setDailyPuzzles(data))
       .catch(err => console.error(err))
@@ -332,9 +333,9 @@ export default function Lobby() {
   const filteredProblems = problems.filter(p => {
     const isSolved = checkIsSolved(user, p);
     return (diffFilter === 'All' || p.difficulty === diffFilter) &&
-           (topicFilter === 'All' || p.category === topicFilter) &&
-           (statusFilter === 'All' || (statusFilter === 'Solved' && isSolved) || (statusFilter === 'Unsolved' && !isSolved)) &&
-           (createSearchQuery === '' || p.title.toLowerCase().includes(createSearchQuery.toLowerCase()))
+      (topicFilter === 'All' || p.category === topicFilter) &&
+      (statusFilter === 'All' || (statusFilter === 'Solved' && isSolved) || (statusFilter === 'Unsolved' && !isSolved)) &&
+      (createSearchQuery === '' || p.title.toLowerCase().includes(createSearchQuery.toLowerCase()))
   })
 
   const handleSearch = async (val) => {
@@ -354,7 +355,7 @@ export default function Lobby() {
   const handlePayment = async (planDetails) => {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/auth'); return; }
-    
+
     setPaymentProcessing(true);
     try {
       const res = await fetch(`${API_URL}/api/payment/create-order`, {
@@ -363,7 +364,7 @@ export default function Lobby() {
         body: JSON.stringify({ plan: planDetails.id, amount: planDetails.amount * 100 })
       });
       const data = await res.json();
-      
+
       if (!data.success) throw new Error('Order creation failed');
 
       const options = {
@@ -394,7 +395,7 @@ export default function Lobby() {
         theme: { color: '#ff6b35' },
         modal: { ondismiss: () => setPaymentProcessing(false) }
       };
-      
+
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
@@ -430,12 +431,12 @@ export default function Lobby() {
   }
 
   const handlePuzzleClick = (id) => {
-    navigate(`/puzzle?id=${id}`); 
+    navigate(`/puzzle?id=${id}`);
   }
 
   const handleMatchFound = (matchData) => {
     setShowMatchmaking(false)
-    
+
     let finalProblemSlug;
     if (matchmakingMode === 'ranked' && rankedSelected) {
       finalProblemSlug = rankedSelected.slug;
@@ -473,94 +474,82 @@ export default function Lobby() {
 
   return (
     <div className="lobby-wrapper">
-      
+
       <Helmet>
         <title>{tab === 'puzzles' ? 'Daily Puzzles | CodeArena' : 'Battle Arena | CodeArena'}</title>
         <meta name="description" content="Choose your training mode. Master algorithms with structured tracks, solve daily puzzles, or test your speed with live coding battles on CodeArena." />
       </Helmet>
 
       {showMatchmaking && <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} selectedProblem={matchmakingMode === 'ranked' ? rankedSelected : null} mode={matchmakingMode} />}
-      
+
       {showRankedList && <ProblemModal user={user} title="🎯 Ranked Arena" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} status={rankedStatus} setStatus={setRankedStatus} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} isRanked={true} />}
-      
+
       {showPracticeList && <ProblemModal user={user} title="🧠 Practice Mode" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} status={practiceStatus} setStatus={setPracticeStatus} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} isRanked={false} />}
 
       {/* Premium Modal */}
       {showPremiumModal && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="premium-overlay"
         >
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="premium-modal"
           >
             <button onClick={() => setShowPremiumModal(false)} className="close-btn">✕</button>
-            <div className="radial-glow" />
-            <div className="modal-left">
-              <div className="icon-box"><span style={{ fontSize: 28 }}>⚡</span></div>
-              <h2 className="title-bold">Pricing<br/>Cards</h2>
-              <p className="subtitle-gray">By Notes 'n Frames</p>
+            <div className="premium-glow-bg" />
+
+            <div className="premium-header">
+              <div className="premium-badge">💎 CODEARENA PREMIUM</div>
+              <h2 className="premium-title">The fastest way to crack <span>FAANG</span></h2>
+              <p className="premium-subtitle">Stop practicing blindly. Get AI-powered mock interviews, structured roadmaps, and global competitive tournaments.</p>
             </div>
-            <div className="modal-right">
-              <div className="saas-card">
-                <div className="card-top-bar" style={{ background: '#500e24' }}>For one person</div>
-                <div className="card-content">
-                  <div style={{ fontSize: 28, marginBottom: 12 }}>⚡</div>
-                  <div className="plan-label">FREE PLAN</div>
-                  <div className="billed-label">Billed annually</div>
-                  <div className="price-text">₹0<span>/Month</span></div>
-                  <p className="desc-text" style={{ padding: '0 10px', marginTop: 12 }}>Design anything and bring your ideas to life.</p>
-                  <div style={{ flex: 1 }}></div>
-                  <button onClick={() => setShowPremiumModal(false)} className="saas-btn">Get Started</button>
-                </div>
+
+            <div className="premium-cards-container">
+              {/* Free Tier */}
+              <div className="premium-card free-tier">
+                <div className="tier-name">Free</div>
+                <div className="tier-price">₹0<span>/mo</span></div>
+                <p className="tier-desc">Basic practice for casual coders.</p>
+                <ul className="tier-features">
+                  <li>✓ Unlimited Practice Problems</li>
+                  <li>✓ Basic IDE & Execution</li>
+                  <li>✓ Global Leaderboard Access</li>
+                  <li className="disabled">✕ AI Mock Interviews</li>
+                  <li className="disabled">✕ Ranked Tournaments</li>
+                </ul>
+                <button onClick={() => setShowPremiumModal(false)} className="tier-btn btn-free">Current Plan</button>
               </div>
 
-              <div className="saas-card saas-card-pro">
-                <div className="card-top-bar" style={{ background: '#f59e0b' }}>For one person | Most Popular</div>
-                <div className="most-popular-badge">MOST POPULAR</div>
-                <div className="card-content">
-                  <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
-                  <div className="plan-label">PRO PLAN</div>
-                  <div className="billed-label">Billed annually</div>
-                  <div className="price-text">₹599<span>/Month</span></div>
-                  <div className="strikethrough-text">₹1200/Year</div>
-                  <p className="desc-text" style={{ padding: '0 10px' }}>Unlock more powerful design tools and coding battles.</p>
-                  <div className="feature-heading">In addition to free, you'll get:</div>
-                  <div className="feature-list">
-                    {['Unlimited premium templates', 'Real-time 1v1 coding battles', 'Live multiplayer matchmaking', 'Global ELO leaderboard', '20 GB of cloud storage'].map(f => (
-                      <div key={f} className="feature-item">
-                        <div className="check-icon">✓</div>
-                        <span>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => handlePayment({ id: 'six_months', name: 'Pro Plan', amount: 599 })} disabled={paymentProcessing} className="saas-btn saas-btn-pro">{paymentProcessing ? 'Processing...' : 'Buy Now'}</button>
-                </div>
+              {/* Pro Tier */}
+              <div className="premium-card pro-tier">
+                <div className="tier-name">Pro</div>
+                <div className="tier-price">₹299<span>/mo</span></div>
+                <p className="tier-desc">For serious competitive programmers.</p>
+                <ul className="tier-features">
+                  <li>✓ Everything in Free</li>
+                  <li>✓ Ranked Tournaments Access</li>
+                  <li>✓ Company Specific Tags</li>
+                  <li>✓ Detailed Analytics</li>
+                  <li className="disabled">✕ AI Mock Interviews</li>
+                </ul>
+                <button onClick={() => handlePayment({ id: 'pro', name: 'Pro Plan', amount: 299 })} disabled={paymentProcessing} className="tier-btn btn-pro">{paymentProcessing ? 'Processing...' : 'Upgrade to Pro'}</button>
               </div>
 
-              <div className="saas-card">
-                <div className="card-top-bar" style={{ background: '#500e24' }}>Unbeatable Value</div>
-                <div className="card-content">
-                  <div style={{ fontSize: 28, marginBottom: 12 }}>📅</div>
-                  <div className="plan-label">YEARLY PLAN</div>
-                  <div className="billed-label">Billed annually</div>
-                  <div className="price-text">₹5999<span>/Year</span></div>
-                  <p className="desc-text" style={{ padding: '0 10px', marginTop: 12, marginBottom: 28 }}>For long-term mastery and coding enthusiasts.</p>
-                  <div className="feature-heading">In addition to pro, you'll get:</div>
-                  <div className="feature-list" style={{ marginBottom: 32 }}>
-                    {['Real-time collaborative editing', 'Live spectator mode (Coming Soon)', 'Priority zero-latency servers', 'Edit, comment and collaborate in real time', '1 TB of cloud storage'].map(f => (
-                      <div key={f} className="feature-item">
-                        <div className="check-icon">✓</div>
-                        <span>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 'auto', width: '100%' }}>
-                    <button onClick={() => handlePayment({ id: 'yearly', name: 'Yearly Plan', amount: 5999 })} disabled={paymentProcessing} className="saas-btn" style={{ marginBottom: 12 }}>{paymentProcessing ? 'Processing...' : 'Buy Now'}</button>
-                    <div className="contact-sales">Contact Sales</div>
-                  </div>
-                </div>
+              {/* Pro+ Tier */}
+              <div className="premium-card pro-plus-tier">
+                <div className="popular-tag">MOST POPULAR</div>
+                <div className="tier-name">Pro+ <span className="sparkle">✨</span></div>
+                <div className="tier-price">₹599<span>/mo</span></div>
+                <p className="tier-desc">The ultimate interview prep arsenal.</p>
+                <ul className="tier-features">
+                  <li>✓ Everything in Pro</li>
+                  <li><span className="highlight-feat">⚡ Live AI Mock Interviews</span></li>
+                  <li><span className="highlight-feat">🧠 Advanced AI Code Reviews</span></li>
+                  <li>✓ Priority Zero-Latency Servers</li>
+                  <li>✓ 1-on-1 Feedback Reports</li>
+                </ul>
+                <button onClick={() => handlePayment({ id: 'pro_plus', name: 'Pro+ Plan', amount: 599 })} disabled={paymentProcessing} className="tier-btn btn-pro-plus">{paymentProcessing ? 'Processing...' : 'Unlock Pro+'}</button>
               </div>
             </div>
           </motion.div>
@@ -577,7 +566,7 @@ export default function Lobby() {
         <div className="nav-links">
           <span onClick={() => navigate('/')}>Dashboard</span>
           <span className="active">Practice</span>
-          <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : setShowPremiumModal(true)}>Practice Interview</span>
+          <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : navigate('/premium')}>Practice Interview</span>
           <span onClick={() => navigate('/leaderboard')}>Leaderboard</span>
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>
@@ -622,13 +611,13 @@ export default function Lobby() {
             </div>
           )}
         </div>
-        
+
         {!user?.isPremium && (
-          <button onClick={() => setShowPremiumModal(true)} style={{ 
-            background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8, 
+          <button onClick={() => navigate('/premium')} style={{
+            background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8,
             padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', marginRight: 16,
             boxShadow: '0 4px 14px rgba(255,107,53,0.3)', transition: 'all 0.2s'
-          }} onMouseEnter={e=>e.currentTarget.style.transform='translateY(-1px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>
+          }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
             💎 Premium
           </button>
         )}
@@ -667,14 +656,14 @@ export default function Lobby() {
         </div>
 
         {tab === 'quickplay' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 32 }}
           >
             {/* Interview Pro Vault Card */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -2 }}
               onClick={() => user?.isPremium ? navigate('/interview-dsa') : setShowPremiumModal(true)}
               style={{
@@ -686,11 +675,11 @@ export default function Lobby() {
             >
               <div style={{ position: 'relative', zIndex: 2 }}>
                 <div style={{ padding: '6px 12px', background: 'rgba(236,72,153,0.1)', color: '#fbcfe8', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 6, fontSize: 11, fontWeight: 700, width: 'fit-content', marginBottom: 16 }}>MAANG EXCLUSIVE</div>
-                <h3 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12 }}>Interview Pro Vault {user?.isPremium && <span style={{fontSize:16, color:'#22c55e'}}>✓ Unlocked</span>}</h3>
+                <h3 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12 }}>Interview Pro Vault {user?.isPremium && <span style={{ fontSize: 16, color: '#22c55e' }}>✓ Unlocked</span>}</h3>
                 <p style={{ color: '#a1a1aa', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>Master the exact algorithms asked by top tech companies. Train with precision, zero distractions, and our integrated AI interviewer.</p>
-                
-                <button style={{ 
-                  background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8, 
+
+                <button style={{
+                  background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8,
                   padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter',
                   boxShadow: '0 4px 14px rgba(255,107,53,0.3)', width: 'fit-content', marginBottom: 24
                 }}>
@@ -704,14 +693,14 @@ export default function Lobby() {
                 </div>
               </div>
               {!user?.isPremium && (
-                 <div style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                   <span style={{fontSize: 16}}>🔒</span> <span style={{fontSize: 12, fontWeight: 700, color: '#aaa'}}>PREMIUM</span>
-                 </div>
+                <div style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>🔒</span> <span style={{ fontSize: 12, fontWeight: 700, color: '#aaa' }}>PREMIUM</span>
+                </div>
               )}
             </motion.div>
 
             {/* Random Match Card */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -2 }}
               onClick={() => { setMatchmakingMode('random'); setRoomType('public'); setShowMatchmaking(true); }}
               style={{
@@ -730,7 +719,7 @@ export default function Lobby() {
             </motion.div>
 
             {/* Ranked Match Card */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -2 }}
               onClick={handleRankedClick}
               style={{
@@ -749,7 +738,7 @@ export default function Lobby() {
             </motion.div>
 
             {/* Practice Bot Card */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -2 }}
               onClick={handlePracticeClick}
               style={{
@@ -790,16 +779,16 @@ export default function Lobby() {
                 {isSprintComplete && <div className="sprint-complete-msg">🎉 Sprint Complete! Come back tomorrow for new puzzles.</div>}
               </div>
             )}
-            
+
             <div className="puzzle-grid">
               {puzzlesLoading ? (
-                 <div style={{ color: '#0ea5e9', padding: '20px' }}>⟳ Loading Brain Teasers...</div>
+                <div style={{ color: '#0ea5e9', padding: '20px' }}>⟳ Loading Brain Teasers...</div>
               ) : dailyPuzzles.length === 0 ? (
-                 <div style={{ color: '#666', padding: '40px', textAlign: 'center' }}>
-                   <div style={{ fontSize: 40, marginBottom: 12 }}>🧩</div>
-                   <div style={{ fontWeight: 600, marginBottom: 6 }}>No puzzles available</div>
-                   <div style={{ fontSize: 12 }}>Check back soon — new puzzles are being added!</div>
-                 </div>
+                <div style={{ color: '#666', padding: '40px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🧩</div>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>No puzzles available</div>
+                  <div style={{ fontSize: 12 }}>Check back soon — new puzzles are being added!</div>
+                </div>
               ) : (
                 dailyPuzzles.map((p, idx) => {
                   const pid = String(p._id || p.id);
@@ -823,8 +812,8 @@ export default function Lobby() {
                   const diffStyle = p.difficulty === 'Easy'
                     ? { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.3)' }
                     : p.difficulty === 'Hard'
-                    ? { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' }
-                    : { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)' };
+                      ? { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' }
+                      : { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)' };
 
                   return (
                     <div key={pid} className={`puzzle-card ${isSolved ? 'solved-card' : ''}`}
@@ -852,7 +841,7 @@ export default function Lobby() {
                         <span className="puzzle-cat">{p.category}</span>
                         <span className="puzzle-points" style={{ color: cc.color }}>+{p.xp || p.points} XP</span>
                       </div>
-                      
+
                       {isSolved ? (
                         <button className="btn-puzzle-solved" disabled>
                           <span style={{ fontSize: 14 }}>✓</span> Solved
@@ -879,7 +868,7 @@ export default function Lobby() {
               <div className="panel-header">
                 <span className="panel-title">Select a Problem <span style={{ color: '#555', fontSize: 12 }}>({filteredProblems.length})</span></span>
                 <div className="filters">
-                  
+
                   <input
                     type="text"
                     placeholder="Search..."
@@ -900,19 +889,20 @@ export default function Lobby() {
                     const isSolved = checkIsSolved(user, p);
 
                     return (
-                    <div key={p._id || idx} onClick={() => setSelectedProblem(p)} className={`problem-item ${selectedProblem?._id === p._id ? 'selected' : ''}`}>
-                      <div className="prob-num" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, borderColor: diffColor[p.difficulty]?.border }}>{idx + 1}</div>
-                      <div className="prob-info">
-                        <div className="prob-name" style={{ display:'flex', alignItems:'center', gap:6 }}>
-                          {p.title}
-                          {isSolved && <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✓ Solved</span>}
+                      <div key={p._id || idx} onClick={() => setSelectedProblem(p)} className={`problem-item ${selectedProblem?._id === p._id ? 'selected' : ''}`}>
+                        <div className="prob-num" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, borderColor: diffColor[p.difficulty]?.border }}>{idx + 1}</div>
+                        <div className="prob-info">
+                          <div className="prob-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {p.title}
+                            {isSolved && <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✓ Solved</span>}
+                          </div>
+                          <div className="prob-meta">{p.category} · {p.acceptance}% acceptance</div>
                         </div>
-                        <div className="prob-meta">{p.category} · {p.acceptance}% acceptance</div>
+                        <span className="prob-diff" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, border: `1px solid ${diffColor[p.difficulty]?.border}` }}>{p.difficulty}</span>
+                        {selectedProblem?._id === p._id && <span style={{ color: '#ff6b35', fontSize: 14 }}>✓</span>}
                       </div>
-                      <span className="prob-diff" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, border: `1px solid ${diffColor[p.difficulty]?.border}` }}>{p.difficulty}</span>
-                      {selectedProblem?._id === p._id && <span style={{ color: '#ff6b35', fontSize: 14 }}>✓</span>}
-                    </div>
-                  )})}
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -1010,84 +1000,45 @@ export default function Lobby() {
           box-shadow: 0 0 0 2px rgba(255,107,53,0.2);
         }
 
-        /* SAAS MODAL CSS */
-        .premium-overlay {
-          position: fixed; inset: 0; z-index: 9999;
-          background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-          display: flex; align-items: center; justify-content: center; padding: 20px; font-family: Inter, sans-serif;
-        }
-        .premium-modal {
-          width: 100%; max-width: 1050px; background: #fdfdfd; border-radius: 24px;
-          padding: 40px; position: relative; overflow: hidden; display: flex; align-items: center;
-          box-shadow: 0 40px 100px rgba(0,0,0,0.9); color: #111;
-        }
-        .close-btn {
-          position: absolute; top: 20px; right: 20px; background: none; border: none;
-          font-size: 24px; color: #9ca3af; cursor: pointer; z-index: 50; transition: color 0.2s;
-        }
-        .close-btn:hover { color: #111; }
-        .radial-glow {
-          position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-          width: 600px; height: 600px; border-radius: 50%; pointer-events: none;
-          background: radial-gradient(circle, rgba(255,182,193,0.25) 0%, rgba(255,200,150,0.2) 50%, transparent 80%);
-          filter: blur(60px);
-        }
-        .modal-left { width: 35%; position: relative; z-index: 10; padding-right: 40px; }
-        .icon-box { width: 64px; height: 64px; background: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #f3f4f6; margin-bottom: 24px; }
-        .title-bold { font-size: 52px; font-weight: 900; color: #000; line-height: 1.05; margin-bottom: 8px; font-family: Inter, sans-serif; letter-spacing: -1px; }
-        .subtitle-gray { color: #6b7280; font-size: 16px; font-weight: 500; margin: 0; }
-        .modal-right { width: 65%; display: flex; gap: 16px; align-items: stretch; position: relative; z-index: 10; }
+        /* OLD CSS REMOVED */
+        /* PREMIUM MODAL REDESIGN */
+        .premium-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+        .premium-modal { position: relative; background: #0a0a0c; border: 1px solid rgba(255,107,53,0.3); border-radius: 24px; padding: 48px 40px; width: 100%; max-width: 1000px; box-shadow: 0 0 80px rgba(255,107,53,0.08), 0 40px 80px rgba(0,0,0,0.6); overflow: hidden; }
+        .close-btn { position: absolute; top: 20px; right: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .close-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+        .premium-glow-bg { position: absolute; top: -20%; left: 50%; transform: translateX(-50%); width: 80%; height: 50%; background: radial-gradient(ellipse at center, rgba(255,107,53,0.15) 0%, transparent 70%); filter: blur(60px); pointer-events: none; }
         
-        /* SAAS CARDS */
-        .saas-card {
-          background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-          flex: 1; display: flex; flex-direction: column; cursor: default; min-height: 520px;
-        }
-        .saas-card-pro {
-          background: #fff; border: 1px solid #fb923c; border-radius: 16px; overflow: hidden;
-          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 20px 40px rgba(251, 146, 60, 0.15);
-          transform: scale(1.05); z-index: 5; flex: 1.1; display: flex; flex-direction: column; cursor: default; min-height: 560px;
-        }
-        
-        .saas-card:hover {
-          transform: scale(1.05); box-shadow: 0 20px 40px rgba(244, 63, 94, 0.15); border-color: #f43f5e; z-index: 10;
-        }
-        .saas-card-pro:hover {
-          transform: scale(1.08); box-shadow: 0 25px 50px rgba(251, 146, 60, 0.25); z-index: 10;
-        }
+        .premium-header { text-align: center; margin-bottom: 48px; position: relative; z-index: 5; }
+        .premium-badge { display: inline-block; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; padding: 6px 16px; border-radius: 20px; margin-bottom: 20px; }
+        .premium-title { font-family: Outfit, sans-serif; font-size: 42px; font-weight: 900; color: #fff; margin: 0 0 16px 0; letter-spacing: -1px; }
+        .premium-title span { background: linear-gradient(135deg, #ff6b35, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .premium-subtitle { font-size: 16px; color: #a1a1aa; max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
-        .card-top-bar { color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
-        .most-popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #ff6b35; color: #fff; font-size: 11px; font-weight: 800; padding: 6px 16px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        .card-content { padding: 24px 20px; display: flex; flex-direction: column; flex: 1; align-items: center; text-align: center; }
-        .plan-label { font-size: 10px; font-weight: 800; color: #111; letter-spacing: 1.5px; margin-bottom: 4px; }
-        .billed-label { font-size: 9px; color: #9ca3af; margin-bottom: 16px; }
-        .price-text { font-size: 40px; font-weight: 900; color: #000; margin-bottom: 4px; line-height: 1; }
-        .price-text span { font-size: 14px; font-weight: 600; color: #6b7280; }
-        .strikethrough-text { font-size: 9px; color: #9ca3af; text-decoration: line-through; margin-bottom: 16px; }
-        .desc-text { font-size: 9px; color: #6b7280; margin-bottom: 20px; }
-        .feature-heading { width: 100%; font-size: 9px; font-weight: 800; color: #374151; margin-bottom: 12px; text-align: left; }
-        .feature-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-        .feature-item { display: flex; gap: 8px; align-items: flex-start; text-align: left; }
-        .check-icon { width: 12px; height: 12px; border-radius: 50%; background: #22c55e; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-        .feature-item span { font-size: 10px; color: #4b5563; line-height: 1.4; font-weight: 500; }
+        .premium-cards-container { display: flex; gap: 24px; position: relative; z-index: 5; }
+        .premium-card { flex: 1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 32px 24px; display: flex; flex-direction: column; transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1); }
+        .premium-card:hover { transform: translateY(-8px); background: rgba(255,255,255,0.03); }
         
-        .saas-btn {
-          width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
-          cursor: pointer; transition: all 0.3s ease; border: 1px solid #d1d5db; background: #fff; color: #374151; font-family: Inter, sans-serif;
-        }
-        .saas-btn-pro {
-          width: 100%; padding: 14px; border-radius: 8px; font-weight: 700; font-size: 13px;
-          cursor: pointer; transition: all 0.3s ease; border: none; background: #f43f5e; color: #fff; font-family: Inter, sans-serif;
-        }
-        .saas-card:hover .saas-btn {
-          background: #f43f5e; color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
-        }
-        .saas-card-pro:hover .saas-btn-pro {
-          background: #e11d48; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.4);
-        }
-        .contact-sales { font-size: 9px; font-weight: 700; color: #f43f5e; cursor: pointer; transition: color 0.2s; text-align: center; }
-        .contact-sales:hover { color: #e11d48; text-decoration: underline; }
+        .pro-tier { border-color: rgba(96,165,250,0.3); background: linear-gradient(180deg, rgba(96,165,250,0.05) 0%, rgba(255,255,255,0.02) 100%); }
+        .pro-plus-tier { border-color: rgba(255,107,53,0.5); background: linear-gradient(180deg, rgba(255,107,53,0.08) 0%, rgba(255,255,255,0.02) 100%); position: relative; transform: scale(1.05); z-index: 10; box-shadow: 0 20px 40px rgba(255,107,53,0.15); }
+        .pro-plus-tier:hover { transform: scale(1.05) translateY(-8px); box-shadow: 0 30px 60px rgba(255,107,53,0.2); }
+        
+        .popular-tag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff6b35, #f7451d); color: #fff; font-size: 10px; font-weight: 800; padding: 6px 16px; border-radius: 20px; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(255,107,53,0.4); }
+        .tier-name { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; font-family: Outfit, sans-serif; display: flex; align-items: center; justify-content: space-between; }
+        .tier-price { font-size: 36px; font-weight: 900; color: #fff; margin-bottom: 12px; font-family: JetBrains Mono, monospace; }
+        .tier-price span { font-size: 14px; color: #666; font-weight: 600; font-family: Inter, sans-serif; }
+        .tier-desc { font-size: 13px; color: #888; margin-bottom: 24px; min-height: 38px; line-height: 1.5; }
+        
+        .tier-features { list-style: none; padding: 0; margin: 0 0 32px 0; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+        .tier-features li { font-size: 13px; color: #d1d5db; display: flex; align-items: center; font-weight: 500; }
+        .tier-features li.disabled { color: #555; text-decoration: line-through; opacity: 0.5; }
+        .highlight-feat { color: #ff6b35; font-weight: 700; background: rgba(255,107,53,0.1); padding: 4px 8px; border-radius: 6px; margin-left: -8px; border: 1px solid rgba(255,107,53,0.2); }
+        
+        .tier-btn { width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.3s ease; font-family: Inter, sans-serif; text-align: center; }
+        .btn-free { background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-pro { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+        .btn-pro:hover { background: rgba(96,165,250,0.2); color: #fff; }
+        .btn-pro-plus { background: linear-gradient(135deg, #ff6b35, #f7451d); color: #fff; border: none; box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
+        .btn-pro-plus:hover { background: linear-gradient(135deg, #f7451d, #ea580c); box-shadow: 0 12px 28px rgba(255,107,53,0.4); }
 
         .glass-nav { height: 60px; background: #111113; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
         .logo { font-size: 16px; cursor: pointer; display: flex; align-items: center; margin-right: 32px; }

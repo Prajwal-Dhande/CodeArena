@@ -157,6 +157,10 @@ export default function BattleRoom() {
   const [zenMode, setZenMode] = useState(false)
   const [showProblemPicker, setShowProblemPicker] = useState(false)
   const [allProblems, setAllProblems] = useState([])
+
+  // Clara AI Interview State
+  const [claraMessages, setClaraMessages] = useState([])
+  const [claraThinking, setClaraThinking] = useState(false)
   const [roomPlayers, setRoomPlayers] = useState([])
   const [battleStarted, setBattleStarted] = useState(false)
   const [opponentName, setOpponentName] = useState('Opponent')
@@ -659,6 +663,9 @@ export default function BattleRoom() {
         socketRef.current?.emit('battle_won', { roomId, winner: currentUser?.username || 'Player' })
       } else {
         setSubmitStatus('failed')
+        if (isPremiumMode()) {
+          setClaraMessages(prev => [...prev, { type: 'warn', text: `⚠️ Some test cases failed. Check your edge cases — what happens with empty arrays, negative numbers, or very large inputs?` }]);
+        }
       }
     } catch (err) {
       setResults([{ i: 0, ok: false, error: 'Network Blocked or Server Unreachable.' }])
@@ -1325,11 +1332,124 @@ export default function BattleRoom() {
       </PanelGroup>
     </Panel>
 
-        {!practiceMode && (
+        {/* Clara AI Panel — shows in premiumMode (replaces opponent panel) */}
+        {premiumMode && (
           <PanelResizeHandle className="resize-handle-h" />
         )}
 
-        {!practiceMode && (
+        {premiumMode && (
+        <Panel defaultSize={28} minSize={20} className="panel opp-panel">
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0d0d10', overflow: 'hidden' }}>
+            {/* Clara Header */}
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(236,72,153,0.15)', background: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(139,92,246,0.06))', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 0 14px rgba(236,72,153,0.4)', flexShrink: 0 }}>🤖</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'Outfit' }}>Clara</div>
+                <div style={{ fontSize: 10, color: '#ec4899', fontWeight: 700, letterSpacing: 1 }}>MAANG INTERVIEWER</div>
+              </div>
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', animation: 'pulse 2s infinite' }} />
+                <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 600 }}>LIVE</span>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Welcome message */}
+              {claraMessages.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 13, color: '#f9a8d4', lineHeight: 1.6 }}>
+                    👋 Hello! I'm Clara, your MAANG technical interviewer. I'll be watching your approach.
+                  </div>
+                  <div style={{ background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 13, color: '#f9a8d4', lineHeight: 1.6 }}>
+                    💡 Start coding! I'll give you real-time hints if you get stuck, and a full code review when you submit.
+                  </div>
+                  {problem?.companies?.length > 0 && (
+                    <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 12, color: '#fbbf24', lineHeight: 1.6 }}>
+                      🏢 This problem is asked at: <strong>{problem.companies.slice(0, 4).join(', ')}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Dynamic messages */}
+              {claraMessages.map((msg, i) => (
+                <div key={i} style={{
+                  background: msg.type === 'hint' ? 'rgba(236,72,153,0.08)' : msg.type === 'warn' ? 'rgba(251,191,36,0.08)' : 'rgba(34,197,94,0.08)',
+                  border: `1px solid ${msg.type === 'hint' ? 'rgba(236,72,153,0.2)' : msg.type === 'warn' ? 'rgba(251,191,36,0.2)' : 'rgba(34,197,94,0.2)'}`,
+                  borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 13,
+                  color: msg.type === 'hint' ? '#f9a8d4' : msg.type === 'warn' ? '#fde68a' : '#86efac',
+                  lineHeight: 1.6, animation: 'fadeIn 0.4s ease'
+                }}>
+                  {msg.text}
+                </div>
+              ))}
+
+              {claraThinking && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.15)', borderRadius: '0 14px 14px 14px' }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[0,1,2].map(d => <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: '#ec4899', animation: `bounce 1s ${d*0.2}s infinite` }} />)}
+                  </div>
+                  <span style={{ fontSize: 12, color: '#ec4899' }}>Clara is analyzing...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Ask Hint Button */}
+            <div style={{ padding: '12px 14px', borderTop: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+              <button
+                onClick={async () => {
+                  if (!problem || !code || claraThinking) return;
+                  setClaraThinking(true);
+                  try {
+                    const token = localStorage.getItem('token');
+                    const res = await fetch(`${API_URL}/api/ai/feedback`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({
+                        problemTitle: problem.title,
+                        userCode: code,
+                        language,
+                        timeComplexity: 'Not yet determined',
+                        spaceComplexity: 'Not yet determined',
+                        timeTaken: 0,
+                        passedTests: myTests,
+                        totalTests
+                      })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.feedback) {
+                      const f = data.feedback;
+                      const hint = f.improvements?.[0] || f.strengths?.[0] || 'Keep going, you are on the right track!';
+                      setClaraMessages(prev => [...prev, { type: 'hint', text: `💡 ${hint}` }]);
+                    } else {
+                      setClaraMessages(prev => [...prev, { type: 'hint', text: '💡 Keep going! Think about edge cases.' }]);
+                    }
+                  } catch {
+                    setClaraMessages(prev => [...prev, { type: 'hint', text: '💡 Think about the time complexity of your current approach.' }]);
+                  } finally {
+                    setClaraThinking(false);
+                  }
+                }}
+                disabled={claraThinking || !problem || !code}
+                style={{
+                  width: '100%', padding: '10px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                  background: claraThinking ? 'rgba(255,255,255,0.04)' : 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(139,92,246,0.2))',
+                  border: '1px solid rgba(236,72,153,0.3)', color: claraThinking ? '#555' : '#ec4899',
+                  cursor: claraThinking ? 'not-allowed' : 'pointer', fontFamily: 'Inter', transition: 'all 0.2s'
+                }}>
+                {claraThinking ? '✨ Thinking...' : '💬 Ask Clara for a Hint'}
+              </button>
+            </div>
+          </div>
+        </Panel>
+        )}
+
+        {!practiceMode && !premiumMode && (
+          <PanelResizeHandle className="resize-handle-h" />
+        )}
+
+        {!practiceMode && !premiumMode && (
         <Panel defaultSize={25} minSize={15} className="panel opp-panel">
           <div className="editor-header glass-panel">
             <div className="user-indicator red">
@@ -1382,6 +1502,7 @@ export default function BattleRoom() {
           difficulty={problem?.difficulty}
           language={language}
           premiumMode={premiumMode}
+          userCode={code}
           timeComplexity={complexity?.time || (problem?.slug ? PROBLEM_COMPLEXITY[problem.slug] : 'O(N)')}
           complexity={complexity}
           onRematch={handleRematch}
@@ -1540,6 +1661,8 @@ export default function BattleRoom() {
         .ai-box.loading p { color: #d97706; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         @media (max-width: 1024px) {
           .main-grid { grid-template-columns: 1fr; overflow-y: auto; display: flex; flex-direction: column; }
           .opp-panel { display: none; }
