@@ -187,7 +187,7 @@ router.post('/run', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Problem not found' })
     }
 
-    const { results, passed, total } = await runTestCases(
+    const { results, passed, total, complexity } = await runTestCases(
       code, language, problem.testCases
     )
 
@@ -196,6 +196,7 @@ router.post('/run', authMiddleware, async (req, res) => {
       passed,
       total,
       results,
+      complexity,
       allPassed: passed === total
     })
 

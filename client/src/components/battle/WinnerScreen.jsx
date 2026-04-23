@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import API_URL from '../../config/api'
 import PremiumRadarChart from './PremiumRadarChart'
 
-export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language, premiumMode, timeComplexity }) {
+export default function WinnerScreen({ result, problem, myTests, totalTests, timeTaken, onRematch, onLobby, opponentName, difficulty, language, premiumMode, timeComplexity, complexity }) {
   const [eloData, setEloData] = useState(null)
   const [rankUp, setRankUp] = useState(false)
   
@@ -174,6 +174,38 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
             </div>
           ))}
         </div>
+
+        {/* ⚡ Your Solution's Complexity */}
+        {(complexity || timeComplexity) && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(255,107,53,0.08), rgba(251,191,36,0.08))',
+            border: '1px solid rgba(255,107,53,0.25)',
+            borderRadius: 16, padding: '18px 20px', marginBottom: 24, textAlign: 'left'
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#ff6b35', letterSpacing: 1, marginBottom: 12 }}>
+              ⚡ YOUR SOLUTION ANALYSIS
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '12px 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 900, color: '#fbbf24', fontFamily: 'Outfit', marginBottom: 4 }}>
+                  {complexity?.time || timeComplexity || 'O(N)'}
+                </div>
+                <div style={{ fontSize: 10, color: '#555', fontWeight: 700, letterSpacing: 0.5 }}>TIME COMPLEXITY</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '12px 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 900, color: '#60a5fa', fontFamily: 'Outfit', marginBottom: 4 }}>
+                  {complexity?.space || 'O(N)'}
+                </div>
+                <div style={{ fontSize: 10, color: '#555', fontWeight: 700, letterSpacing: 0.5 }}>SPACE COMPLEXITY</div>
+              </div>
+            </div>
+            {complexity?.note && (
+              <div style={{ marginTop: 10, fontSize: 12, color: '#777', textAlign: 'center', fontStyle: 'italic' }}>
+                📊 {complexity.note}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 12 }}>

@@ -99,33 +99,9 @@ const LanguageIcon = ({ lang }) => {
   }
 }
 
-// 🔥 BULLETPROOF SMART ALIAS INJECTOR
-const processCodeForBackend = (rawCode, lang) => {
-  let finalCode = rawCode;
-  try {
-    if (lang === 'javascript' || lang === 'typescript') {
-      const funcMatch = rawCode.match(/function\s+([a-zA-Z0-9_]+)\s*\(/);
-      const arrowMatch = rawCode.match(/(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/);
-      
-      const funcName = funcMatch ? funcMatch[1] : (arrowMatch ? arrowMatch[1] : null);
-      if (funcName && funcName !== 'solution') {
-        if (funcMatch) {
-          finalCode = rawCode.replace(new RegExp(`function\\s+${funcName}\\s*\\(`), `function solution(`);
-        } else if (arrowMatch) {
-          finalCode = rawCode.replace(new RegExp(`(?:const|let|var)\\s+${funcName}\\s*=`), `const solution =`);
-        }
-      }
-    } else if (lang === 'python') {
-      const funcMatch = rawCode.match(/def\s+([a-zA-Z0-9_]+)\s*\(/);
-      if (funcMatch && funcMatch[1] !== 'solution') {
-        finalCode = rawCode.replace(new RegExp(`def\\s+${funcMatch[1]}\\s*\\(`), `def solution(`);
-      }
-    }
-  } catch(e) { 
-    console.error("Alias injection failed", e); 
-  }
-  return finalCode;
-};
+// Server-side function name adaptation handles all languages
+// No client-side renaming needed — server reads user's actual function name
+const processCodeForBackend = (rawCode) => rawCode;
 
 const getRoomId = () => new URLSearchParams(window.location.search).get('room') || 'demo-room-1'
 const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
@@ -187,6 +163,7 @@ export default function BattleRoom() {
   const [gameOver, setGameOver] = useState(false)
   const [gameResult, setGameResult] = useState(null)
   const [timeTaken, setTimeTaken] = useState(0)
+  const [complexity, setComplexity] = useState(null)
 
   const [timerKey, setTimerKey] = useState(0) 
   const [remainingTime, setRemainingTime] = useState(() => {
@@ -213,6 +190,9 @@ export default function BattleRoom() {
 
   useEffect(() => {
     if (battleStarted) {
+      // ✅ Agar problem already solved hai toh timer mat chalaao
+      if (isAlreadySolved) return;
+
       const roomId = getRoomId();
       const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
       
@@ -232,7 +212,7 @@ export default function BattleRoom() {
         setTimerKey(prev => prev + 1);
       }
     }
-  }, [battleStarted])
+  }, [battleStarted, isAlreadySolved])
 
   useEffect(() => {
     const slug = getProblemSlug()
@@ -528,6 +508,7 @@ export default function BattleRoom() {
       }
 
       setMyTests(data.passed)
+      if (data.complexity) setComplexity(data.complexity)
       socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
       setResults(resultsArray.map(r => ({
         i: r.testCase, ok: r.passed, result: r.result,
@@ -612,6 +593,7 @@ export default function BattleRoom() {
       }
 
       setMyTests(data.passed)
+      if (data.complexity) setComplexity(data.complexity)
       socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
       setResults(resultsArray.map(r => ({
         i: r.testCase, ok: r.passed, result: r.result,
@@ -823,7 +805,7 @@ export default function BattleRoom() {
           </span>
         </div>
 
-        {!premiumMode && (
+        {!premiumMode && !isAlreadySolved && (
           <div className="timer-box">
             <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
             {battleStarted
@@ -832,64 +814,249 @@ export default function BattleRoom() {
             }
           </div>
         )}
+        {isAlreadySolved && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
+            borderRadius: 8, padding: '5px 14px', fontSize: 12, fontWeight: 700, color: '#22c55e'
+          }}>
+            ✅ Solved
+          </div>
+        )}
       </div>
 
       <PanelGroup direction="horizontal" orientation="horizontal" className="main-grid" style={{ flex: 1 }}>
 
         {!battleStarted && !new URLSearchParams(window.location.search).get('bot') && (
-          <div className="waiting-overlay">
-            <div className="waiting-card">
-              <div className="radar-spinner" style={{ borderTopColor: practiceMode ? '#22c55e' : '#ff6b35' }} />
-              <h2 className="wait-title">
-                {practiceMode ? '🧠 Practice Mode' : 'Waiting for Opponent...'}
-              </h2>
-              <p className="wait-desc">
-                {practiceMode ? (
-                  <>Setting up your practice session...<br />
-                    <span style={{ fontFamily: 'monospace', color: '#22c55e', fontWeight: 700 }}>{problem?.title || 'Loading...'}</span>
-                  </>
-                ) : (
-                  <>Room: <span style={{ fontFamily: 'monospace', color: '#ff6b35', fontWeight: 700 }}>{roomId}</span>
-                    <br />Share this room ID or wait for the player to connect!
-                  </>
-                )}
-              </p>
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 10,
+            background: 'radial-gradient(ellipse at 60% 30%, rgba(34,197,94,0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(255,107,53,0.06) 0%, transparent 60%), #030305',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Inter, sans-serif'
+          }}>
 
-              <div className="wait-players">
-                <div className="w-player">
-                  <div className="w-avatar me-bg">
-                    {roomPlayers[0]?.username?.slice(0, 2).toUpperCase() || 'P'}
+            {/* Animated bg particles */}
+            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{
+                  position: 'absolute',
+                  width: `${120 + i * 80}px`, height: `${120 + i * 80}px`,
+                  border: `1px solid rgba(34,197,94,${0.04 + i * 0.015})`,
+                  borderRadius: '50%',
+                  top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  animation: `ringPulse ${2.5 + i * 0.4}s ease-in-out ${i * 0.3}s infinite`
+                }} />
+              ))}
+            </div>
+
+            {/* Main Card */}
+            <div style={{
+              position: 'relative',
+              background: 'rgba(12,12,16,0.85)',
+              backdropFilter: 'blur(40px)',
+              border: '1px solid rgba(34,197,94,0.2)',
+              borderRadius: 28,
+              padding: '52px 56px',
+              width: '100%', maxWidth: 520,
+              textAlign: 'center',
+              boxShadow: '0 0 80px rgba(34,197,94,0.08), 0 40px 80px rgba(0,0,0,0.6)',
+              animation: 'cardSlideIn 0.5s cubic-bezier(0.16,1,0.3,1)'
+            }}>
+
+              {/* Top glow line */}
+              <div style={{
+                position: 'absolute', top: 0, left: '20%', right: '20%', height: 1,
+                background: 'linear-gradient(90deg, transparent, rgba(34,197,94,0.7), transparent)',
+                borderRadius: 2
+              }} />
+
+              {/* Mode badge */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: practiceMode ? 'rgba(34,197,94,0.1)' : 'rgba(255,107,53,0.1)',
+                border: `1px solid ${practiceMode ? 'rgba(34,197,94,0.3)' : 'rgba(255,107,53,0.3)'}`,
+                borderRadius: 20, padding: '6px 18px', marginBottom: 32,
+                fontSize: 12, fontWeight: 800, letterSpacing: 1,
+                color: practiceMode ? '#22c55e' : '#ff6b35'
+              }}>
+                <div style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: practiceMode ? '#22c55e' : '#ff6b35',
+                  animation: 'pulse 1.2s ease-in-out infinite'
+                }} />
+                {practiceMode ? 'PRACTICE MODE' : 'MATCHMAKING'}
+              </div>
+
+              {/* Spinner */}
+              <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 28px' }}>
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  border: '2px solid rgba(255,255,255,0.04)'
+                }} />
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  border: `2px solid transparent`,
+                  borderTopColor: practiceMode ? '#22c55e' : '#ff6b35',
+                  borderRightColor: practiceMode ? 'rgba(34,197,94,0.4)' : 'rgba(255,107,53,0.4)',
+                  animation: 'spin 0.9s linear infinite'
+                }} />
+                <div style={{
+                  position: 'absolute', inset: 8, borderRadius: '50%',
+                  border: `1px solid transparent`,
+                  borderBottomColor: practiceMode ? 'rgba(34,197,94,0.6)' : 'rgba(255,107,53,0.6)',
+                  animation: 'spin 1.4s linear infinite reverse'
+                }} />
+                <div style={{
+                  position: 'absolute', inset: 0, display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  fontSize: 24
+                }}>
+                  {practiceMode ? '🧠' : '⚔️'}
+                </div>
+              </div>
+
+              {/* Problem title */}
+              <div style={{
+                fontFamily: 'Outfit, sans-serif', fontWeight: 900,
+                fontSize: 28, letterSpacing: '-0.5px',
+                background: practiceMode
+                  ? 'linear-gradient(135deg, #22c55e, #86efac, #22c55e)'
+                  : 'linear-gradient(135deg, #ff6b35, #fbbf24, #ff6b35)',
+                backgroundSize: '200% auto',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                marginBottom: 10,
+                animation: 'shimmer 2.5s linear infinite'
+              }}>
+                {problem?.title || 'Loading...'}
+              </div>
+
+              <div style={{ fontSize: 13, color: '#555', marginBottom: 36, fontWeight: 500 }}>
+                {practiceMode ? 'Setting up your arena...' : `Room: `}
+                {!practiceMode && <span style={{ color: '#ff6b35', fontFamily: 'monospace', fontWeight: 700 }}>{roomId}</span>}
+              </div>
+
+              {/* Players section */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+                {/* Me */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 54, height: 54, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ff6b35, #f7451d)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 18, fontWeight: 800, color: '#fff',
+                    boxShadow: '0 0 20px rgba(255,107,53,0.4)',
+                    animation: 'avatarPop 0.4s cubic-bezier(0.16,1,0.3,1)'
+                  }}>
+                    {(roomPlayers[0]?.username || currentUser?.username || 'P').slice(0, 2).toUpperCase()}
                   </div>
-                  <div className="w-name">{roomPlayers[0]?.username || 'You'}</div>
-                  <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 700 }}>Ready</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#e5e5e5' }}>
+                    {roomPlayers[0]?.username || currentUser?.username || 'You'}
+                  </div>
+                  <div style={{
+                    fontSize: 10, fontWeight: 800, color: '#22c55e',
+                    letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 4
+                  }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', animation: 'pulse 1s infinite' }} />
+                    READY
+                  </div>
                 </div>
 
-                <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 20, color: '#555' }}>VS</div>
+                {/* VS */}
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
+                }}>
+                  <div style={{
+                    fontFamily: 'Outfit', fontWeight: 900, fontSize: 18,
+                    color: '#333', letterSpacing: 2
+                  }}>VS</div>
+                  <div style={{ width: 1, height: 30, background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.1), transparent)' }} />
+                </div>
 
-                <div className="w-player">
-                  <div className="w-avatar" style={{
-                    background: practiceMode ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'rgba(255,255,255,0.02)',
-                    borderStyle: practiceMode ? 'solid' : 'dashed',
-                    borderColor: practiceMode ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)',
-                    color: practiceMode ? '#fff' : '#555'
+                {/* Opponent / Bot */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 54, height: 54, borderRadius: '50%',
+                    background: practiceMode
+                      ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: practiceMode ? 'none' : '2px dashed rgba(255,255,255,0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22,
+                    boxShadow: practiceMode ? '0 0 20px rgba(34,197,94,0.3)' : 'none',
+                    animation: 'avatarPop 0.4s cubic-bezier(0.16,1,0.3,1) 0.15s both'
                   }}>
                     {practiceMode ? '🤖' : '?'}
                   </div>
-                  <div className="w-name" style={{ color: practiceMode ? '#22c55e' : '#666' }}>
-                    {practiceMode ? 'AI Bot' : 'Waiting...'}
+                  <div style={{ fontSize: 12, fontWeight: 700, color: practiceMode ? '#e5e5e5' : '#444' }}>
+                    {practiceMode ? 'AI Opponent' : 'Searching...'}
                   </div>
-                  <div style={{ fontSize: 11, color: practiceMode ? '#22c55e' : '#fb923c', fontWeight: 700 }}>
-                    {practiceMode ? 'Ready' : 'Connecting'}
+                  <div style={{
+                    fontSize: 10, fontWeight: 800,
+                    color: practiceMode ? '#22c55e' : '#fb923c',
+                    letterSpacing: 0.5, display: 'flex', alignItems: 'center', gap: 4
+                  }}>
+                    <div style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: practiceMode ? '#22c55e' : '#fb923c',
+                      animation: 'pulse 1s infinite'
+                    }} />
+                    {practiceMode ? 'READY' : 'JOINING'}
                   </div>
                 </div>
               </div>
 
+              {/* Difficulty + loading bar */}
+              {problem?.difficulty && (
+                <div style={{ marginTop: 36 }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 14 }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20,
+                      background: problem.difficulty === 'Easy' ? 'rgba(34,197,94,0.1)' : problem.difficulty === 'Hard' ? 'rgba(239,68,68,0.1)' : 'rgba(251,146,60,0.1)',
+                      color: problem.difficulty === 'Easy' ? '#22c55e' : problem.difficulty === 'Hard' ? '#ef4444' : '#fb923c',
+                      border: `1px solid ${problem.difficulty === 'Easy' ? 'rgba(34,197,94,0.2)' : problem.difficulty === 'Hard' ? 'rgba(239,68,68,0.2)' : 'rgba(251,146,60,0.2)'}`
+                    }}>{problem.difficulty}</span>
+                  </div>
+                  <div style={{ height: 2, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 2,
+                      background: practiceMode ? 'linear-gradient(90deg, #22c55e, #86efac)' : 'linear-gradient(90deg, #ff6b35, #fbbf24)',
+                      animation: 'loadBar 1.8s ease-in-out infinite'
+                    }} />
+                  </div>
+                </div>
+              )}
+
               {!practiceMode && !isRealMatch() && (
-                <div style={{ marginTop: 24, fontSize: 12, color: '#555' }}>
-                  No opponent? A bot will join in 8 seconds...
+                <div style={{ marginTop: 20, fontSize: 11, color: '#333', fontStyle: 'italic' }}>
+                  No opponent found? A bot joins in 8s...
                 </div>
               )}
             </div>
+
+            <style>{`
+              @keyframes ringPulse {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+                50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+              }
+              @keyframes cardSlideIn {
+                from { opacity: 0; transform: translateY(24px) scale(0.97); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              @keyframes avatarPop {
+                from { opacity: 0; transform: scale(0.7); }
+                to { opacity: 1; transform: scale(1); }
+              }
+              @keyframes shimmer {
+                0% { background-position: 0% center; }
+                100% { background-position: 200% center; }
+              }
+              @keyframes loadBar {
+                0% { width: 0%; margin-left: 0; }
+                50% { width: 70%; margin-left: 10%; }
+                100% { width: 0%; margin-left: 100%; }
+              }
+            `}</style>
           </div>
         )}
 
@@ -1213,8 +1380,10 @@ export default function BattleRoom() {
           timeTaken={timeTaken}
           opponentName={opponentName}
           difficulty={problem?.difficulty}
+          language={language}
           premiumMode={premiumMode}
-          timeComplexity={problem?.slug ? PROBLEM_COMPLEXITY[problem.slug] : 'O(N)'}
+          timeComplexity={complexity?.time || (problem?.slug ? PROBLEM_COMPLEXITY[problem.slug] : 'O(N)')}
+          complexity={complexity}
           onRematch={handleRematch}
           onLobby={() => navigate('/lobby')}
         />

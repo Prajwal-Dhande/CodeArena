@@ -808,7 +808,19 @@ export default function Profile() {
                     </span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{b.problem || 'Unknown'}</div>
+                    <div 
+                      onClick={() => {
+                        // Problem title se slug banao aur practice mode mein open karo
+                        const slug = b.problemSlug || b.problem?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                        navigate(`/battle?problem=${slug}&practice=true`)
+                      }}
+                      style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 3, cursor: 'pointer', transition: 'color 0.2s' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#ff6b35'; e.currentTarget.style.textDecoration = 'underline'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.textDecoration = 'none'; }}
+                      title="View this problem in Practice Mode"
+                    >
+                      {b.problem || 'Unknown'} ↗
+                    </div>
                     <div style={{ fontSize: 11, color: b.result === 'win' ? '#22c55e' : '#ef4444', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>
                       {b.result === 'win' ? '+' : ''}{b.eloChange || 0} ELO
                     </div>
