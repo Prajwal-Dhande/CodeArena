@@ -17,10 +17,13 @@ router.get('/battles', authMiddleware, userController.getBattleHistory)
 router.get('/leaderboard', userController.getLeaderboard)
 router.post('/match-result', authMiddleware, userController.updateMatchResult)
 
+// 🔥 PROBLEM SOLVE ROUTE (NEW) 🔥
+router.post('/solve', authMiddleware, userController.markAsSolved)
+
 // 🔥 PUZZLE ROUTE 🔥
 router.post('/puzzle-result', authMiddleware, userController.updatePuzzleResult)
 
-// 🔥 NEW: SOCIAL ROUTES (FOLLOW / UNFOLLOW) 🔥
+// 🔥 SOCIAL ROUTES (FOLLOW / UNFOLLOW) 🔥
 router.post('/follow/:id', authMiddleware, userController.followUser)
 router.post('/unfollow/:id', authMiddleware, userController.unfollowUser)
 router.get('/search', authMiddleware, userController.searchUsers);

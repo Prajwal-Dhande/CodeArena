@@ -276,7 +276,7 @@ export default function BattleRoom() {
   }, [])
 
   useEffect(() => {
-    // 🔥 FIXED TYPO HERE (new URLSearchParams instead of newSearchParams)
+    // 🔥 TYPO FIXED HERE: new URLSearchParams
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
     const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
     
@@ -519,11 +519,17 @@ export default function BattleRoom() {
       }
 
       const data = await res.json()
-      if (!res.ok) { setResults([{ i: 0, ok: false, error: data.message }]); setRunning(false); return }
+      
+      // CORB SAFE CHECK
+      const resultsArray = data.results || [];
+      if (!res.ok || resultsArray.length === 0) { 
+        setResults([{ i: 0, ok: false, error: data.message || "Execution Failed" }]); 
+        setRunning(false); return; 
+      }
 
       setMyTests(data.passed)
       socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
-      setResults(data.results.map(r => ({
+      setResults(resultsArray.map(r => ({
         i: r.testCase, ok: r.passed, result: r.result,
         expected: r.expected, input: JSON.stringify(r.input),
         error: r.error, time: r.executionTime
@@ -533,7 +539,7 @@ export default function BattleRoom() {
         setTimeout(() => triggerAIConstraint(code, data.passed, data.total), 1200)
       }
     } catch (err) {
-      setResults([{ i: 0, ok: false, error: 'Server not reachable.' }])
+      setResults([{ i: 0, ok: false, error: 'Network Blocked or Server Unreachable.' }])
     }
     setRunning(false)
   }
@@ -597,11 +603,17 @@ export default function BattleRoom() {
       }
 
       const data = await res.json()
-      if (!res.ok) { setResults([{ i: 0, ok: false, error: data.message }]); setSubmitting(false); return }
+      
+      // CORB SAFE CHECK
+      const resultsArray = data.results || [];
+      if (!res.ok || resultsArray.length === 0) { 
+        setResults([{ i: 0, ok: false, error: data.message || "Execution Failed" }]); 
+        setSubmitting(false); return; 
+      }
 
       setMyTests(data.passed)
       socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
-      setResults(data.results.map(r => ({
+      setResults(resultsArray.map(r => ({
         i: r.testCase, ok: r.passed, result: r.result,
         expected: r.expected, input: JSON.stringify(r.input),
         error: r.error, time: r.executionTime
@@ -613,14 +625,41 @@ export default function BattleRoom() {
         gameOverRef.current = true
         setSubmitStatus('success')
         
-        const updatedUser = { ...currentUser };
-        if (!updatedUser.solvedProblems) updatedUser.solvedProblems = [];
-        const finalId = problem?._id || slug;
-        if (!updatedUser.solvedProblems.includes(finalId)) {
-           updatedUser.solvedProblems.push(finalId);
+        try {
+           const solveRes = await fetch(`${API_URL}/api/users/solve`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+             body: JSON.stringify({ problemId: problem?._id || slug })
+           });
+           const solveData = await solveRes.json();
+           
+           // Server se fresh user data aaya toh localStorage update karo
+           if (solveData.success && solveData.user) {
+             localStorage.setItem('user', JSON.stringify(solveData.user));
+             setCurrentUser(solveData.user);
+           } else {
+             // Fallback: locally update karo agar server ne fresh data nahi diya
+             const updatedUser = { ...currentUser };
+             if (!updatedUser.solvedProblems) updatedUser.solvedProblems = [];
+             const finalId = problem?._id || slug;
+             if (!updatedUser.solvedProblems.includes(finalId)) {
+               updatedUser.solvedProblems.push(finalId);
+             }
+             localStorage.setItem('user', JSON.stringify(updatedUser));
+             setCurrentUser(updatedUser);
+           }
+        } catch (e) { 
+          console.log("DB Sync failed", e);
+          // Network fail pe bhi locally update karo
+          const updatedUser = { ...currentUser };
+          if (!updatedUser.solvedProblems) updatedUser.solvedProblems = [];
+          const finalId = problem?._id || slug;
+          if (!updatedUser.solvedProblems.includes(finalId)) {
+            updatedUser.solvedProblems.push(finalId);
+          }
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          setCurrentUser(updatedUser);
         }
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setCurrentUser(updatedUser); 
 
         localStorage.setItem(`codeArena_solvedCode_${slug}`, code);
 
@@ -640,7 +679,7 @@ export default function BattleRoom() {
         setSubmitStatus('failed')
       }
     } catch (err) {
-      setResults([{ i: 0, ok: false, error: 'Server not reachable.' }])
+      setResults([{ i: 0, ok: false, error: 'Network Blocked or Server Unreachable.' }])
     }
     setSubmitting(false)
   }
@@ -1022,6 +1061,7 @@ export default function BattleRoom() {
               </button>
             )}
 
+            {/* 🔥 ANTI-CHEAT: Hide Run/Submit if already solved! */}
             {isAlreadySolved ? (
               <button disabled style={{ 
                 background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)',
@@ -1056,7 +1096,7 @@ export default function BattleRoom() {
               onMount={handleEditorMount}
               theme={zenMode ? 'synthwave' : 'vs-dark'}
               options={{
-                readOnly: isAlreadySolved,
+                readOnly: isAlreadySolved, // 🔥 Make Editor read-only if solved!
                 minimap: { enabled: false }, fontSize: 13.5,
                 fontFamily: 'JetBrains Mono', padding: { top: 14, bottom: 14 },
                 smoothScrolling: true, cursorBlinking: 'smooth',

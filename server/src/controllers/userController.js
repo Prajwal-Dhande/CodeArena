@@ -290,6 +290,53 @@ exports.getLeaderboard = async (req, res) => {
   }
 }
 
+// 🔥 NEW: Mark Problem as Solved & Give Base ELO 🔥
+exports.markAsSolved = async (req, res) => {
+  try {
+    const { problemId } = req.body;
+    
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // 🛡️ ANTI-CHEAT: Check agar pehle se solved hai
+    const alreadySolved = user.solvedProblems && user.solvedProblems.includes(String(problemId));
+    if (alreadySolved) {
+      return res.status(200).json({ 
+        success: true, 
+        message: "Problem already solved. No extra ELO awarded.",
+        user: { ...user.toObject(), rankInfo: getRankFromElo(user.elo) }
+      });
+    }
+
+    // Naya problem hai — $addToSet se safely add karo aur base ELO do
+    const newElo = Math.max(0, (user.elo || 0) + 20);
+    const newRank = getRankFromElo(newElo);
+    const newPeakElo = Math.max(user.peakElo || 0, newElo);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $addToSet: { solvedProblems: String(problemId) },
+        $set: { elo: newElo, rank: newRank.name, peakElo: newPeakElo }
+      },
+      { new: true }
+    ).select('-password -otp -otpExpiry');
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Problem solved successfully!", 
+      user: { ...updatedUser.toObject(), rankInfo: newRank }
+    });
+
+  } catch (error) {
+    console.error("Error in markAsSolved:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 // ✅ Export rank system
 exports.getRankFromElo = getRankFromElo
 exports.RANKS = RANKS
