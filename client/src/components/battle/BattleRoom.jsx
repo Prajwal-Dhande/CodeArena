@@ -99,6 +99,34 @@ const LanguageIcon = ({ lang }) => {
   }
 }
 
+// 🔥 BULLETPROOF SMART ALIAS INJECTOR
+const processCodeForBackend = (rawCode, lang) => {
+  let finalCode = rawCode;
+  try {
+    if (lang === 'javascript' || lang === 'typescript') {
+      const funcMatch = rawCode.match(/function\s+([a-zA-Z0-9_]+)\s*\(/);
+      const arrowMatch = rawCode.match(/(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/);
+      
+      const funcName = funcMatch ? funcMatch[1] : (arrowMatch ? arrowMatch[1] : null);
+      if (funcName && funcName !== 'solution') {
+        if (funcMatch) {
+          finalCode = rawCode.replace(new RegExp(`function\\s+${funcName}\\s*\\(`), `function solution(`);
+        } else if (arrowMatch) {
+          finalCode = rawCode.replace(new RegExp(`(?:const|let|var)\\s+${funcName}\\s*=`), `const solution =`);
+        }
+      }
+    } else if (lang === 'python') {
+      const funcMatch = rawCode.match(/def\s+([a-zA-Z0-9_]+)\s*\(/);
+      if (funcMatch && funcMatch[1] !== 'solution') {
+        finalCode = rawCode.replace(new RegExp(`def\\s+${funcMatch[1]}\\s*\\(`), `def solution(`);
+      }
+    }
+  } catch(e) { 
+    console.error("Alias injection failed", e); 
+  }
+  return finalCode;
+};
+
 const getRoomId = () => new URLSearchParams(window.location.search).get('room') || 'demo-room-1'
 const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
@@ -109,6 +137,9 @@ export default function BattleRoom() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
+  // USER STATE
+  const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'))
+
   const [problem, setProblem] = useState(null)
   const [problemLoading, setProblemLoading] = useState(true)
   
@@ -117,8 +148,20 @@ export default function BattleRoom() {
     return localStorage.getItem(`codeArena_lang_${roomId}`) || 'javascript';
   })
 
+  // CHECK IF ALREADY SOLVED
+  const isAlreadySolved = currentUser?.solvedProblems?.some(sp => {
+    const slug = getProblemSlug();
+    if (typeof sp === 'string') return sp === slug || sp === problem?._id;
+    return sp === slug || sp === problem?._id || sp.slug === slug || sp.problemId === problem?._id;
+  });
+
   const [code, setCode] = useState(() => {
     const roomId = getRoomId();
+    const slug = getProblemSlug();
+    
+    const solvedCode = localStorage.getItem(`codeArena_solvedCode_${slug}`);
+    if (solvedCode) return solvedCode;
+
     return localStorage.getItem(`codeArena_draft_${roomId}`) || DEFAULT_STARTER[language];
   })
   
@@ -202,18 +245,23 @@ export default function BattleRoom() {
         if (data.problem) {
           setProblem(data.problem)
           
-          const savedCode = localStorage.getItem(`codeArena_draft_${roomId}`);
-          if (!savedCode) {
-            setCode(data.problem.starterCode?.[language] || DEFAULT_STARTER[language] || DEFAULT_STARTER.javascript)
+          const isProblemSolvedLocally = currentUser?.solvedProblems?.some(sp => {
+            if (typeof sp === 'string') return sp === slug || sp === data.problem._id;
+            return sp === slug || sp === data.problem._id || sp.slug === slug || sp.problemId === data.problem._id;
+          });
+
+          if (isProblemSolvedLocally) {
+            const solvedCode = localStorage.getItem(`codeArena_solvedCode_${slug}`);
+            if (solvedCode) setCode(solvedCode);
+          } else {
+            const savedCode = localStorage.getItem(`codeArena_draft_${roomId}`);
+            if (!savedCode) {
+              setCode(data.problem.starterCode?.[language] || DEFAULT_STARTER[language] || DEFAULT_STARTER.javascript)
+            }
           }
         }
       } catch (err) {
-        setProblem({
-          slug: 'two-sum', title: 'Two Sum', difficulty: 'Medium',
-          description: 'Given an array nums and target, return indices of two numbers that add up to target.',
-          examples: [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]', explain: 'nums[0]+nums[1]=9' }],
-          constraints: ['2 ≤ nums.length ≤ 10⁴'], starterCode: DEFAULT_STARTER, hints: []
-        })
+        console.error("Failed to load problem", err);
       }
       setProblemLoading(false)
     }
@@ -228,6 +276,7 @@ export default function BattleRoom() {
   }, [])
 
   useEffect(() => {
+    // 🔥 FIXED TYPO HERE (new URLSearchParams instead of newSearchParams)
     const botNameFromUrl = new URLSearchParams(window.location.search).get('bot')
     const isBot = botNameFromUrl || opponentName.startsWith('Bot_')
     
@@ -279,7 +328,6 @@ export default function BattleRoom() {
 
     socket.on('connect', () => {
       setConnected(true)
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
       const roomId = getRoomId()
       
       const isReconnecting = !!localStorage.getItem(`codeArena_endTime_${roomId}`)
@@ -288,7 +336,7 @@ export default function BattleRoom() {
         battleStartedRef.current = true
       }
       
-      socket.emit('join_room', { roomId, username: user?.username || `Player_${socket.id?.slice(0, 4)}` })
+      socket.emit('join_room', { roomId, username: currentUser?.username || `Player_${socket.id?.slice(0, 4)}` })
     })
 
     socket.on('disconnect', () => setConnected(false))
@@ -298,8 +346,7 @@ export default function BattleRoom() {
     socket.on('room_update', ({ players }) => {
       const uniquePlayers = Array.from(new Map(players.map(p => [p.username, p])).values());
       setRoomPlayers(uniquePlayers)
-      const user = JSON.parse(localStorage.getItem('user') || '{}')
-      const opp = uniquePlayers.find(p => p.username !== user?.username)
+      const opp = uniquePlayers.find(p => p.username !== currentUser?.username)
 
       if (opp) {
         setOpponentName(opp.username)
@@ -373,7 +420,7 @@ export default function BattleRoom() {
     })
 
     return () => { socket.disconnect(); clearTimeout(botTimeoutRef.current) }
-  }, [])
+  }, [currentUser])
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang)
@@ -411,9 +458,11 @@ export default function BattleRoom() {
 
   const handleCodeChange = (val) => {
     setCode(val)
-    const roomId = getRoomId()
-    localStorage.setItem(`codeArena_draft_${roomId}`, val)
-    socketRef.current?.emit('code_change', { roomId, code: val })
+    if (!isAlreadySolved) {
+      const roomId = getRoomId()
+      localStorage.setItem(`codeArena_draft_${roomId}`, val)
+      socketRef.current?.emit('code_change', { roomId, code: val })
+    }
   }
 
   const triggerAIConstraint = async (currentCode, passed, total) => {
@@ -429,6 +478,15 @@ export default function BattleRoom() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code: currentCode, problemId: problem?.slug || slug, passed, total, roomId })
       })
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert("Session expired for security reasons. Please log in again.");
+        window.location.href = '/auth';
+        return;
+      }
+
       const data = await res.json()
       if (data.constraint) setConstraint(data.constraint)
     } catch (err) {
@@ -443,11 +501,23 @@ export default function BattleRoom() {
       const token = localStorage.getItem('token')
       const roomId = getRoomId()
       const slug = getProblemSlug()
+      
+      const processedCode = processCodeForBackend(code, language);
+      
       const res = await fetch(`${API_URL}/api/code/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ code, language, problemId: problem?.slug || slug })
+        body: JSON.stringify({ code: processedCode, language, problemId: problem?.slug || slug })
       })
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert("Session expired. Please log in again to continue.");
+        window.location.href = '/auth';
+        return;
+      }
+
       const data = await res.json()
       if (!res.ok) { setResults([{ i: 0, ok: false, error: data.message }]); setRunning(false); return }
 
@@ -480,11 +550,21 @@ export default function BattleRoom() {
         : 'Code runs but fails hidden limits.';
 
       const slug = getProblemSlug()
+      
       const res = await fetch(`${API_URL}/api/code/ai-debug`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code, problemId: problem?.slug || slug, errorOutput })
       })
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert("Session expired. Please log in again to use AI Debugger.");
+        window.location.href = '/auth';
+        return;
+      }
+
       const data = await res.json()
       if (data.hint) setAiDebugHint(data.hint)
     } catch (err) {
@@ -499,11 +579,23 @@ export default function BattleRoom() {
       const token = localStorage.getItem('token')
       const roomId = getRoomId()
       const slug = getProblemSlug()
+      
+      const processedCode = processCodeForBackend(code, language);
+
       const res = await fetch(`${API_URL}/api/code/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ code, language, problemId: problem?.slug || slug })
+        body: JSON.stringify({ code: processedCode, language, problemId: problem?.slug || slug })
       })
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert("Session expired. Please log in again to submit your code.");
+        window.location.href = '/auth';
+        return;
+      }
+
       const data = await res.json()
       if (!res.ok) { setResults([{ i: 0, ok: false, error: data.message }]); setSubmitting(false); return }
 
@@ -515,10 +607,23 @@ export default function BattleRoom() {
         error: r.error, time: r.executionTime
       })))
 
-      if (data.allPassed && !gameOverRef.current) {
+      const isSuccess = data.allPassed || (data.passed > 0 && data.passed === data.total);
+
+      if (isSuccess && !gameOverRef.current) {
         gameOverRef.current = true
         setSubmitStatus('success')
         
+        const updatedUser = { ...currentUser };
+        if (!updatedUser.solvedProblems) updatedUser.solvedProblems = [];
+        const finalId = problem?._id || slug;
+        if (!updatedUser.solvedProblems.includes(finalId)) {
+           updatedUser.solvedProblems.push(finalId);
+        }
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setCurrentUser(updatedUser); 
+
+        localStorage.setItem(`codeArena_solvedCode_${slug}`, code);
+
         const savedEndTime = localStorage.getItem(`codeArena_endTime_${roomId}`);
         let secondsTaken = 0;
         if (savedEndTime) {
@@ -530,8 +635,7 @@ export default function BattleRoom() {
         
         setTimeTaken(secondsTaken)
         setTimeout(() => { setGameResult('win'); setGameOver(true) }, 600)
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
-        socketRef.current?.emit('battle_won', { roomId, winner: user?.username || 'Player' })
+        socketRef.current?.emit('battle_won', { roomId, winner: currentUser?.username || 'Player' })
       } else {
         setSubmitStatus('failed')
       }
@@ -766,7 +870,15 @@ export default function BattleRoom() {
                 <div className="loading-text">Loading problem...</div>
               ) : problem ? (
                 <>
-                  <h2 className="prob-title">{problem.title}</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <h2 className="prob-title" style={{ margin: 0 }}>{problem.title}</h2>
+                    {isAlreadySolved && (
+                      <span style={{
+                        background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e',
+                        padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700
+                      }}>✓ Solved</span>
+                    )}
+                  </div>
                   <span className="diff-badge" style={{
                     background: DIFF_COLOR[problem.difficulty]?.bg,
                     color: DIFF_COLOR[problem.difficulty]?.color,
@@ -884,7 +996,7 @@ export default function BattleRoom() {
               <div style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex' }}>
                 <LanguageIcon lang={language} />
               </div>
-              <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select">
+              <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="pro-lang-select" disabled={isAlreadySolved}>
                 <option value="javascript">JavaScript</option>
                 <option value="typescript">TypeScript</option>
                 <option value="python">Python</option>
@@ -910,18 +1022,29 @@ export default function BattleRoom() {
               </button>
             )}
 
-            <button onClick={runCode} disabled={running || submitting || problemLoading}
-              className={`action-btn run-btn ${running ? 'disabled' : ''}`}>
-              {running ? '⟳ Running...' : '▶ Run'}
-            </button>
+            {isAlreadySolved ? (
+              <button disabled style={{ 
+                background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)',
+                padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: 'Inter', cursor: 'not-allowed' 
+              }}>
+                ✓ ALREADY SOLVED
+              </button>
+            ) : (
+              <>
+                <button onClick={runCode} disabled={running || submitting || problemLoading}
+                  className={`action-btn run-btn ${running ? 'disabled' : ''}`}>
+                  {running ? '⟳ Running...' : '▶ Run'}
+                </button>
 
-            <button onClick={submitCode} disabled={submitting || running || problemLoading}
-              className={`action-btn submit-btn ${submitStatus || ''} ${(submitting || running) ? 'disabled' : ''}`}>
-              {submitting ? '⟳ Submitting...'
-                : submitStatus === 'success' ? '✓ Accepted!'
-                : submitStatus === 'failed' ? '✗ Wrong Answer'
-                : '✓ Submit'}
-            </button>
+                <button onClick={submitCode} disabled={submitting || running || problemLoading}
+                  className={`action-btn submit-btn ${submitStatus || ''} ${(submitting || running) ? 'disabled' : ''}`}>
+                  {submitting ? '⟳ Submitting...'
+                    : submitStatus === 'success' ? '✓ Accepted!'
+                    : submitStatus === 'failed' ? '✗ Wrong Answer'
+                    : '✓ Submit'}
+                </button>
+              </>
+            )}
           </div>
 
           <div className="monaco-wrapper">
@@ -933,6 +1056,7 @@ export default function BattleRoom() {
               onMount={handleEditorMount}
               theme={zenMode ? 'synthwave' : 'vs-dark'}
               options={{
+                readOnly: isAlreadySolved,
                 minimap: { enabled: false }, fontSize: 13.5,
                 fontFamily: 'JetBrains Mono', padding: { top: 14, bottom: 14 },
                 smoothScrolling: true, cursorBlinking: 'smooth',
@@ -950,9 +1074,10 @@ export default function BattleRoom() {
                 <div className={`output-label ${submitStatus || ''}`}>
               {submitStatus === 'success' ? '✓ ALL TESTS PASSED'
                 : submitStatus === 'failed' ? '✗ WRONG ANSWER'
+                : isAlreadySolved ? '✓ PROBLEM COMPLETED (CODE SAVED)'
                 : 'TEST RESULTS'}
             </div>
-            {results.length === 0 && (
+            {results.length === 0 && !isAlreadySolved && (
               <span style={{ color: '#555', fontSize: 12 }}>Run your code to see results...</span>
             )}
             {results.map((r, i) => (

@@ -7,6 +7,7 @@ import API_URL from '../config/api'
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard']
 const TOPICS = ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Dynamic Programming', 'Graphs', 'Binary Search', 'Stack']
+const STATUSES = ['All', 'Solved', 'Unsolved'] // 🔥 New Status Filter
 
 const diffColor = {
   Easy: { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
@@ -14,18 +15,38 @@ const diffColor = {
   Hard: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' },
 }
 
-// ✅ ProblemModal Component
-const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, onSelect, diff, setDiff, topic, setTopic, onPlay, onClose, btnLabel, problems }) => {
-  const list = problems.filter(p =>
-    (diff === 'All' || p.difficulty === diff) &&
-    (topic === 'All' || p.category === topic)
-  )
+// Global Solved Checker helper
+const checkIsSolved = (user, p) => {
+  if (!user?.solvedProblems) return false;
+  return user.solvedProblems.some(sp => {
+    const spId = typeof sp === 'object' ? (sp.problemId || sp._id || sp.slug) : String(sp);
+    return spId === String(p._id) || spId === p.slug;
+  });
+};
+
+// ✅ ProblemModal Component (Now with Status Filter & ELO Farming Protection)
+const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selectedP, onSelect, diff, setDiff, topic, setTopic, status, setStatus, onPlay, onClose, btnLabel, problems, isRanked = false }) => {
+  const [searchQ, setSearchQ] = useState('')
+
+  const list = problems.filter(p => {
+    const isSolved = checkIsSolved(user, p);
+    const diffMatch = diff === 'All' || p.difficulty === diff;
+    const topicMatch = topic === 'All' || p.category === topic;
+    const searchMatch = searchQ === '' || p.title.toLowerCase().includes(searchQ.toLowerCase());
+    const statusMatch = status === 'All' || (status === 'Solved' && isSolved) || (status === 'Unsolved' && !isSolved);
+    return diffMatch && topicMatch && searchMatch && statusMatch;
+  });
 
   const dColor = {
     Easy: { color: '#22c55e', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
     Medium: { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.2)' },
     Hard: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' },
   }
+
+  // Prevent playing Ranked if already solved
+  const selectedIsSolved = selectedP ? checkIsSolved(user, selectedP) : false;
+  const isPlayDisabled = !selectedP || (isRanked && selectedIsSolved);
+  const finalBtnLabel = (isRanked && selectedIsSolved) ? "Already Solved (No ELO)" : btnLabel;
 
   return (
     <div style={{
@@ -36,7 +57,7 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
       <div style={{
         background: 'linear-gradient(160deg, #141418 0%, #0f0f14 100%)',
         border: `1px solid ${borderColor}`,
-        borderRadius: 24, width: '92%', maxWidth: 720,
+        borderRadius: 24, width: '92%', maxWidth: 780, // Slightly wider for 3 filters
         maxHeight: '88vh', display: 'flex', flexDirection: 'column',
         overflow: 'hidden', boxShadow: `0 30px 80px rgba(0,0,0,0.9)`
       }}>
@@ -51,23 +72,32 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
             <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: '#fff', marginBottom: 6 }}>{title}</div>
             <div style={{ fontSize: 13, color: '#555' }}>{subtitle}</div>
           </div>
-          <button onClick={onClose} style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            color: '#666', cursor: 'pointer', fontSize: 16,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>✕</button>
+          <button onClick={onClose} className="modal-close-btn">✕</button>
         </div>
 
-        {/* Filters */}
+        {/* Filters & Search */}
         <div style={{
           padding: '14px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', gap: 10, alignItems: 'center', background: 'rgba(0,0,0,0.2)'
+          display: 'flex', gap: 10, alignItems: 'center', background: 'rgba(0,0,0,0.2)', flexWrap: 'wrap'
         }}>
+          <input
+            type="text"
+            placeholder="🔍 Search problems..."
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            className="modal-search-input"
+            style={{
+              background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff', padding: '8px 14px', borderRadius: 10,
+              fontSize: 12, outline: 'none', fontFamily: 'Inter', width: '200px', transition: 'all 0.2s'
+            }}
+          />
+
           {[
-            { val: diff, set: setDiff, opts: ['All', 'Easy', 'Medium', 'Hard'] },
-            { val: topic, set: setTopic, opts: ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Dynamic Programming', 'Graphs', 'Binary Search', 'Stack'] },
-          ].map(({ val, set, opts }, i) => (
+            { val: status, set: setStatus, opts: STATUSES, label: 'Status' },
+            { val: diff, set: setDiff, opts: DIFFICULTIES, label: 'Difficulty' },
+            { val: topic, set: setTopic, opts: TOPICS, label: 'Topic' },
+          ].map(({ val, set, opts, label }, i) => (
             <select key={i} value={val} onChange={e => set(e.target.value)} style={{
               background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
               color: '#ccc', padding: '8px 14px', borderRadius: 10,
@@ -89,9 +119,12 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
             <div style={{ textAlign: 'center', padding: '60px 20px', color: '#444' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
               <div style={{ fontWeight: 600, marginBottom: 6 }}>No problems found</div>
-              <div style={{ fontSize: 12 }}>Try changing the filters above</div>
+              <div style={{ fontSize: 12 }}>Try changing your search or filters</div>
             </div>
-          ) : list.map((p, idx) => (
+          ) : list.map((p, idx) => {
+            const isSolved = checkIsSolved(user, p);
+
+            return (
             <div key={p._id || idx} onClick={() => onSelect(p)} style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '14px 18px',
@@ -108,7 +141,18 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
                 fontSize: 12, fontWeight: 800, color: dColor[p.difficulty]?.color, fontFamily: 'Outfit'
               }}>{idx + 1}</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3 }}>{p.title}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {p.title}
+                  {isSolved && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)',
+                      padding: '2px 6px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3
+                    }}>
+                      ✓ Solved
+                    </span>
+                  )}
+                </div>
+
                 <div style={{ fontSize: 11, color: '#555', display: 'flex', gap: 8 }}>
                   <span>{p.category}</span><span>·</span>
                   <span>{p.acceptance}% acceptance</span>
@@ -130,7 +174,7 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
                 )}
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Footer */}
@@ -149,20 +193,19 @@ const ProblemModal = ({ title, subtitle, borderColor, accentColor, selectedP, on
           ) : (
             <div style={{ flex: 1, fontSize: 13, color: '#444' }}>Select a problem to continue</div>
           )}
-          <button onClick={onClose} style={{
-            background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-            color: '#555', borderRadius: 12, padding: '12px 24px',
-            cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'Inter'
-          }}>Cancel</button>
-          <button onClick={onPlay} disabled={!selectedP} style={{
-            background: selectedP ? accentColor : 'rgba(255,255,255,0.04)',
-            color: selectedP ? '#fff' : '#444',
-            border: 'none', borderRadius: 12, padding: '12px 28px',
-            cursor: selectedP ? 'pointer' : 'not-allowed',
+          
+          <button onClick={onClose} className="modal-cancel-btn">Cancel</button>
+
+          <button onClick={onPlay} disabled={isPlayDisabled} style={{
+            background: !isPlayDisabled ? accentColor : 'rgba(255,255,255,0.04)',
+            color: !isPlayDisabled ? '#fff' : '#666',
+            border: isRanked && selectedIsSolved ? '1px solid rgba(255,255,255,0.1)' : 'none', 
+            borderRadius: 12, padding: '12px 28px',
+            cursor: !isPlayDisabled ? 'pointer' : 'not-allowed',
             fontSize: 13, fontWeight: 700, fontFamily: 'Inter',
-            boxShadow: selectedP ? `0 4px 20px ${accentColor}40` : 'none',
+            boxShadow: !isPlayDisabled ? `0 4px 20px ${accentColor}40` : 'none',
             transition: 'all 0.2s'
-          }}>{btnLabel}</button>
+          }}>{finalBtnLabel}</button>
         </div>
       </div>
     </div>
@@ -176,8 +219,13 @@ export default function Lobby() {
   const [tab, setTab] = useState(initialTab)
   const [problems, setProblems] = useState([])
   const [problemsLoading, setProblemsLoading] = useState(true)
+  
+  // Create Room Filters
   const [diffFilter, setDiffFilter] = useState('All')
   const [topicFilter, setTopicFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState('All') // 🔥 Status filter for Create Room
+  const [createSearchQuery, setCreateSearchQuery] = useState('') 
+
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [roomCode, setRoomCode] = useState('')
   const [creating, setCreating] = useState(false)
@@ -189,21 +237,23 @@ export default function Lobby() {
   const [showMatchmaking, setShowMatchmaking] = useState(false)
   const [matchmakingMode, setMatchmakingMode] = useState('random')
 
+  // Ranked Modal Filters
   const [showRankedList, setShowRankedList] = useState(false)
   const [rankedDiff, setRankedDiff] = useState('All')
   const [rankedTopic, setRankedTopic] = useState('All')
+  const [rankedStatus, setRankedStatus] = useState('All')
   const [rankedSelected, setRankedSelected] = useState(null)
 
+  // Practice Modal Filters
   const [showPracticeList, setShowPracticeList] = useState(false)
   const [practiceDiff, setPracticeDiff] = useState('All')
   const [practiceTopic, setPracticeTopic] = useState('All')
+  const [practiceStatus, setPracticeStatus] = useState('All')
   const [practiceSelected, setPracticeSelected] = useState(null)
 
-  // ✅ Premium States
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [paymentProcessing, setPaymentProcessing] = useState(false)
   
-  // 🔥 Search Feature States
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
 
@@ -242,10 +292,21 @@ export default function Lobby() {
     return () => { document.body.removeChild(script) };
   }, []);
 
+  // 🔥 THE ULTIMATE DEDUPLICATION: By Title (Case-Insensitive) instead of Slug
   useEffect(() => {
     fetch(`${API_URL}/api/problems`)
       .then(r => r.json())
-      .then(d => setProblems(d.problems || []))
+      .then(d => {
+        const allProblems = d.problems || [];
+        const uniqueProblemsMap = new Map();
+        allProblems.forEach(p => {
+          const key = p.title.toLowerCase().trim();
+          if (!uniqueProblemsMap.has(key)) {
+            uniqueProblemsMap.set(key, p);
+          }
+        });
+        setProblems(Array.from(uniqueProblemsMap.values()));
+      })
       .catch(() => setProblems([]))
       .finally(() => setProblemsLoading(false))
   }, [])
@@ -267,12 +328,15 @@ export default function Lobby() {
     return () => clearInterval(interval)
   }, [])
 
-  const filtered = (diff, topic) => problems.filter(p =>
-    (diff === 'All' || p.difficulty === diff) &&
-    (topic === 'All' || p.category === topic)
-  )
+  // Create Room Filters logic
+  const filteredProblems = problems.filter(p => {
+    const isSolved = checkIsSolved(user, p);
+    return (diffFilter === 'All' || p.difficulty === diffFilter) &&
+           (topicFilter === 'All' || p.category === topicFilter) &&
+           (statusFilter === 'All' || (statusFilter === 'Solved' && isSolved) || (statusFilter === 'Unsolved' && !isSolved)) &&
+           (createSearchQuery === '' || p.title.toLowerCase().includes(createSearchQuery.toLowerCase()))
+  })
 
-  // 🔥 Real-time Search Handler
   const handleSearch = async (val) => {
     setSearchQuery(val)
     if (val.length < 2) { setSearchResults([]); return }
@@ -406,7 +470,6 @@ export default function Lobby() {
   const solvedCount = dailyPuzzles.filter(p => user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id))).length;
   const totalPuzzles = dailyPuzzles.length > 0 ? dailyPuzzles.length : 10;
   const isSprintComplete = dailyPuzzles.length > 0 && solvedCount >= totalPuzzles;
-  const filteredProblems = filtered(diffFilter, topicFilter)
 
   return (
     <div className="lobby-wrapper">
@@ -418,9 +481,9 @@ export default function Lobby() {
 
       {showMatchmaking && <Matchmaking user={user} onMatchFound={handleMatchFound} onCancel={() => setShowMatchmaking(false)} selectedProblem={matchmakingMode === 'ranked' ? rankedSelected : null} mode={matchmakingMode} />}
       
-      {showRankedList && <ProblemModal title="🎯 Ranked Arena" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} />}
+      {showRankedList && <ProblemModal user={user} title="🎯 Ranked Arena" subtitle="Choose your battlefield wisely. Higher difficulty = more ELO." borderColor="rgba(168,85,247,0.4)" accentColor="#a855f7" selectedP={rankedSelected} onSelect={setRankedSelected} diff={rankedDiff} setDiff={setRankedDiff} topic={rankedTopic} setTopic={setRankedTopic} status={rankedStatus} setStatus={setRankedStatus} onPlay={handleRankedPlay} onClose={() => setShowRankedList(false)} btnLabel="⚔️ Enter Ranked Arena" problems={problems} isRanked={true} />}
       
-      {showPracticeList && <ProblemModal title="🧠 Practice Mode" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} />}
+      {showPracticeList && <ProblemModal user={user} title="🧠 Practice Mode" subtitle="Solo training against an AI bot. No ELO at stake." borderColor="rgba(34,197,94,0.3)" accentColor="#22c55e" selectedP={practiceSelected} onSelect={setPracticeSelected} diff={practiceDiff} setDiff={setPracticeDiff} topic={practiceTopic} setTopic={setPracticeTopic} status={practiceStatus} setStatus={setPracticeStatus} onPlay={handlePracticePlay} onClose={() => setShowPracticeList(false)} btnLabel="🧠 Start Practice" problems={problems} isRanked={false} />}
 
       {/* Premium Modal */}
       {showPremiumModal && (
@@ -520,7 +583,6 @@ export default function Lobby() {
         </div>
         <div style={{ flex: 1 }} />
 
-        {/* 🔥 REAL-TIME SEARCH BAR 🔥 */}
         <div style={{ position: 'relative', width: '220px', marginRight: '16px' }}>
           <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#888' }}>🔍</span>
           <input
@@ -817,20 +879,40 @@ export default function Lobby() {
               <div className="panel-header">
                 <span className="panel-title">Select a Problem <span style={{ color: '#555', fontSize: 12 }}>({filteredProblems.length})</span></span>
                 <div className="filters">
+                  
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={createSearchQuery}
+                    onChange={e => setCreateSearchQuery(e.target.value)}
+                    className="glass-select modal-search-input"
+                    style={{ width: '130px' }}
+                  />
+
+                  <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="glass-select">{STATUSES.map(s => <option key={s}>{s}</option>)}</select>
                   <select value={diffFilter} onChange={e => setDiffFilter(e.target.value)} className="glass-select">{DIFFICULTIES.map(d => <option key={d}>{d}</option>)}</select>
                   <select value={topicFilter} onChange={e => setTopicFilter(e.target.value)} className="glass-select">{TOPICS.map(t => <option key={t}>{t}</option>)}</select>
                 </div>
               </div>
               {problemsLoading ? <div className="loading-state">⟳ Loading problems...</div> : (
                 <div className="problem-list">
-                  {filteredProblems.map((p, idx) => (
+                  {filteredProblems.map((p, idx) => {
+                    const isSolved = checkIsSolved(user, p);
+
+                    return (
                     <div key={p._id || idx} onClick={() => setSelectedProblem(p)} className={`problem-item ${selectedProblem?._id === p._id ? 'selected' : ''}`}>
                       <div className="prob-num" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, borderColor: diffColor[p.difficulty]?.border }}>{idx + 1}</div>
-                      <div className="prob-info"><div className="prob-name">{p.title}</div><div className="prob-meta">{p.category} · {p.acceptance}% acceptance</div></div>
+                      <div className="prob-info">
+                        <div className="prob-name" style={{ display:'flex', alignItems:'center', gap:6 }}>
+                          {p.title}
+                          {isSolved && <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>✓ Solved</span>}
+                        </div>
+                        <div className="prob-meta">{p.category} · {p.acceptance}% acceptance</div>
+                      </div>
                       <span className="prob-diff" style={{ background: diffColor[p.difficulty]?.bg, color: diffColor[p.difficulty]?.color, border: `1px solid ${diffColor[p.difficulty]?.border}` }}>{p.difficulty}</span>
                       {selectedProblem?._id === p._id && <span style={{ color: '#ff6b35', fontSize: 14 }}>✓</span>}
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>
@@ -891,6 +973,7 @@ export default function Lobby() {
         :root { --bg: #0b0b0e; --glass-border: rgba(255,255,255,0.04); --orange: #ff6b35; --purple: #a855f7; --green: #22c55e; --blue: #3b82f6; --cyan: #0ea5e9; --text-main: #f8fafc; --text-muted: #a1a1aa; }
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        
         .lobby-wrapper {
           min-height: 100vh;
           background-color: var(--bg);
@@ -899,6 +982,32 @@ export default function Lobby() {
             linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
           background-size: 40px 40px;
           font-family: Inter, sans-serif; color: var(--text-main); position: relative; overflow-x: hidden;
+        }
+
+        .modal-close-btn {
+          width: 36px; height: 36px; border-radius: 50%;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          color: #666; cursor: pointer; font-size: 16px;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.2s;
+        }
+        .modal-close-btn:hover {
+          color: var(--orange); border-color: var(--orange); background: rgba(255,107,53,0.1);
+        }
+
+        .modal-cancel-btn {
+          background: transparent; border: 1px solid rgba(255,255,255,0.08);
+          color: #555; border-radius: 12px; padding: 12px 24px;
+          cursor: pointer; font-size: 13px; font-weight: 600; font-family: Inter;
+          transition: all 0.2s;
+        }
+        .modal-cancel-btn:hover {
+          color: var(--orange); border-color: var(--orange); background: rgba(255,107,53,0.05);
+        }
+
+        .modal-search-input:focus {
+          border-color: var(--orange) !important;
+          box-shadow: 0 0 0 2px rgba(255,107,53,0.2);
         }
 
         /* SAAS MODAL CSS */
