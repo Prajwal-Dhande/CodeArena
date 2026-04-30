@@ -1,24 +1,45 @@
-import React from 'react';
-
-// 🔥 DYNAMIC DATA MAPPER (Har problem ke liye alag data)
-const PROBLEM_DATA = {
-  'two-sum': ['[2]', '[7]', '[11]', '[15]'],
-  'merge-k-sorted-lists': ['L1:[1,4,5]', 'L2:[1,3,4]', 'L3:[2,6]', 'Min-Heap'],
-  'valid-parentheses': ['(', '{', '[', 'Stack'],
-  'best-time-to-buy-stock': ['[7]', '[1]', '[5]', '[3]'],
-  'contains-duplicate': ['Set()', '1', '2', '1'],
-  'binary-search': ['L=0', 'Mid', 'R=9', 'Target'],
-  'default': ['0x4A', '0x1B', '0x9F', '0x2C'] // Sci-fi fallback for unknown problems
-};
+import React, { useState, useEffect } from 'react';
+import API_URL from '../../config/api';
 
 export default function VisualFlowHint({ problemSlug }) {
+  const [nodes, setNodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // Slug ko clean title mein convert karna
   const displayTitle = problemSlug 
     ? problemSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     : 'Execution';
 
-  // Problem ke hisaab se data uthao, nahi toh default
-  const nodes = PROBLEM_DATA[problemSlug] || PROBLEM_DATA['default'];
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchVisualNodes = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/ai/visualize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ problemTitle: displayTitle })
+        });
+        
+        const data = await res.json();
+        if (data.success && data.steps && isMounted) {
+          setNodes(data.steps);
+        } else if (isMounted) {
+          setNodes(['Init', 'Process', 'Optimize', 'Return']);
+        }
+      } catch (err) {
+        if (isMounted) setNodes(['Error', 'Loading', 'Steps', 'Failed']);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    if (displayTitle) fetchVisualNodes();
+
+    return () => { isMounted = false; };
+  }, [displayTitle]);
 
   return (
     <div className="ai-visualizer-wrapper">
@@ -35,25 +56,34 @@ export default function VisualFlowHint({ problemSlug }) {
 
       {/* ANIMATED TRACK */}
       <div className="ai-vis-track">
-        {/* Dynamic Nodes */}
-        {nodes.map((data, i) => (
-          <div key={i} className="node-wrapper">
-            <div className={`node-box node-${i}`}>
-              {data}
-            </div>
-            <div className="node-line"></div>
+        {loading ? (
+          <div className="loading-container">
+            <div className="cyber-spinner"></div>
+            <span style={{color: '#c084fc', fontSize: 11, fontFamily: 'JetBrains Mono', marginTop: 10}}>INITIATING NEURAL LINK...</span>
           </div>
-        ))}
-        
-        {/* 🔴 Cyberpunk Laser Scanner */}
-        <div className="laser-scanner"></div>
+        ) : (
+          <>
+            {/* Dynamic Nodes */}
+            {nodes.map((data, i) => (
+              <div key={i} className="node-wrapper">
+                <div className={`node-box node-${i}`} title={data}>
+                  {data.length > 10 ? data.substring(0, 10) + '...' : data}
+                </div>
+                <div className="node-line"></div>
+              </div>
+            ))}
+            
+            {/* 🔴 Cyberpunk Laser Scanner */}
+            <div className="laser-scanner"></div>
+          </>
+        )}
       </div>
 
       {/* FOOTER */}
       <div className="ai-vis-footer">
         <span style={{ fontSize: 16 }}>🤖</span>
         <div style={{ color: '#aaa', fontSize: 12, lineHeight: 1.4 }}>
-          Analyzing optimal algorithm flow for <strong style={{ color: '#fff' }}>{displayTitle}</strong>...
+          {loading ? 'Connecting to AI visualizer...' : <>Analyzing optimal algorithm flow for <strong style={{ color: '#fff' }}>{displayTitle}</strong>...</>}
         </div>
       </div>
 
@@ -141,6 +171,25 @@ export default function VisualFlowHint({ problemSlug }) {
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { left: 95%; opacity: 0; }
+        }
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+        .cyber-spinner {
+          width: 30px;
+          height: 30px;
+          border: 3px solid rgba(192, 132, 252, 0.3);
+          border-top-color: #c084fc;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>

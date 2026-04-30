@@ -20,6 +20,7 @@ const app = express()
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'http://localhost:5174', // Added in case Vite runs on 5174
     'https://code-arena-virid.vercel.app' // Tera Vercel URL yahan allow ho gaya!
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

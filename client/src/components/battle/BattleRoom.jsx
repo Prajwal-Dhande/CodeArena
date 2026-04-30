@@ -190,7 +190,7 @@ export default function BattleRoom() {
 
   const mode = searchParams.get('mode')
   const isMatchmakingMode = mode === 'random' || mode === 'ranked'
-  const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch()
+  const isProblemLocked = battleStarted || isMatchmakingMode || isRealMatch() || isPracticeMode() || isPremiumMode()
 
   useEffect(() => {
     if (battleStarted) {
