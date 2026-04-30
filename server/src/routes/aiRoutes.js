@@ -85,4 +85,110 @@ Return ONLY a valid JSON object with a single key "steps" containing an array of
   }
 });
 
+// =============================================
+// 🏢 MAANG REPORT CARD — Hire/No-Hire Verdict
+// =============================================
+router.post('/report-card', auth, async (req, res) => {
+  try {
+    const { problemTitle, userCode, language, passedTests, totalTests, timeTaken, result } = req.body;
+
+    if (!problemTitle) return res.status(400).json({ success: false });
+
+    const prompt = `You are a strict Senior Engineering Manager at a FAANG company (Google/Amazon/Microsoft level). 
+You are evaluating a candidate's coding interview performance.
+
+Problem: "${problemTitle}"
+Language: ${language || 'javascript'}
+Tests Passed: ${passedTests}/${totalTests}
+Time Taken: ${timeTaken || 0} seconds
+Result: ${result === 'win' ? 'COMPLETED' : 'DID NOT FINISH'}
+
+Candidate's Code:
+\`\`\`${language || 'javascript'}
+${userCode || '// No code submitted'}
+\`\`\`
+
+Evaluate this candidate as if you are making a real hire/no-hire decision. Be honest but constructive.
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "verdict": "HIRE" or "NO HIRE" or "BORDERLINE",
+  "hireScore": <integer 0-100 representing overall hire likelihood>,
+  "codeQuality": <integer 0-100>,
+  "readability": <integer 0-100>,
+  "problemSolving": <integer 0-100>,
+  "edgeCasesMissed": <integer 0-5>,
+  "speedPercentile": <integer 0-99, how fast compared to others>,
+  "verdictReason": "<2 sentence honest explanation of the verdict>",
+  "topStrength": "<single most impressive thing about their code>",
+  "criticalFlaw": "<single most important thing to fix, or null if HIRE>",
+  "companyFit": {
+    "google": <integer 0-100>,
+    "amazon": <integer 0-100>,
+    "microsoft": <integer 0-100>
+  }
+}`;
+
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'system', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.4,
+      response_format: { type: 'json_object' }
+    });
+
+    const data = JSON.parse(completion.choices[0]?.message?.content);
+    res.json({ success: true, report: data });
+  } catch (error) {
+    console.error('Report Card Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate report card' });
+  }
+});
+
+// =============================================
+// 🐛 DEBUG WITH CLARA — Line-specific bug finder
+// =============================================
+router.post('/debug', auth, async (req, res) => {
+  try {
+    const { problemTitle, userCode, language, failedTestInput, failedTestExpected, failedTestActual } = req.body;
+
+    if (!userCode || !problemTitle) return res.status(400).json({ success: false });
+
+    const prompt = `You are Clara, an expert debugging assistant. A candidate's code is failing a test case.
+
+Problem: "${problemTitle}"
+Language: ${language || 'javascript'}
+Failed Test Input: ${failedTestInput || 'Unknown'}
+Expected Output: ${failedTestExpected || 'Unknown'}
+Actual Output: ${failedTestActual || 'Wrong'}
+
+Candidate's Code:
+\`\`\`${language || 'javascript'}
+${userCode}
+\`\`\`
+
+Identify the EXACT bug causing this failure. Be specific and pinpoint the line number.
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "bugLine": <line number as integer, or null if not determinable>,
+  "bugDescription": "<concise description of the bug in 1-2 sentences>",
+  "fix": "<specific fix suggestion in 1 sentence>",
+  "fixedSnippet": "<just the fixed lines of code, not the whole solution>"
+}`;
+
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'system', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
+    });
+
+    const data = JSON.parse(completion.choices[0]?.message?.content);
+    res.json({ success: true, debug: data });
+  } catch (error) {
+    console.error('Debug Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to debug' });
+  }
+});
+
 module.exports = router;

@@ -275,7 +275,16 @@ export default function Lobby() {
     const token = localStorage.getItem('token');
     if (token) {
       fetch(`${API_URL}/api/users/profile`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(res => res.json())
+        .then(res => {
+          if (res.status === 401) {
+            // Token expired/invalid — silently clear and redirect to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth';
+            return null;
+          }
+          return res.json();
+        })
         .then(data => {
           if (data && data.user) {
             localStorage.setItem('user', JSON.stringify(data.user));

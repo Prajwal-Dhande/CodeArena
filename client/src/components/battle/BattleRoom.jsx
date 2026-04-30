@@ -1178,7 +1178,7 @@ export default function BattleRoom() {
                   </div>
                 )}
 
-                {!battleStarted ? (
+                {!battleStarted && !practiceMode && !premiumMode ? (
                   <div className="battle-alert alert-orange">
                     <div className="pulse-dot orange" />
                     <span>Waiting for opponent... ({roomPlayers.length}/2)</span>
@@ -1186,7 +1186,11 @@ export default function BattleRoom() {
                 ) : (
                   <div className="battle-alert alert-green">
                     <div className="pulse-dot green" />
-                    <span>⚔️ Battle in progress!</span>
+                    <span>
+                      {premiumMode ? '🤖 AI Interview in progress!' : 
+                       practiceMode ? '🧠 Practice Session active!' : 
+                       '⚔️ Battle in progress!'}
+                    </span>
                   </div>
                 )}
               </div>
