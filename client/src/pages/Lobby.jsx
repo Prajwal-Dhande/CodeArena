@@ -578,6 +578,7 @@ export default function Lobby() {
           </span>
           <span className="active">Practice</span>
           <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : navigate('/premium')}>Practice Interview</span>
+          <span onClick={() => navigate('/tournaments')}>🏆 Tournaments</span>
           <span onClick={() => navigate('/leaderboard')}>Leaderboard</span>
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>

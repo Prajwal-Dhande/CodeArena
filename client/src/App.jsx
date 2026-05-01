@@ -24,6 +24,9 @@ import Premium from './pages/Premium'
 // 📊 PREMIUM DASHBOARD
 import PremiumDashboard from './pages/PremiumDashboard'
 
+// 🏆 TOURNAMENTS PAGE
+import Tournaments from './pages/Tournaments'
+
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
@@ -61,6 +64,9 @@ export default function App() {
 
           {/* 📊 PREMIUM DASHBOARD */}
           <Route path="/dashboard" element={<PremiumDashboard />} />
+
+          {/* 🏆 TOURNAMENTS */}
+          <Route path="/tournaments" element={<Tournaments />} />
         </Route>
 
         {/* ⚠️ Catch-all route */}
