@@ -21,6 +21,9 @@ import InterviewDSA from './pages/InterviewDSA'
 // 💎 PREMIUM SUBSCRIPTION PAGE
 import Premium from './pages/Premium'
 
+// 📊 PREMIUM DASHBOARD
+import PremiumDashboard from './pages/PremiumDashboard'
+
 import AuthGuard from './components/AuthGuard' 
 
 export default function App() {
@@ -55,6 +58,9 @@ export default function App() {
 
           {/* 💎 PREMIUM SUBSCRIPTION PAGE */}
           <Route path="/premium" element={<Premium />} />
+
+          {/* 📊 PREMIUM DASHBOARD */}
+          <Route path="/dashboard" element={<PremiumDashboard />} />
         </Route>
 
         {/* ⚠️ Catch-all route */}

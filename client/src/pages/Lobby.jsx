@@ -573,7 +573,9 @@ export default function Lobby() {
         </span>
         <div style={{ flex: 1 }} />
         <div className="nav-links">
-          <span onClick={() => navigate('/')}>Dashboard</span>
+          <span onClick={() => navigate('/dashboard')} style={{ color: user?.isPremium ? '#a855f7' : undefined }}>
+            {user?.isPremium ? '📊 Dashboard' : 'Dashboard'}
+          </span>
           <span className="active">Practice</span>
           <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : navigate('/premium')}>Practice Interview</span>
           <span onClick={() => navigate('/leaderboard')}>Leaderboard</span>
