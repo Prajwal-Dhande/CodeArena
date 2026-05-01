@@ -154,6 +154,8 @@ export default function BattleRoom() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiDebugHint, setAiDebugHint] = useState(null)
   const [aiDebugLoading, setAiDebugLoading] = useState(false)
+  const [voiceMode, setVoiceMode] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const [zenMode, setZenMode] = useState(false)
   const [showProblemPicker, setShowProblemPicker] = useState(false)
   const [allProblems, setAllProblems] = useState([])
@@ -529,39 +531,61 @@ export default function BattleRoom() {
     setRunning(false)
   }
 
+  // 🐛 Debug with Clara — calls new structured debug endpoint
   const handleAiDebug = async () => {
     if (!code || results.length === 0) return
     setAiDebugLoading(true)
     setAiDebugHint(null)
     try {
       const token = localStorage.getItem('token')
-      const firstError = results.find(r => !r.ok)
-      const errorOutput = firstError 
-        ? `Failed on input: ${firstError.input}. Expected: ${firstError.expected}. Got: ${firstError.result}. Error: ${firstError.error}`
-        : 'Code runs but fails hidden limits.';
-
-      const slug = getProblemSlug()
-      
-      const res = await fetch(`${API_URL}/api/code/ai-debug`, {
+      const firstFail = results.find(r => !r.ok)
+      const res = await fetch(`${API_URL}/api/ai/debug`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ code, problemId: problem?.slug || slug, errorOutput })
+        body: JSON.stringify({
+          problemTitle: problem?.title || 'Unknown',
+          userCode: code,
+          language,
+          failedTestInput:    firstFail?.input    || 'Unknown',
+          failedTestExpected: JSON.stringify(firstFail?.expected) || 'Unknown',
+          failedTestActual:   JSON.stringify(firstFail?.result)   || 'Wrong'
+        })
       })
-
       if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        alert("Session expired. Please log in again to use AI Debugger.");
-        window.location.href = '/auth';
-        return;
+        localStorage.removeItem('token'); localStorage.removeItem('user');
+        window.location.href = '/auth'; return;
       }
-
       const data = await res.json()
-      if (data.hint) setAiDebugHint(data.hint)
+      if (data.success && data.debug) {
+        setAiDebugHint(data.debug)
+        // 🔊 Voice Mode: speak the bug description
+        if (voiceMode && data.debug.bugDescription && 'speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(
+            `Clara found a bug. ${data.debug.bugDescription}. To fix it: ${data.debug.fix}`
+          )
+          utterance.rate = 0.95; utterance.pitch = 1.1;
+          utterance.onstart = () => setIsSpeaking(true)
+          utterance.onend   = () => setIsSpeaking(false)
+          window.speechSynthesis.speak(utterance)
+        }
+      } else {
+        setAiDebugHint({ bugDescription: 'Clara could not pinpoint the bug. Check edge cases manually.', fix: null, fixedSnippet: null })
+      }
     } catch (err) {
-      setAiDebugHint('Oops! The AI Whisperer fell asleep. Check your syntax.')
+      setAiDebugHint({ bugDescription: 'Clara is unavailable right now. Try again!', fix: null, fixedSnippet: null })
     }
     setAiDebugLoading(false)
+  }
+
+  // 🔊 Voice Clara — speak a message
+  const speakClara = (text) => {
+    if (!voiceMode || !text || !('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.rate = 0.95; u.pitch = 1.1;
+    u.onstart = () => setIsSpeaking(true)
+    u.onend   = () => setIsSpeaking(false)
+    window.speechSynthesis.speak(u)
   }
 
   const submitCode = async () => {
@@ -1307,26 +1331,58 @@ export default function BattleRoom() {
               </div>
             ))}
 
-            {premiumMode && submitStatus === 'failed' && (
-              <div style={{ marginTop: 24, padding: 16, background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: aiDebugHint ? 12 : 0 }}>
+            {/* 🐛 Debug with Clara — shows after any failed test in premium mode */}
+            {premiumMode && results.some(r => !r.ok) && (
+              <div style={{ marginTop: 16, padding: 16, background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: aiDebugHint ? 14 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 20 }}>🤖</span>
-                    <span style={{ color: '#ec4899', fontWeight: 800, fontFamily: 'Outfit', letterSpacing: 0.5 }}>AI Whisperer</span>
+                    <span style={{ fontSize: 18 }}>🐛</span>
+                    <span style={{ color: '#ec4899', fontWeight: 800, fontFamily: 'Outfit', fontSize: 13 }}>Debug with Clara</span>
                   </div>
                   {!aiDebugHint && (
-                    <button onClick={handleAiDebug} disabled={aiDebugLoading} style={{ 
-                      background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', border: 'none', color: '#fff', 
-                      padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                      opacity: aiDebugLoading ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(236,72,153,0.3)'
+                    <button onClick={handleAiDebug} disabled={aiDebugLoading} style={{
+                      background: aiDebugLoading ? 'rgba(139,92,246,0.3)' : 'linear-gradient(90deg, #ec4899, #8b5cf6)',
+                      border: 'none', color: '#fff', padding: '7px 14px', borderRadius: 8,
+                      fontSize: 12, fontWeight: 700, cursor: aiDebugLoading ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s'
                     }}>
-                      {aiDebugLoading ? 'Analyzing code...' : 'Debug My Code'}
+                      {aiDebugLoading
+                        ? <><span style={{ width: 10, height: 10, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Analyzing...</>
+                        : '🔍 Find Bug'}
                     </button>
                   )}
                 </div>
-                {aiDebugHint && (
-                  <div style={{ background: 'rgba(0,0,0,0.4)', borderRadius: 8, padding: 16, borderLeft: '4px solid #ec4899', animation: 'fadeIn 0.4s ease' }}>
-                    <p style={{ margin: 0, color: '#fbcfe8', fontSize: 14, fontStyle: 'italic', lineHeight: 1.6 }}>"{aiDebugHint}"</p>
+
+                {aiDebugHint && typeof aiDebugHint === 'object' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {/* Bug Line */}
+                    {aiDebugHint.bugLine && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 800, color: '#ef4444', fontFamily: 'JetBrains Mono, monospace' }}>Line {aiDebugHint.bugLine}</span>
+                        <span style={{ fontSize: 11, color: '#888' }}>is where Clara spotted the issue</span>
+                      </div>
+                    )}
+                    {/* Bug Description */}
+                    <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #ef4444' }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#ef4444', marginBottom: 4 }}>🐛 BUG</div>
+                      <p style={{ margin: 0, color: '#fca5a5', fontSize: 12, lineHeight: 1.6 }}>{aiDebugHint.bugDescription}</p>
+                    </div>
+                    {/* Fix suggestion */}
+                    {aiDebugHint.fix && (
+                      <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #22c55e' }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: '#22c55e', marginBottom: 4 }}>💡 FIX</div>
+                        <p style={{ margin: 0, color: '#86efac', fontSize: 12, lineHeight: 1.6 }}>{aiDebugHint.fix}</p>
+                      </div>
+                    )}
+                    {/* Fixed code snippet */}
+                    {aiDebugHint.fixedSnippet && (
+                      <div style={{ background: 'rgba(96,165,250,0.05)', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 8, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: '#60a5fa', marginBottom: 6 }}>✏️ CORRECTED CODE</div>
+                        <pre style={{ margin: 0, background: 'rgba(0,0,0,0.4)', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: '#a78bfa', fontFamily: 'JetBrains Mono, monospace', overflowX: 'auto' }}>{aiDebugHint.fixedSnippet}</pre>
+                      </div>
+                    )}
+                    {/* Re-debug button */}
+                    <button onClick={() => { setAiDebugHint(null) }} style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid rgba(236,72,153,0.3)', color: '#ec4899', borderRadius: 6, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>↩ Try Again</button>
                   </div>
                 )}
               </div>
@@ -1351,7 +1407,16 @@ export default function BattleRoom() {
                 <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'Outfit' }}>Clara</div>
                 <div style={{ fontSize: 10, color: '#ec4899', fontWeight: 700, letterSpacing: 1 }}>MAANG INTERVIEWER</div>
               </div>
-              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* 🔊 Voice Call Mode toggle */}
+                <button
+                  onClick={() => { setVoiceMode(v => !v); if (isSpeaking) window.speechSynthesis?.cancel(); }}
+                  title={voiceMode ? 'Call Mode ON — click to mute' : 'Enable Voice Call Mode'}
+                  style={{ background: voiceMode ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${voiceMode ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 8, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: voiceMode ? '#22c55e' : '#666', fontWeight: 700, transition: 'all 0.2s' }}>
+                  {isSpeaking
+                    ? <><span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22c55e', animation: 'pulse 0.6s infinite' }} /> Speaking...</>
+                    : voiceMode ? '🎙️ ON' : '🎙️ Call'}
+                </button>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', animation: 'pulse 2s infinite' }} />
                 <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 600 }}>LIVE</span>
               </div>
