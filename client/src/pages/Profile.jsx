@@ -125,6 +125,7 @@ export default function Profile() {
   const [showAppPrefs, setShowAppPrefs] = useState(false) 
   const [profileData, setProfileData] = useState(null)
   const [battles, setBattles] = useState([])
+  const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -774,7 +775,7 @@ export default function Profile() {
           {/* Tabs Navigation */}
           <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', gap: 16, background: 'transparent', padding: '0 8px' }}>
             {['battles', 'achievements', 'stats'].map(t => (
-              <button key={t} onClick={() => setActiveTab(t)} style={{
+              <button key={t} onClick={() => { setActiveTab(t); if (t === 'battles') setVisibleCount(10); }} style={{
                 padding: '10px 22px', fontSize: 13, fontWeight: 600, background: 'none', border: 'none',
                 borderBottom: `2px solid ${activeTab === t ? '#ff6b35' : 'transparent'}`,
                 borderRadius: '10px 10px 0 0',
@@ -788,6 +789,17 @@ export default function Profile() {
           {/* BATTLES TAB */}
           {activeTab === 'battles' && (
             <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px) saturate(150%)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '0 0 24px 24px', overflow: 'hidden', boxShadow: '0 20px 48px rgba(0,0,0,0.5)' }}>
+              {/* Count bar */}
+              {battles.length > 0 && (
+                <div style={{ padding: '10px 24px', background: 'rgba(255,107,53,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: '#555' }}>
+                    Showing <span style={{ color: '#ff6b35', fontWeight: 700 }}>{Math.min(visibleCount, battles.length)}</span> of <span style={{ color: '#aaa', fontWeight: 700 }}>{battles.length}</span> battles
+                  </span>
+                  {battles.length > 10 && visibleCount >= battles.length && (
+                    <span style={{ fontSize: 11, color: '#333' }}>All loaded ✓</span>
+                  )}
+                </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 130px 90px 70px 90px', padding: '14px 24px', background: 'rgba(0,0,0,0.4)', fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.8)', letterSpacing: 2 }}>
                 {['RESULT', 'PROBLEM', 'OPPONENT', 'DIFF', 'TIME', 'DATE'].map(h => <div key={h}>{h}</div>)}
               </div>
@@ -798,19 +810,18 @@ export default function Profile() {
                   <div style={{ fontSize: 13, color: '#555', marginBottom: 24 }}>Enter the arena and start your coding combat journey</div>
                   {isOwnProfile && <button onClick={() => navigate('/lobby')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', cursor: 'pointer', fontWeight: 700, fontFamily: 'Inter', fontSize: 14, boxShadow: '0 8px 24px rgba(255,107,53,0.3)', transition: 'all 0.3s' }}>⚡ Enter Arena</button>}
                 </div>
-              ) : battles.map((b, i) => (
+              ) : battles.slice(0, visibleCount).map((b, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 130px 90px 70px 90px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.paddingLeft = '28px'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '24px'; }}>
                   <div>
-                    <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20, background: b.result === 'win' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: b.result === 'win' ? '#22c55e' : '#ef4444', border: `1px solid ${b.result === 'win' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`, letterSpacing: 0.5 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20, background: b.result === 'win' ? 'rgba(34,197,94,0.1)' : b.result === 'draw' ? 'rgba(251,191,36,0.1)' : 'rgba(239,68,68,0.1)', color: b.result === 'win' ? '#22c55e' : b.result === 'draw' ? '#fbbf24' : '#ef4444', border: `1px solid ${b.result === 'win' ? 'rgba(34,197,94,0.25)' : b.result === 'draw' ? 'rgba(251,191,36,0.25)' : 'rgba(239,68,68,0.25)'}`, letterSpacing: 0.5 }}>
                       {b.result?.toUpperCase()}
                     </span>
                   </div>
                   <div>
                     <div 
                       onClick={() => {
-                        // Problem title se slug banao aur practice mode mein open karo
                         const slug = b.problemSlug || b.problem?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
                         navigate(`/battle?problem=${slug}&practice=true`)
                       }}
@@ -821,7 +832,7 @@ export default function Profile() {
                     >
                       {b.problem || 'Unknown'} ↗
                     </div>
-                    <div style={{ fontSize: 11, color: b.result === 'win' ? '#22c55e' : '#ef4444', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>
+                    <div style={{ fontSize: 11, color: b.result === 'win' ? '#22c55e' : b.result === 'draw' ? '#fbbf24' : '#ef4444', fontWeight: 700, fontFamily: 'JetBrains Mono' }}>
                       {b.result === 'win' ? '+' : ''}{b.eloChange || 0} ELO
                     </div>
                   </div>
@@ -840,6 +851,26 @@ export default function Profile() {
                   <div style={{ fontSize: 11, color: '#555', fontWeight: 500 }}>{formatDate(b.date)}</div>
                 </div>
               ))}
+
+              {/* Load More button */}
+              {battles.length > visibleCount && (
+                <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                  <span style={{ fontSize: 12, color: '#444' }}>Showing {Math.min(visibleCount, battles.length)} of {battles.length} battles</span>
+                  <button
+                    onClick={() => setVisibleCount(c => c + 10)}
+                    style={{ background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)', color: '#ff6b35', borderRadius: 10, padding: '8px 20px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.08)'; }}
+                  >
+                    Load More ↓
+                  </button>
+                </div>
+              )}
+              {battles.length > 0 && battles.length <= visibleCount && battles.length > 10 && (
+                <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.04)', textAlign: 'center', fontSize: 12, color: '#333' }}>
+                  All {battles.length} battles loaded ✓
+                </div>
+              )}
             </div>
           )}
 
