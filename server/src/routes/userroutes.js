@@ -24,7 +24,11 @@ router.get('/search', authMiddleware, userController.searchUsers)
 router.get('/premium-stats', authMiddleware, async (req, res) => {
   try {
     const User = require('../models/User')
-    const user = await User.findById(req.user.id).select(
+    // Auth middleware sets req.userId (not req.user.id)
+    const userId = req.userId
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' })
+
+    const user = await User.findById(userId).select(
       'stats matchHistory solvedProblems elo rank peakElo isPremium username'
     )
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
@@ -71,11 +75,11 @@ router.get('/premium-stats', authMiddleware, async (req, res) => {
     const winRate = Math.round(((user.stats.wins || 0) / total) * 100)
 
     // Recent 5 matches
-    const recentMatches = user.matchHistory
+    const recentMatches = [...user.matchHistory]
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 5)
       .map(m => ({
-        opponent:  m.opponent, problem: m.problem, result: m.result,
+        opponent:  m.opponent,  problem: m.problem,   result: m.result,
         eloChange: m.eloChange, difficulty: m.difficulty,
         date: new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       }))

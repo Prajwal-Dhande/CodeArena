@@ -42,6 +42,8 @@ app.use('/api/ai', require('./routes/aiRoutes'))
 app.use('/api/puzzles', require('./routes/puzzleRoutes'));
 
 app.use('/api/payment', paymentRoutes);
+app.use('/api/tournaments', require('./routes/tournamentRoutes'));
+
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'CodeArena server is alive 🔥' })
