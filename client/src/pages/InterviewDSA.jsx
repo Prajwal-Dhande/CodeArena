@@ -233,7 +233,7 @@ export default function InterviewDSA() {
             <div className="hero-text-content">
               <h1 className="hero-title">
                 The FAANG Vault
-                <span className="pro-badge-glow">PRO</span>
+                <span className="pro-badge-glow">PRO+</span>
               </h1>
               <p className="hero-subtitle">
                 Master the most frequently asked interview questions from top tech companies. 
@@ -241,7 +241,7 @@ export default function InterviewDSA() {
               </p>
               {!isPremium && (
                 <div className="premium-upsell" onClick={() => setShowPaywall(true)}>
-                  🔒 Unlock all {problems.filter(p => p.tier === 'premium').length} Premium questions
+                  🔒 Unlock all {problems.filter(p => p.tier === 'premium').length} PRO+ questions
                 </div>
               )}
             </div>
@@ -274,8 +274,8 @@ export default function InterviewDSA() {
                 </select>
                 <select value={tierFilter} onChange={e => setTierFilter(e.target.value)} className="vault-select">
                   <option value="All">All Tiers</option>
-                  <option value="free">Free Problems</option>
-                  <option value="premium">Premium 🔒</option>
+                  <option value="free">PRO</option>
+                  <option value="premium">PRO+ 🔒</option>
                 </select>
               </div>
               <div className="problem-count">
@@ -319,7 +319,7 @@ export default function InterviewDSA() {
                           <div>
                             <div className="p-title">
                               {p.title} 
-                              {p.tier === 'premium' && <span className="premium-tag">PRO</span>}
+                              {p.tier === 'premium' && <span className="premium-tag">PRO+</span>}
                             </div>
                             <div className="p-category">{p.category}</div>
                           </div>
