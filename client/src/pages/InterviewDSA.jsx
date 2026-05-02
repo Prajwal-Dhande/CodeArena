@@ -314,7 +314,7 @@ export default function InterviewDSA() {
                       >
                         <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: 16 }}>
                           <div className="company-badge" style={{ borderColor: `${getCompanyColor(p.topCompany)}40`, background: `${getCompanyColor(p.topCompany)}10`, color: getCompanyColor(p.topCompany) }}>
-                            {p.topCompany.charAt(0)}
+                            {(idx + 1).toString().padStart(2, '0')}
                           </div>
                           <div>
                             <div className="p-title">
