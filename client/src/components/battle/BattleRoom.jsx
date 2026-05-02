@@ -104,7 +104,7 @@ const LanguageIcon = ({ lang }) => {
 const processCodeForBackend = (rawCode) => rawCode;
 
 const getRoomId = () => new URLSearchParams(window.location.search).get('room') || 'demo-room-1'
-const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'two-sum'
+const getProblemSlug = () => new URLSearchParams(window.location.search).get('problem') || 'contains-duplicate'
 const isPracticeMode = () => new URLSearchParams(window.location.search).get('practice') === 'true'
 const isRealMatch = () => new URLSearchParams(window.location.search).get('real') === 'true'
 const isPremiumMode = () => new URLSearchParams(window.location.search).get('premium') === 'true'

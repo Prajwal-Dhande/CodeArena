@@ -453,7 +453,7 @@ export default function Lobby() {
       finalProblemSlug = matchData.problemSlug;
     } else {
       const fallbackProb = problems[Math.floor(Date.now() / 30000) % problems.length];
-      finalProblemSlug = fallbackProb ? fallbackProb.slug : 'two-sum';
+      finalProblemSlug = fallbackProb ? fallbackProb.slug : 'contains-duplicate';
     }
 
     if (matchData.isReal) {

@@ -38,7 +38,7 @@ function initSocket(server) {
         }
 
         const roomId = `room_${Date.now()}`
-        const sharedProblemSlug = opponent.problemSlug || problemSlug || 'two-sum'
+        const sharedProblemSlug = opponent.problemSlug || problemSlug || 'contains-duplicate'
 
         socket.join(roomId)
         opponent.socket.join(roomId)
