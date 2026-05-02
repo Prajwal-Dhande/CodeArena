@@ -7,7 +7,7 @@ const authMiddleware = require('../middleware/authmiddleware')
 router.get('/', async (req, res) => {
   try {
     const { difficulty, category, search } = req.query
-    const filter = { isActive: true }
+    const filter = { isActive: true, isFaang: { $ne: true } }
 
     if (difficulty && difficulty !== 'All') filter.difficulty = difficulty
     if (category && category !== 'All') filter.category = category
