@@ -42,6 +42,21 @@ router.get('/premium', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/problems/vault — FAANG problems for the Interview DSA Vault UI
+router.get('/vault', async (req, res) => {
+  try {
+    // Return all FAANG problems, both free and premium.
+    // The frontend will lock the premium ones if the user isn't premium.
+    const problems = await Problem.find({ isFaang: true, isActive: true })
+      .select('-testCases -starterCode')
+      .sort({ order: 1 });
+
+    res.json({ problems, total: problems.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // GET /api/problems/:slug — single problem
 router.get('/:slug', async (req, res) => {
   try {

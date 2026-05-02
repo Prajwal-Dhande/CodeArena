@@ -1,0 +1,513 @@
+const mongoose = require('mongoose');
+require('dotenv').config();
+const Problem = require('./src/models/Problem');
+
+const seedData = [
+  // FREE TIER (10 problems)
+  {
+    slug: 'two-sum-faang',
+    title: 'Two Sum',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+    hints: ['Use a hash map to store seen values and their indices.'],
+    companies: ['Google', 'Amazon', 'Facebook', 'Microsoft', 'Apple'],
+    acceptance: 50.1,
+    tier: 'free',
+    faangFrequency: 1542,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 1
+  },
+  {
+    slug: 'valid-parentheses-faang',
+    title: 'Valid Parentheses',
+    difficulty: 'Easy',
+    category: 'Stack',
+    description: 'Given a string s containing just the characters (, ), {, }, [ and ], determine if the input string is valid.',
+    hints: ['Use a stack to keep track of opening brackets.'],
+    companies: ['Amazon', 'Microsoft', 'Facebook', 'Google', 'Bloomberg'],
+    acceptance: 40.2,
+    tier: 'free',
+    faangFrequency: 1210,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 2
+  },
+  {
+    slug: 'merge-two-sorted-lists-faang',
+    title: 'Merge Two Sorted Lists',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    description: 'Merge two sorted linked lists and return it as a sorted list.',
+    hints: ['Use a dummy node to build the result list.'],
+    companies: ['Amazon', 'Microsoft', 'Apple', 'Google'],
+    acceptance: 62.5,
+    tier: 'free',
+    faangFrequency: 1150,
+    isFaang: true,
+    topCompany: 'Microsoft',
+    order: 3
+  },
+  {
+    slug: 'best-time-to-buy-sell-stock-faang',
+    title: 'Best Time to Buy and Sell Stock',
+    difficulty: 'Easy',
+    category: 'Arrays',
+    description: 'You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.',
+    hints: ['Keep track of the minimum price seen so far.'],
+    companies: ['Amazon', 'Facebook', 'Microsoft', 'Google'],
+    acceptance: 54.3,
+    tier: 'free',
+    faangFrequency: 1080,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 4
+  },
+  {
+    slug: 'valid-palindrome-faang',
+    title: 'Valid Palindrome',
+    difficulty: 'Easy',
+    category: 'Strings',
+    description: 'A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.',
+    hints: ['Use two pointers from the start and end.'],
+    companies: ['Facebook', 'Amazon', 'Microsoft'],
+    acceptance: 45.8,
+    tier: 'free',
+    faangFrequency: 950,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 5
+  },
+  {
+    slug: 'invert-binary-tree-faang',
+    title: 'Invert Binary Tree',
+    difficulty: 'Easy',
+    category: 'Trees',
+    description: 'Given the root of a binary tree, invert the tree, and return its root.',
+    hints: ['Recursively invert the left and right subtrees.'],
+    companies: ['Google', 'Amazon', 'Apple'],
+    acceptance: 75.1,
+    tier: 'free',
+    faangFrequency: 890,
+    isFaang: true,
+    topCompany: 'Google',
+    order: 6
+  },
+  {
+    slug: 'maximum-subarray-faang',
+    title: 'Maximum Subarray',
+    difficulty: 'Medium',
+    category: 'Dynamic Programming',
+    description: 'Find the contiguous subarray (containing at least one number) which has the largest sum and return its sum.',
+    hints: ['Use Kadane\'s algorithm.'],
+    companies: ['Amazon', 'Microsoft', 'Apple', 'Google'],
+    acceptance: 50.5,
+    tier: 'free',
+    faangFrequency: 840,
+    isFaang: true,
+    topCompany: 'Microsoft',
+    order: 7
+  },
+  {
+    slug: 'climbing-stairs-faang',
+    title: 'Climbing Stairs',
+    difficulty: 'Easy',
+    category: 'Dynamic Programming',
+    description: 'You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?',
+    hints: ['Use dynamic programming to calculate ways for each step.'],
+    companies: ['Amazon', 'Google', 'Apple'],
+    acceptance: 52.8,
+    tier: 'free',
+    faangFrequency: 780,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 8
+  },
+  {
+    slug: 'linked-list-cycle-faang',
+    title: 'Linked List Cycle',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    description: 'Given head, the head of a linked list, determine if the linked list has a cycle in it.',
+    hints: ['Use Floyd\'s Tortoise and Hare algorithm.'],
+    companies: ['Microsoft', 'Amazon', 'Google'],
+    acceptance: 48.9,
+    tier: 'free',
+    faangFrequency: 720,
+    isFaang: true,
+    topCompany: 'Microsoft',
+    order: 9
+  },
+  {
+    slug: 'reverse-linked-list-faang',
+    title: 'Reverse Linked List',
+    difficulty: 'Easy',
+    category: 'Linked List',
+    description: 'Given the head of a singly linked list, reverse the list, and return the reversed list.',
+    hints: ['Iterate through the list and change the next pointers.'],
+    companies: ['Amazon', 'Microsoft', 'Apple', 'Facebook'],
+    acceptance: 74.2,
+    tier: 'free',
+    faangFrequency: 680,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 10
+  },
+
+  // PREMIUM TIER (20 problems)
+  {
+    slug: 'lru-cache-faang',
+    title: 'LRU Cache',
+    difficulty: 'Medium',
+    category: 'Design',
+    description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.',
+    hints: ['Use a combination of a Hash Map and a Doubly Linked List.'],
+    companies: ['Amazon', 'Microsoft', 'Facebook', 'Google', 'Apple'],
+    acceptance: 41.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 2150,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 11
+  },
+  {
+    slug: 'number-of-islands-faang',
+    title: 'Number of Islands',
+    difficulty: 'Medium',
+    category: 'Graphs',
+    description: 'Given an m x n 2D binary grid grid which represents a map of 1s (land) and 0s (water), return the number of islands.',
+    hints: ['Use DFS or BFS to traverse connected land components.'],
+    companies: ['Amazon', 'Google', 'Microsoft', 'Facebook', 'Bloomberg'],
+    acceptance: 58.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1980,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 12
+  },
+  {
+    slug: 'merge-intervals-faang',
+    title: 'Merge Intervals',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    description: 'Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals.',
+    hints: ['Sort the intervals by their start times.'],
+    companies: ['Facebook', 'Amazon', 'Google', 'Microsoft', 'Apple'],
+    acceptance: 46.8,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1820,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 13
+  },
+  {
+    slug: 'two-sum-ii-faang',
+    title: 'Two Sum II - Input Array Is Sorted',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    description: 'Given a 1-indexed array of integers numbers that is already sorted in non-decreasing order, find two numbers such that they add up to a specific target number.',
+    hints: ['Use two pointers, one at the beginning and one at the end.'],
+    companies: ['Amazon', 'Apple', 'Google'],
+    acceptance: 60.1,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1650,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 14
+  },
+  {
+    slug: '3sum-faang',
+    title: '3Sum',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    description: 'Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0.',
+    hints: ['Sort the array and use two pointers for the remaining sum.'],
+    companies: ['Amazon', 'Facebook', 'Microsoft', 'Google', 'Apple'],
+    acceptance: 33.4,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1590,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 15
+  },
+  {
+    slug: 'search-in-rotated-sorted-array-faang',
+    title: 'Search in Rotated Sorted Array',
+    difficulty: 'Medium',
+    category: 'Binary Search',
+    description: 'There is an integer array nums sorted in ascending order (with distinct values). Given the array nums after the possible rotation and an integer target, return the index of target if it is in nums, or -1 if it is not in nums.',
+    hints: ['Use binary search. Find which half is sorted.'],
+    companies: ['Amazon', 'Microsoft', 'Facebook', 'Google', 'Apple'],
+    acceptance: 39.8,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1520,
+    isFaang: true,
+    topCompany: 'Microsoft',
+    order: 16
+  },
+  {
+    slug: 'longest-substring-without-repeating-characters-faang',
+    title: 'Longest Substring Without Repeating Characters',
+    difficulty: 'Medium',
+    category: 'Strings',
+    description: 'Given a string s, find the length of the longest substring without repeating characters.',
+    hints: ['Use a sliding window and a hash set or hash map.'],
+    companies: ['Amazon', 'Google', 'Facebook', 'Microsoft', 'Apple'],
+    acceptance: 34.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1480,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 17
+  },
+  {
+    slug: 'word-search-faang',
+    title: 'Word Search',
+    difficulty: 'Medium',
+    category: 'Graphs',
+    description: 'Given an m x n grid of characters board and a string word, return true if word exists in the grid.',
+    hints: ['Use backtracking (DFS) to explore all possible paths.'],
+    companies: ['Amazon', 'Microsoft', 'Facebook', 'Google'],
+    acceptance: 41.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1410,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 18
+  },
+  {
+    slug: 'validate-binary-search-tree-faang',
+    title: 'Validate Binary Search Tree',
+    difficulty: 'Medium',
+    category: 'Trees',
+    description: 'Given the root of a binary tree, determine if it is a valid binary search tree (BST).',
+    hints: ['Recursively check if each node value is within its valid range.'],
+    companies: ['Amazon', 'Facebook', 'Microsoft', 'Google'],
+    acceptance: 32.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1350,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 19
+  },
+  {
+    slug: 'lowest-common-ancestor-of-a-binary-tree-faang',
+    title: 'Lowest Common Ancestor of a Binary Tree',
+    difficulty: 'Medium',
+    category: 'Trees',
+    description: 'Given a binary tree, find the lowest common ancestor (LCA) of two given nodes in the tree.',
+    hints: ['Recursively find if p or q exists in the left or right subtree.'],
+    companies: ['Amazon', 'Facebook', 'Microsoft', 'Google', 'Apple'],
+    acceptance: 60.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1290,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 20
+  },
+  {
+    slug: 'course-schedule-faang',
+    title: 'Course Schedule',
+    difficulty: 'Medium',
+    category: 'Graphs',
+    description: 'There are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1. You are given an array prerequisites where prerequisites[i] = [ai, bi] indicates that you must take course bi first if you want to take course ai. Return true if you can finish all courses.',
+    hints: ['This is a topological sort / cycle detection problem in a directed graph.'],
+    companies: ['Amazon', 'Google', 'Microsoft', 'Facebook'],
+    acceptance: 46.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1220,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 21
+  },
+  {
+    slug: 'product-of-array-except-self-faang',
+    title: 'Product of Array Except Self',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    description: 'Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i].',
+    hints: ['Calculate prefix products and suffix products.'],
+    companies: ['Amazon', 'Facebook', 'Microsoft', 'Apple', 'Google'],
+    acceptance: 65.1,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1180,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 22
+  },
+  {
+    slug: 'kth-largest-element-in-an-array-faang',
+    title: 'Kth Largest Element in an Array',
+    difficulty: 'Medium',
+    category: 'Arrays',
+    description: 'Given an integer array nums and an integer k, return the kth largest element in the array.',
+    hints: ['Use a min-heap of size k.'],
+    companies: ['Amazon', 'Facebook', 'Google', 'Microsoft'],
+    acceptance: 66.8,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1120,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 23
+  },
+  {
+    slug: 'binary-tree-level-order-traversal-faang',
+    title: 'Binary Tree Level Order Traversal',
+    difficulty: 'Medium',
+    category: 'Trees',
+    description: 'Given the root of a binary tree, return the level order traversal of its nodes\' values. (i.e., from left to right, level by level).',
+    hints: ['Use BFS with a queue.'],
+    companies: ['Amazon', 'Microsoft', 'Facebook', 'Google'],
+    acceptance: 65.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1050,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 24
+  },
+  {
+    slug: 'serialize-and-deserialize-binary-tree-faang',
+    title: 'Serialize and Deserialize Binary Tree',
+    difficulty: 'Hard',
+    category: 'Trees',
+    description: 'Design an algorithm to serialize and deserialize a binary tree.',
+    hints: ['Use preorder or level order traversal with null markers.'],
+    companies: ['Amazon', 'Facebook', 'Google', 'Microsoft'],
+    acceptance: 56.1,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 990,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 25
+  },
+  {
+    slug: 'trapping-rain-water-faang',
+    title: 'Trapping Rain Water',
+    difficulty: 'Hard',
+    category: 'Arrays',
+    description: 'Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.',
+    hints: ['Use two pointers or precompute max heights from left and right.'],
+    companies: ['Amazon', 'Google', 'Facebook', 'Microsoft', 'Apple'],
+    acceptance: 60.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1850,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 26
+  },
+  {
+    slug: 'merge-k-sorted-lists-faang',
+    title: 'Merge k Sorted Lists',
+    difficulty: 'Hard',
+    category: 'Linked List',
+    description: 'You are given an array of k linked-lists lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.',
+    hints: ['Use a min-heap to keep track of the smallest current nodes.'],
+    companies: ['Amazon', 'Facebook', 'Google', 'Microsoft'],
+    acceptance: 51.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1420,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 27
+  },
+  {
+    slug: 'median-of-two-sorted-arrays-faang',
+    title: 'Median of Two Sorted Arrays',
+    difficulty: 'Hard',
+    category: 'Arrays',
+    description: 'Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays. The overall run time complexity should be O(log (m+n)).',
+    hints: ['Use binary search on the smaller array to partition them equally.'],
+    companies: ['Amazon', 'Google', 'Microsoft', 'Apple'],
+    acceptance: 38.5,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 1100,
+    isFaang: true,
+    topCompany: 'Google',
+    order: 28
+  },
+  {
+    slug: 'word-ladder-faang',
+    title: 'Word Ladder',
+    difficulty: 'Hard',
+    category: 'Graphs',
+    description: 'A transformation sequence from word beginWord to word endWord using a dictionary wordList is a sequence of words beginWord -> s1 -> s2 -> ... -> sk such that every adjacent pair of words differs by a single letter.',
+    hints: ['Use BFS for shortest path in an unweighted graph.'],
+    companies: ['Amazon', 'Facebook', 'Google'],
+    acceptance: 38.8,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 950,
+    isFaang: true,
+    topCompany: 'Amazon',
+    order: 29
+  },
+  {
+    slug: 'regular-expression-matching-faang',
+    title: 'Regular Expression Matching',
+    difficulty: 'Hard',
+    category: 'Dynamic Programming',
+    description: 'Given an input string s and a pattern p, implement regular expression matching with support for \'.\' and \'*\' where \'.\' Matches any single character and \'*\' Matches zero or more of the preceding element.',
+    hints: ['Use dynamic programming to handle the \'*\' wildcards.'],
+    companies: ['Facebook', 'Google', 'Amazon'],
+    acceptance: 28.2,
+    tier: 'premium',
+    isPremium: true,
+    faangFrequency: 820,
+    isFaang: true,
+    topCompany: 'Facebook',
+    order: 30
+  }
+];
+
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://prajwaldhande1:tH1sW9L8bXwQZqBq@cluster0.widov1x.mongodb.net/codearena')
+  .then(async () => {
+    console.log('Connected to DB');
+    
+    // Check which ones exist
+    for (const p of seedData) {
+      const existing = await Problem.findOne({ slug: p.slug });
+      if (existing) {
+        console.log(`Updating ${p.slug}...`);
+        await Problem.updateOne({ slug: p.slug }, { $set: p });
+      } else {
+        console.log(`Creating ${p.slug}...`);
+        // Add dummy test case if missing
+        p.testCases = [{
+           input: "dummy", expected: "dummy", functionCall: "solve()"
+        }];
+        p.starterCode = {
+          javascript: 'function solve() { return null; }',
+          python: 'def solve(): return None',
+          java: 'class Solution { public Object solve() { return null; } }',
+          cpp: 'class Solution { public: void solve() {} };'
+        };
+        await Problem.create(p);
+      }
+    }
+    
+    console.log('Seed complete!');
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
