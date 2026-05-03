@@ -21,6 +21,9 @@ const userSchema = new mongoose.Schema({
 
   // 🔥 PREMIUM STATUS 🔥
   isPremium: { type: Boolean, default: false },
+  premiumPlan: { type: String, enum: ['free', 'pro', 'pro_plus'], default: 'free' },
+  premiumExpiry: { type: Date },
+  premiumOrderId: { type: String },
 
   // 🔥 SOCIAL FIELDS (FOLLOW SYSTEM) 🔥
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

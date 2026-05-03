@@ -32,6 +32,7 @@ const PlayIcon = () => (
 
 export default function InterviewDSA() {
   const [isPremium, setIsPremium] = useState(false);
+  const [premiumPlan, setPremiumPlan] = useState('free');
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -56,6 +57,7 @@ export default function InterviewDSA() {
       setUser(userObj);
       if (userObj.isPremium) {
         setIsPremium(true);
+        setPremiumPlan(userObj.premiumPlan || 'pro');
       }
     }
     fetchVaultProblems();
@@ -141,7 +143,17 @@ export default function InterviewDSA() {
   };
 
   const handleProblemClick = (p) => {
-    if (p.tier === 'premium' && !isPremium) {
+    // Pro+ users can access everything
+    // Pro users can access free-tier vault problems only
+    // Free users can't access anything (they shouldn't be here, but just in case)
+    const isProPlus = premiumPlan === 'pro_plus';
+    const isPro = premiumPlan === 'pro';
+    
+    if (p.tier === 'premium' && !isProPlus) {
+      setLockedProblem(p);
+      setShowPaywall(true);
+    } else if (!isPremium && p.tier === 'free') {
+      // Even free-tier vault problems need at least Pro
       setLockedProblem(p);
       setShowPaywall(true);
     } else {
@@ -295,7 +307,7 @@ export default function InterviewDSA() {
               <div className="list-body">
                 <AnimatePresence>
                   {filteredProblems.map((p, idx) => {
-                    const isLocked = p.tier === 'premium' && !isPremium;
+                    const isLocked = p.tier === 'premium' && premiumPlan !== 'pro_plus';
                     const diffColors = {
                       Easy: { bg: 'rgba(34,197,94,0.1)', color: '#22c55e', border: 'rgba(34,197,94,0.2)' },
                       Medium: { bg: 'rgba(251,146,60,0.1)', color: '#fb923c', border: 'rgba(251,146,60,0.2)' },

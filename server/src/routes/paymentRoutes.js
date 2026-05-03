@@ -83,8 +83,10 @@ router.post('/verify', authMiddleware, async (req, res) => {
       }
 
       // Update user status
+      const premiumPlan = (plan === 'pro_plus' || plan === 'pro+') ? 'pro_plus' : 'pro';
       await User.findByIdAndUpdate(req.userId, { 
         isPremium: true,
+        premiumPlan: premiumPlan,
         premiumExpiry: expiry,
         premiumOrderId: razorpay_order_id
       });
@@ -109,7 +111,7 @@ router.post('/verify', authMiddleware, async (req, res) => {
 // GET /api/payment/status (Required by frontend on load)
 router.get('/status', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('isPremium premiumExpiry');
+    const user = await User.findById(req.userId).select('isPremium premiumPlan premiumExpiry');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     // Expiry check karo
@@ -120,6 +122,7 @@ router.get('/status', authMiddleware, async (req, res) => {
 
     res.json({
       isPremium: user.isPremium,
+      premiumPlan: user.premiumPlan || 'free',
       premiumExpiry: user.premiumExpiry,
       daysLeft: user.premiumExpiry
         ? Math.ceil((new Date(user.premiumExpiry) - new Date()) / (1000 * 60 * 60 * 24))

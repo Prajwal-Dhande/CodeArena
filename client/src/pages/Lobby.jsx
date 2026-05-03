@@ -230,6 +230,8 @@ export default function Lobby() {
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [roomCode, setRoomCode] = useState('')
   const [creating, setCreating] = useState(false)
+  const [createdRoomCode, setCreatedRoomCode] = useState(null)
+  const [roomCodeCopied, setRoomCodeCopied] = useState(false)
   const [joining, setJoining] = useState(false)
   const [onlineCount, setOnlineCount] = useState(247)
   const [pulse, setPulse] = useState(false)
@@ -467,14 +469,21 @@ export default function Lobby() {
 
   const handleCreateRoom = () => {
     if (!selectedProblem) return
-    setCreating(true)
-    setTimeout(() => navigate(`/battle?problem=${selectedProblem.slug}&room=room-${Math.random().toString(36).slice(2, 8)}`), 1500)
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase()
+    setCreatedRoomCode(code)
+    setRoomCodeCopied(false)
+  }
+
+  const handleStartCreatedRoom = () => {
+    if (!selectedProblem || !createdRoomCode) return
+    navigate(`/battle?problem=${selectedProblem.slug}&room=${createdRoomCode}`)
   }
 
   const handleJoinRoom = () => {
     if (roomCode.trim().length < 4) return
     setJoining(true)
-    setTimeout(() => navigate(`/battle?room=${roomCode.trim()}`), 1200)
+    // Try to get problem from the room first, then navigate
+    setTimeout(() => navigate(`/battle?room=${roomCode.trim()}`), 800)
   }
 
   const solvedCount = dailyPuzzles.filter(p => user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id))).length;
@@ -563,6 +572,43 @@ export default function Lobby() {
             </div>
           </motion.div>
         </motion.div>
+      )}
+
+      {/* ROOM CODE MODAL */}
+      {createdRoomCode && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#13131a', border: '1px solid rgba(255,107,53,0.3)', borderRadius: 24, width: '90%', maxWidth: 440, padding: '40px', textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
+            <h2 style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: '#fff', margin: '0 0 8px 0' }}>Room Created!</h2>
+            <p style={{ color: '#888', fontSize: 13, margin: '0 0 24px 0' }}>Share this code with your opponent to start the battle.</p>
+            
+            <div style={{ background: 'rgba(255,107,53,0.06)', border: '2px dashed rgba(255,107,53,0.3)', borderRadius: 14, padding: '20px', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#555', letterSpacing: 2, marginBottom: 8 }}>ROOM CODE</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 36, fontWeight: 900, color: '#ff6b35', letterSpacing: 6 }}>{createdRoomCode}</div>
+            </div>
+
+            <button 
+              onClick={() => { navigator.clipboard.writeText(createdRoomCode); setRoomCodeCopied(true); setTimeout(() => setRoomCodeCopied(false), 2000) }}
+              style={{ width: '100%', background: roomCodeCopied ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${roomCodeCopied ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`, color: roomCodeCopied ? '#22c55e' : '#e5e5e5', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', marginBottom: 12, transition: 'all 0.2s' }}>
+              {roomCodeCopied ? '✓ Copied to Clipboard!' : '📋 Copy Room Code'}
+            </button>
+
+            {selectedProblem && (
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px', marginBottom: 16, textAlign: 'left' }}>
+                <div style={{ fontSize: 10, color: '#555', fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PROBLEM</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#e5e5e5' }}>{selectedProblem.title}</div>
+                <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{selectedProblem.category} · {selectedProblem.difficulty}</div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setCreatedRoomCode(null)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
+              <button onClick={handleStartCreatedRoom} style={{ flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none', color: '#fff', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Enter Room</button>
+            </div>
+
+            <div style={{ fontSize: 11, color: '#444', marginTop: 14 }}>💡 Your opponent enters this code in the "Join Room" tab</div>
+          </div>
+        </div>
       )}
 
       {/* NAV */}

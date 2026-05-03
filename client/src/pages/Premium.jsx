@@ -117,7 +117,7 @@ export default function Premium() {
       .then(data => {
         setPremiumStatus(data)
         if (data.isPremium) {
-          const updatedUser = { ...user, isPremium: true }
+          const updatedUser = { ...user, isPremium: true, premiumPlan: data.premiumPlan || 'pro' }
           setUser(updatedUser)
           localStorage.setItem('user', JSON.stringify(updatedUser))
         }
@@ -177,6 +177,9 @@ export default function Premium() {
   }
 
   const isPremiumUser = user?.isPremium || premiumStatus?.isPremium
+  const currentPlan = user?.premiumPlan || premiumStatus?.premiumPlan || 'free'
+  const isProUser = currentPlan === 'pro'
+  const isProPlusUser = currentPlan === 'pro_plus'
 
   return (
     <div style={{ minHeight: '100vh', background: '#060608', fontFamily: 'Inter, sans-serif', overflowX: 'hidden' }}>
@@ -310,7 +313,7 @@ export default function Premium() {
               {/* CTA Button */}
               <button
                 onClick={() => handlePayment(plan)}
-                disabled={plan.disabled || processing === plan.id || (isPremiumUser && plan.id !== 'free')}
+                disabled={plan.disabled || processing === plan.id || (plan.id === 'pro' && (isProUser || isProPlusUser)) || (plan.id === 'pro_plus' && isProPlusUser)}
                 style={{
                   width: '100%',
                   padding: '14px 0',
@@ -332,9 +335,15 @@ export default function Premium() {
               >
                 {processing === plan.id
                   ? '⏳ Processing...'
-                  : isPremiumUser && plan.id !== 'free'
-                    ? '✓ Active'
-                    : plan.btnLabel}
+                  : plan.id === 'free'
+                    ? 'Current Plan'
+                    : plan.id === 'pro' && (isProUser || isProPlusUser)
+                      ? '✓ Active'
+                      : plan.id === 'pro_plus' && isProPlusUser
+                        ? '✓ Active'
+                        : plan.id === 'pro_plus' && isProUser
+                          ? '⬆ Upgrade to Pro+'
+                          : plan.btnLabel}
               </button>
             </motion.div>
           ))}

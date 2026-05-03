@@ -442,39 +442,7 @@ export default function Profile() {
         </div>
       )}
 
-      {showAppPrefs && isOwnProfile && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(16px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#13131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '90%', maxWidth: 440, overflow: 'hidden' }}>
-            <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
-              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 18, color: '#fff' }}>Preferences</span>
-              <button onClick={() => setShowAppPrefs(false)} style={{ background: 'none', border: 'none', color: '#555', fontSize: 20, cursor: 'pointer' }}>✕</button>
-            </div>
-            <div style={{ padding: '16px 0' }}>
-              {[
-                { section: 'Arena Settings', items: [{label: '🎵 Enable Match Sounds'}, {label: '💻 Editor: Vim Keybindings'}] },
-                { section: 'Privacy', items: [{label: '👁️ Make Profile Public'}, {label: '📊 Show ELO on Leaderboard'}] },
-                { section: 'Account', items: [{label: '🔑 Change Password'}, {label: '🚪 Logout', action: handleLogout, danger: true}, {label: '🗑️ Delete Account', danger: true}] }
-              ].map((grp, i) => (
-                <div key={i} style={{ marginBottom: i === 2 ? 0 : 16 }}>
-                  <div style={{ padding: '0 28px', fontSize: 11, color: '#666', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>{grp.section}</div>
-                  {grp.items.map((item, j) => (
-                    <div key={j} onClick={item.action ? item.action : undefined} style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: 'transparent' }} 
-                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} 
-                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <span style={{ fontSize: 14, color: item.danger ? '#ef4444' : '#e5e5e5', fontWeight: 500 }}>{item.label}</span>
-                      {!item.danger && !item.label.includes('Password') && (
-                        <div style={{ width: 36, height: 20, borderRadius: 10, background: j===0 ? '#ff6b35' : 'rgba(255,255,255,0.1)', position: 'relative' }}>
-                          <div style={{ position: 'absolute', top: 2, left: j===0 ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'all 0.2s' }} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* NAV */}
       <nav style={{ height: 64, background: 'rgba(10,10,12,0.75)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: 16, position: 'sticky', top: 0, zIndex: 50 }}>
@@ -488,7 +456,7 @@ export default function Profile() {
         <button onClick={handleShare} style={{ background: copied ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${copied ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`, color: copied ? '#22c55e' : '#a1a1aa', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
           {copied ? '✓ Copied!' : '↗ Share'}
         </button>
-        {isOwnProfile && <button onClick={() => setShowAppPrefs(true)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>}
+        {isOwnProfile && <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>}
         <button onClick={() => navigate('/lobby')} style={{ background: '#ff6b35', color: '#fff', border: 'none', padding: '6px 18px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Battle</button>
       </nav>
 
@@ -510,7 +478,15 @@ export default function Profile() {
               </div>
             </div>
 
-            <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: '#fff', marginBottom: 4 }}>{username}</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: '#fff' }}>{username}</span>
+              {(() => {
+                const plan = profileData?.premiumPlan || storedUser?.premiumPlan || (profileData?.isPremium ? 'pro' : 'free')
+                if (plan === 'pro_plus') return <span style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 6, letterSpacing: 0.5 }}>PRO+</span>
+                if (plan === 'pro') return <span style={{ background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 6, letterSpacing: 0.5 }}>PRO</span>
+                return null
+              })()}
+            </div>
 
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: tier.bg, border: `1px solid ${tier.color}40`, borderRadius: 20, padding: '4px 12px', marginBottom: 16 }}>
               <span>{tier.icon}</span>
