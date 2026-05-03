@@ -574,11 +574,11 @@ export default function Lobby() {
         <div style={{ flex: 1 }} />
         <div className="nav-links">
           <span onClick={() => navigate('/dashboard')} style={{ color: user?.isPremium ? '#a855f7' : undefined }}>
-            {user?.isPremium ? '📊 Dashboard' : 'Dashboard'}
+            Dashboard
           </span>
           <span className="active">Practice</span>
-          <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : navigate('/premium')}>Practice Interview</span>
-          <span onClick={() => navigate('/tournaments')}>🏆 Tournaments</span>
+          <span onClick={() => user?.isPremium ? navigate('/interview-dsa') : navigate('/premium')}>FAANG Vault</span>
+          <span onClick={() => navigate('/tournaments')}>Tournaments</span>
           <span onClick={() => navigate('/leaderboard')}>Leaderboard</span>
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>

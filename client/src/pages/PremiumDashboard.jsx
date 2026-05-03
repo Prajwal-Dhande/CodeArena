@@ -94,7 +94,7 @@ export default function PremiumDashboard() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(15,15,20,0.98))', borderBottom: '1px solid rgba(168,85,247,0.12)', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#aaa', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
+          <button onClick={() => navigate('/lobby')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#aaa', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
           <div>
             <div style={{ fontSize: 20, fontWeight: 900, fontFamily: 'Outfit' }}>
               <span style={{ color: '#a855f7' }}>Premium</span> Dashboard
