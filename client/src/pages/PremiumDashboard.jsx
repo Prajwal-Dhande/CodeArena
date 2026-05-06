@@ -111,6 +111,7 @@ export default function PremiumDashboard() {
             <div style={{ fontSize: 15, fontWeight: 900, color: rank.color, fontFamily: 'Outfit' }}>{stats.rank}</div>
             <div style={{ fontSize: 10, color: '#555' }}>{stats.elo} ELO</div>
           </div>
+          </div>
         </div>
       </div>
 
