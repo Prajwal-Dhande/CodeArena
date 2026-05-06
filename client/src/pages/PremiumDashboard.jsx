@@ -19,20 +19,20 @@ const RANK_META = {
 
 const StatCard = ({ label, value, sub, color = '#a855f7', icon }) => (
   <div style={{
-    background: '#0f0f14', border: `1px solid ${color}22`,
+    background: 'var(--card-bg)', border: `1px solid ${color}22`,
     borderRadius: 16, padding: '20px 22px',
     display: 'flex', flexDirection: 'column', gap: 6,
     boxShadow: `0 4px 24px ${color}11`
   }}>
     <div style={{ fontSize: 22, marginBottom: 2 }}>{icon}</div>
     <div style={{ fontSize: 28, fontWeight: 900, color, fontFamily: 'Outfit', lineHeight: 1 }}>{value}</div>
-    <div style={{ fontSize: 12, fontWeight: 700, color: '#aaa', letterSpacing: 0.5 }}>{label}</div>
-    {sub && <div style={{ fontSize: 11, color: '#555' }}>{sub}</div>}
+    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 0.5 }}>{label}</div>
+    {sub && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sub}</div>}
   </div>
 )
 
 const SectionTitle = ({ children }) => (
-  <div style={{ fontSize: 11, fontWeight: 800, color: '#555', letterSpacing: 2, marginBottom: 14, textTransform: 'uppercase' }}>
+  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 14, textTransform: 'uppercase' }}>
     {children}
   </div>
 )
@@ -41,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
     <div style={{ background: '#1a1a24', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 10, padding: '10px 14px', fontSize: 12 }}>
-      <div style={{ color: '#aaa', marginBottom: 6 }}>{label}</div>
+      <div style={{ color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {p.value}</div>
       ))}
@@ -68,15 +68,15 @@ export default function PremiumDashboard() {
   }, [])
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
       <div style={{ width: 44, height: 44, border: '3px solid rgba(168,85,247,0.2)', borderTopColor: '#a855f7', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <div style={{ color: '#555', fontSize: 14, fontFamily: 'Inter' }}>Loading your dashboard...</div>
+      <div style={{ color: 'var(--text-muted)', fontSize: 14, fontFamily: 'Inter' }}>Loading your dashboard...</div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 
   if (error) return (
-    <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontFamily: 'Inter' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontFamily: 'Inter' }}>
       {error}
     </div>
   )
@@ -90,17 +90,17 @@ export default function PremiumDashboard() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', fontFamily: 'Inter, sans-serif', color: 'var(--text-main)' }}>
 
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(15,15,20,0.98))', borderBottom: '1px solid rgba(168,85,247,0.12)', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button onClick={() => navigate('/lobby')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#aaa', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
+          <button onClick={() => navigate('/lobby')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
           <div>
             <div style={{ fontSize: 20, fontWeight: 900, fontFamily: 'Outfit' }}>
               <span style={{ color: '#a855f7' }}>Premium</span> Dashboard
             </div>
-            <div style={{ fontSize: 11, color: '#555', marginTop: 1 }}>@{stats.username} • AI-powered performance analytics</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>@{stats.username} • AI-powered performance analytics</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -109,7 +109,7 @@ export default function PremiumDashboard() {
           <span style={{ fontSize: 20 }}>{rank.icon}</span>
           <div>
             <div style={{ fontSize: 15, fontWeight: 900, color: rank.color, fontFamily: 'Outfit' }}>{stats.rank}</div>
-            <div style={{ fontSize: 10, color: '#555' }}>{stats.elo} ELO</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{stats.elo} ELO</div>
           </div>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function PremiumDashboard() {
         {/* ── Row 2: Weekly Bar + ELO Line ── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
           {/* Weekly Performance */}
-          <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
             <SectionTitle>📅 Weekly Performance</SectionTitle>
             {weeklyData.every(d => d.wins === 0 && d.losses === 0) ? (
               <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: 13 }}>No battles this week — go fight! ⚔️</div>
@@ -149,7 +149,7 @@ export default function PremiumDashboard() {
           </div>
 
           {/* ELO History */}
-          <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
             <SectionTitle>📈 ELO History (30 days)</SectionTitle>
             {eloHistory.length < 2 ? (
               <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: 13 }}>Play more battles to see your ELO trend!</div>
@@ -175,7 +175,7 @@ export default function PremiumDashboard() {
         {/* ── Row 3: Difficulty Pie + Streak Card + Recent Matches ── */}
         <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, marginBottom: 24 }}>
           {/* Difficulty Pie */}
-          <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <SectionTitle>🎯 Difficulty Mix</SectionTitle>
             {diffData.every(d => d.value === 0) ? (
               <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: 12 }}>No data yet</div>
@@ -203,7 +203,7 @@ export default function PremiumDashboard() {
           </div>
 
           {/* Recent Matches */}
-          <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px' }}>
             <SectionTitle>⚔️ Recent Battles</SectionTitle>
             {recentMatches.length === 0 ? (
               <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333', fontSize: 13 }}>No battles yet — start fighting!</div>
@@ -219,7 +219,7 @@ export default function PremiumDashboard() {
                       <span style={{ fontSize: 18 }}>{m.result === 'win' ? '🏆' : '💀'}</span>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: '#ddd' }}>{m.problem || 'Unknown Problem'}</div>
-                        <div style={{ fontSize: 11, color: '#555' }}>vs {m.opponent} • {m.date}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>vs {m.opponent} • {m.date}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -240,7 +240,7 @@ export default function PremiumDashboard() {
         </div>
 
         {/* ── Row 4: Streak Heatmap ── */}
-        <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px', marginBottom: 24 }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '24px', marginBottom: 24 }}>
           <SectionTitle>🔥 Activity Heatmap (Last 28 days)</SectionTitle>
           <ActivityHeatmap matchHistory={data.recentMatches} />
         </div>
@@ -258,7 +258,7 @@ export default function PremiumDashboard() {
             ].map(({ company, score, color, emoji }) => (
               <div key={company} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontSize: 13, color: '#aaa', fontWeight: 600 }}>{emoji} {company}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600 }}>{emoji} {company}</span>
                   <span style={{ fontSize: 16, fontWeight: 900, color, fontFamily: 'Outfit' }}>{score}%</span>
                 </div>
                 <div style={{ height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>

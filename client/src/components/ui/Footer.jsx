@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <span onClick={() => navigate('/')} className="footer-logo">
         <span style={{ color: '#ff6b35' }}>Code</span>
-        <span style={{ color: '#ffffff', textShadow: '0 0 10px rgba(255,107,53,0.3)' }}>Arena</span>
+        <span style={{ color: 'var(--text-main)', textShadow: '0 0 10px rgba(255,107,53,0.3)' }}>Arena</span>
       </span>
 
       <span className="footer-copyright">

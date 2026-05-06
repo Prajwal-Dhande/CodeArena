@@ -35,7 +35,7 @@ export default function Contact() {
       </button>
 
       <div className="glass-card">
-        <h1 style={{ fontFamily: 'Outfit', fontSize: '42px', color: '#fff', marginBottom: '8px', letterSpacing: '-1px' }}>Get in Touch</h1>
+        <h1 style={{ fontFamily: 'Outfit', fontSize: '42px', color: 'var(--text-main)', marginBottom: '8px', letterSpacing: '-1px' }}>Get in Touch</h1>
         <p style={{ color: '#9ca3af', fontSize: '15px', marginBottom: '40px', lineHeight: '1.6' }}>Found a bug? Have a suggestion? Or just want to say hi? Drop us a line.</p>
         
         <form onSubmit={(e) => e.preventDefault()}>

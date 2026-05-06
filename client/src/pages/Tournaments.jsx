@@ -12,7 +12,7 @@ const TIER_META = {
 const STATUS_META = {
   upcoming:  { label: 'UPCOMING',  color: '#60a5fa', dot: '#60a5fa'  },
   active:    { label: 'LIVE 🔴',   color: '#22c55e', dot: '#22c55e'  },
-  completed: { label: 'ENDED',     color: '#555',    dot: '#444'     },
+  completed: { label: 'ENDED',     color: 'var(--text-muted)',    dot: '#444'     },
 }
 
 const DIFF_COLOR = { Easy: '#22c55e', Medium: '#fbbf24', Hard: '#ef4444' }
@@ -50,7 +50,7 @@ function TournamentCard({ t, user, onJoin, joining }) {
 
   return (
     <div style={{
-      background: '#0f0f14', border: `1px solid ${tier.color}22`,
+      background: 'var(--card-bg)', border: `1px solid ${tier.color}22`,
       borderRadius: 20, padding: '24px', position: 'relative', overflow: 'hidden',
       boxShadow: `0 4px 32px ${tier.glow}`, transition: 'transform 0.2s, box-shadow 0.2s',
       cursor: 'default'
@@ -77,8 +77,8 @@ function TournamentCard({ t, user, onJoin, joining }) {
               </span>
             )}
           </div>
-          <div style={{ fontSize: 17, fontWeight: 900, color: '#fff', fontFamily: 'Outfit', lineHeight: 1.3 }}>{t.title}</div>
-          <div style={{ fontSize: 12, color: '#666', marginTop: 4, lineHeight: 1.5 }}>{t.description}</div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--text-main)', fontFamily: 'Outfit', lineHeight: 1.3 }}>{t.title}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{t.description}</div>
         </div>
       </div>
 
@@ -89,11 +89,11 @@ function TournamentCard({ t, user, onJoin, joining }) {
 
       {/* Meta row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 12, color: '#555' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           <span style={{ color: '#888' }}>Problem: </span>
-          <span style={{ color: '#aaa', fontWeight: 600 }}>{t.problem}</span>
+          <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{t.problem}</span>
         </div>
-        <div style={{ fontSize: 12, color: '#555' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           <span style={{ color: '#888' }}>Slots: </span>
           <span style={{ color: slots > 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
             {t.participants?.length || 0}/{t.maxSlots}
@@ -113,7 +113,7 @@ function TournamentCard({ t, user, onJoin, joining }) {
 
       {/* Action button */}
       {t.status === 'completed' ? (
-        <button disabled style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid #222', background: 'transparent', color: '#444', fontSize: 13, fontWeight: 700, cursor: 'not-allowed' }}>
+        <button disabled style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid #222', background: 'transparent', color: 'var(--text-muted)', fontSize: 13, fontWeight: 700, cursor: 'not-allowed' }}>
           Tournament Ended
         </button>
       ) : alreadyJoined ? (
@@ -121,20 +121,20 @@ function TournamentCard({ t, user, onJoin, joining }) {
           ✅ Registered
         </button>
       ) : isPremiumRequired ? (
-        <button onClick={() => window.location.href = '/premium'} style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: 'linear-gradient(90deg, #f97316, #ec4899)', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
+        <button onClick={() => window.location.href = '/premium'} style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: 'linear-gradient(90deg, #f97316, #ec4899)', color: 'var(--text-main)', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>
           🔒 Upgrade to Join
         </button>
       ) : slots <= 0 ? (
-        <button disabled style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid #333', background: 'transparent', color: '#555', fontSize: 13, fontWeight: 700, cursor: 'not-allowed' }}>
+        <button disabled style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid #333', background: 'transparent', color: 'var(--text-muted)', fontSize: 13, fontWeight: 700, cursor: 'not-allowed' }}>
           Tournament Full
         </button>
       ) : (
         <button
           onClick={() => onJoin(t._id)}
           disabled={joining === t._id}
-          style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: joining === t._id ? 'rgba(168,85,247,0.3)' : `linear-gradient(90deg, ${tier.color}cc, ${tier.color})`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: joining === t._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s' }}>
+          style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: joining === t._id ? 'rgba(168,85,247,0.3)' : `linear-gradient(90deg, ${tier.color}cc, ${tier.color})`, color: 'var(--text-main)', fontSize: 13, fontWeight: 800, cursor: joining === t._id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s' }}>
           {joining === t._id
-            ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Registering...</>
+            ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTopcolor: 'var(--text-main)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Registering...</>
             : `${tier.icon} Join Tournament`}
         </button>
       )}
@@ -189,24 +189,24 @@ export default function Tournaments() {
   const filtered = tournaments.filter(t => filter === 'all' || t.status === filter)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-dark)', fontFamily: 'Inter, sans-serif', color: 'var(--text-main)' }}>
 
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(8,8,16,0.98))', borderBottom: '1px solid rgba(168,85,247,0.12)', padding: '20px 32px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <button onClick={() => navigate('/lobby')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#aaa', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
+            <button onClick={() => navigate('/lobby')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', borderRadius: 8, padding: '6px 12px', fontSize: 12, cursor: 'pointer' }}>← Back</button>
             <div>
               <div style={{ fontSize: 22, fontWeight: 900, fontFamily: 'Outfit' }}>
                 🏆 <span style={{ color: '#a855f7' }}>Ranked</span> Tournaments
               </div>
-              <div style={{ fontSize: 11, color: '#555', marginTop: 1 }}>Compete. Climb. Conquer MAANG.</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>Compete. Climb. Conquer MAANG.</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <ThemeToggle />
             {!user?.isPremium && (
-              <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(90deg, #a855f7, #ec4899)', border: 'none', color: '#fff', borderRadius: 10, padding: '8px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
+              <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(90deg, #a855f7, #ec4899)', border: 'none', color: 'var(--text-main)', borderRadius: 10, padding: '8px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
                 💎 Upgrade to Pro
               </button>
             )}
@@ -225,7 +225,7 @@ export default function Tournaments() {
               fontSize: 12, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.2s'
             }}>{f === 'all' ? '🌐 All' : f === 'active' ? '🔴 Live' : f === 'upcoming' ? '⏳ Upcoming' : '✅ Ended'}</button>
           ))}
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: '#444', alignSelf: 'center' }}>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>
             {filtered.length} tournament{filtered.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -234,12 +234,12 @@ export default function Tournaments() {
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, gap: 16 }}>
             <div style={{ width: 40, height: 40, border: '3px solid rgba(168,85,247,0.2)', borderTopColor: '#a855f7', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <div style={{ color: '#444', fontSize: 13 }}>Loading tournaments...</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading tournaments...</div>
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0', color: '#333' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🏆</div>
-            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: '#444' }}>No tournaments here yet</div>
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--text-muted)' }}>No tournaments here yet</div>
             <div style={{ fontSize: 13 }}>Check back soon — new tournaments drop weekly!</div>
           </div>
         ) : (
@@ -256,7 +256,7 @@ export default function Tournaments() {
         <div style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
           background: toast.type === 'error' ? 'rgba(239,68,68,0.95)' : 'rgba(34,197,94,0.95)',
-          color: '#fff', borderRadius: 12, padding: '12px 20px', fontSize: 13, fontWeight: 700,
+          color: 'var(--text-main)', borderRadius: 12, padding: '12px 20px', fontSize: 13, fontWeight: 700,
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)', animation: 'slideIn 0.3s ease'
         }}>
           {toast.type === 'error' ? '❌' : '✅'} {toast.msg}

@@ -150,7 +150,7 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
 
       {phase === 'searching' && (
         <>
-          <div style={{ marginBottom: 48, fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: 24 }}><span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: '#fff' }}>Arena</span></div>
+          <div style={{ marginBottom: 48, fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: 24 }}><span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: 'var(--text-main)' }}>Arena</span></div>
           <div style={{ position: 'relative', width: 200, height: 200, marginBottom: 48 }}>
             {[200, 150, 100].map((size, i) => (
               <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: size, height: size, borderRadius: '50%', border: `1px solid rgba(255,107,53,${0.1 + i * 0.08})`, animation: `ping ${2 + i * 0.5}s ease-out infinite`, animationDelay: `${i * 0.3}s` }} />
@@ -165,12 +165,12 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
             })}
           </div>
 
-          <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 28, color: '#fff', marginBottom: 8, letterSpacing: '-0.5px' }}>Finding Match{dots}</div>
-          <div style={{ fontSize: 14, color: '#555', marginBottom: 32 }}>Searching for real players near your ELO rating</div>
+          <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 28, color: 'var(--text-main)', marginBottom: 8, letterSpacing: '-0.5px' }}>Finding Match{dots}</div>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 32 }}>Searching for real players near your ELO rating</div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 24, alignItems: 'center', marginBottom: 40, width: 520 }}>
             <div style={{ background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.2)', borderRadius: 16, padding: '20px', textAlign: 'center' }}>
-              <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #ff6b35, #f7451d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 18, color: '#fff' }}>{(user?.username || 'PL').slice(0, 2).toUpperCase()}</div>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #ff6b35, #f7451d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 18, color: 'var(--text-main)' }}>{(user?.username || 'PL').slice(0, 2).toUpperCase()}</div>
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{user?.username || 'Player'}</div>
               <div style={{ fontSize: 12, color: '#ff6b35', fontWeight: 700 }}>⭐ {userElo} ELO</div>
               <div style={{ marginTop: 8, fontSize: 10, fontWeight: 600, color: '#22c55e', letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />READY</div>
@@ -178,20 +178,20 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
 
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 32, color: '#333', letterSpacing: 2 }}>VS</div>
-              <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{formatTime(searchTime)}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{formatTime(searchTime)}</div>
             </div>
 
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 16, padding: '20px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               {flashPlayers.length > 0 ? (
                 <>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #374151, #1f2937)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 18, color: '#aaa', animation: 'flash 0.3s ease-in-out' }}>{flashPlayers[0].avatar}</div>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, color: '#aaa', animation: 'flash 0.3s' }}>{flashPlayers[0].name}</div>
-                  <div style={{ fontSize: 12, color: '#555', fontWeight: 700 }}>⭐ {flashPlayers[0].elo} ELO</div>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #374151, #1f2937)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 18, color: 'var(--text-muted)', animation: 'flash 0.3s ease-in-out' }}>{flashPlayers[0].avatar}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, color: 'var(--text-muted)', animation: 'flash 0.3s' }}>{flashPlayers[0].name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700 }}>⭐ {flashPlayers[0].elo} ELO</div>
                 </>
               ) : (
                 <>
                   <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 12px', background: 'rgba(255,255,255,0.03)', border: '2px dashed rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: '#333' }}>?</div>
-                  <div style={{ fontSize: 13, color: '#444', marginBottom: 4 }}>Searching{dots}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Searching{dots}</div>
                   <div style={{ fontSize: 11, color: '#333' }}>~{userElo} ELO range</div>
                 </>
               )}
@@ -205,11 +205,11 @@ export default function Matchmaking({ user, onMatchFound, onCancel, selectedProb
         <div style={{ textAlign: 'center', animation: 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1)' }}>
           <div style={{ fontSize: 48, marginBottom: 16, animation: 'bounce 0.6s ease infinite' }}>⚔️</div>
           <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 36, background: 'linear-gradient(90deg, #ff6b35, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8, letterSpacing: '-1px' }}>{phase === 'starting' ? 'BATTLE STARTING!' : 'MATCH FOUND!'}</div>
-          <p style={{ fontSize: 14, color: '#555', marginBottom: 40 }}>{phase === 'starting' ? 'Prepare your weapons...' : 'Opponent locked in!'}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 40 }}>{phase === 'starting' ? 'Prepare your weapons...' : 'Opponent locked in!'}</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 32, alignItems: 'center', width: 480 }}>
             <div style={{ background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.3)', borderRadius: 16, padding: '24px', textAlign: 'center', boxShadow: '0 0 30px rgba(255,107,53,0.1)' }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #ff6b35, #f7451d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 22, color: '#fff', boxShadow: '0 0 20px rgba(255,107,53,0.4)' }}>{(user?.username || 'PL').slice(0, 2).toUpperCase()}</div>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 12px', background: 'linear-gradient(135deg, #ff6b35, #f7451d)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit', fontWeight: 900, fontSize: 22, color: 'var(--text-main)', boxShadow: '0 0 20px rgba(255,107,53,0.4)' }}>{(user?.username || 'PL').slice(0, 2).toUpperCase()}</div>
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{user?.username || 'You'}</div>
               <div style={{ fontSize: 13, color: '#ff6b35', fontWeight: 700 }}>⭐ {userElo}</div>
             </div>

@@ -82,8 +82,8 @@ export default function VisualFlowHint({ problemSlug }) {
       {/* FOOTER */}
       <div className="ai-vis-footer">
         <span style={{ fontSize: 16 }}>🤖</span>
-        <div style={{ color: '#aaa', fontSize: 12, lineHeight: 1.4 }}>
-          {loading ? 'Connecting to AI visualizer...' : <>Analyzing optimal algorithm flow for <strong style={{ color: '#fff' }}>{displayTitle}</strong>...</>}
+        <div style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.4 }}>
+          {loading ? 'Connecting to AI visualizer...' : <>Analyzing optimal algorithm flow for <strong style={{ color: 'var(--text-main)' }}>{displayTitle}</strong>...</>}
         </div>
       </div>
 

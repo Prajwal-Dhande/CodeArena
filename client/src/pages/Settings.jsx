@@ -12,7 +12,7 @@ const LANGUAGES = [
 ]
 
 const SectionTitle = ({ children }) => (
-  <div style={{ fontSize: 11, fontWeight: 800, color: '#555', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>{children}</div>
+  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>{children}</div>
 )
 
 const Toggle = ({ value, onChange }) => (
@@ -25,7 +25,7 @@ const SettingRow = ({ label, desc, children }) => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
     <div>
       <div style={{ fontSize: 14, fontWeight: 600, color: '#e5e5e5' }}>{label}</div>
-      {desc && <div style={{ fontSize: 12, color: '#555', marginTop: 3 }}>{desc}</div>}
+      {desc && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{desc}</div>}
     </div>
     {children}
   </div>
@@ -101,24 +101,24 @@ export default function Settings() {
   const planInfo = getPlanLabel()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#060608', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: '#060608', fontFamily: 'Inter, sans-serif', color: 'var(--text-main)' }}>
       {/* NAV */}
-      <nav style={{ height: 60, background: '#111113', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 24px', position: 'sticky', top: 0, zIndex: 50 }}>
+      <nav style={{ height: 60, background: 'var(--card-bg)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 24px', position: 'sticky', top: 0, zIndex: 50 }}>
         <span style={{ fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: 32 }} onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35', marginRight: 6 }}>{'{C}'}</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>CodeArena</span>
+          <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>CodeArena</span>
         </span>
         <div style={{ flex: 1 }} />
         <ThemeToggle />
-        <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>← Back to Profile</button>
+        <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>← Back to Profile</button>
       </nav>
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '48px 20px 80px' }}>
         <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 32, fontWeight: 900, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>Settings</h1>
-        <p style={{ color: '#555', fontSize: 14, margin: '0 0 40px 0' }}>Manage your account, preferences, and subscription.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '0 0 40px 0' }}>Manage your account, preferences, and subscription.</p>
 
         {/* ── SUBSCRIPTION ── */}
-        <div style={{ background: '#0f0f14', border: `1px solid ${planInfo.border}`, borderRadius: 16, padding: '24px', marginBottom: 32 }}>
+        <div style={{ background: 'var(--card-bg)', border: `1px solid ${planInfo.border}`, borderRadius: 16, padding: '24px', marginBottom: 32 }}>
           <SectionTitle>Subscription</SectionTitle>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -129,13 +129,13 @@ export default function Settings() {
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#e5e5e5' }}>
                   {planInfo.name === 'Free' ? 'Free Plan' : `${planInfo.name} Plan Active`}
                 </div>
-                <div style={{ fontSize: 12, color: '#555' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   {premiumStatus?.daysLeft ? `${premiumStatus.daysLeft} days remaining` : planInfo.name === 'Free' ? 'Upgrade to unlock premium features' : 'Active subscription'}
                 </div>
               </div>
             </div>
             {planInfo.name !== 'Pro+' && (
-              <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>
+              <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>
                 {planInfo.name === 'Free' ? 'Upgrade' : 'Upgrade to Pro+'}
               </button>
             )}
@@ -143,7 +143,7 @@ export default function Settings() {
         </div>
 
         {/* ── ARENA PREFERENCES ── */}
-        <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
           <SectionTitle>Arena Preferences</SectionTitle>
 
           <SettingRow label="Default Language" desc="Language pre-selected when you start a battle">
@@ -168,7 +168,7 @@ export default function Settings() {
         </div>
 
         {/* ── PRIVACY ── */}
-        <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
           <SectionTitle>Privacy</SectionTitle>
 
           <SettingRow label="Public Profile" desc="Allow other users to view your profile">
@@ -181,11 +181,11 @@ export default function Settings() {
         </div>
 
         {/* ── ACCOUNT ── */}
-        <div style={{ background: '#0f0f14', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
           <SectionTitle>Account</SectionTitle>
 
           <SettingRow label="Email" desc={user?.email || 'Not set'}>
-            <span style={{ fontSize: 12, color: '#555', padding: '6px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>Verified ✓</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', padding: '6px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>Verified ✓</span>
           </SettingRow>
 
           <SettingRow label="Change Password" desc="Update your account password">
@@ -200,7 +200,7 @@ export default function Settings() {
         </div>
 
         {/* ── DANGER ZONE ── */}
-        <div style={{ background: '#0f0f14', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 16, padding: '24px' }}>
+        <div style={{ background: 'var(--card-bg)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 16, padding: '24px' }}>
           <SectionTitle>⚠️ Danger Zone</SectionTitle>
           <SettingRow label="Delete Account" desc="Permanently delete your account and all data. This action cannot be undone.">
             <button onClick={() => setShowDeleteModal(true)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Delete Account</button>
@@ -215,14 +215,14 @@ export default function Settings() {
             <h3 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, margin: '0 0 20px 0' }}>Change Password</h3>
             {[{ label: 'Current Password', val: oldPw, set: setOldPw }, { label: 'New Password', val: newPw, set: setNewPw }, { label: 'Confirm New Password', val: confirmPw, set: setConfirmPw }].map(f => (
               <div key={f.label} style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, color: '#666', fontWeight: 700, display: 'block', marginBottom: 6 }}>{f.label}</label>
-                <input type="password" value={f.val} onChange={e => f.set(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '10px 14px', borderRadius: 10, fontSize: 13, outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 6 }}>{f.label}</label>
+                <input type="password" value={f.val} onChange={e => f.set(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-main)', padding: '10px 14px', borderRadius: 10, fontSize: 13, outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
               </div>
             ))}
             {pwMsg && <div style={{ fontSize: 12, color: '#fbbf24', marginBottom: 12 }}>{pwMsg}</div>}
             <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-              <button onClick={() => { setShowPwModal(false); setPwMsg('') }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
-              <button onClick={handleChangePw} style={{ flex: 1, background: '#ff6b35', border: 'none', color: '#fff', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Update</button>
+              <button onClick={() => { setShowPwModal(false); setPwMsg('') }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
+              <button onClick={handleChangePw} style={{ flex: 1, background: '#ff6b35', border: 'none', color: 'var(--text-main)', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Update</button>
             </div>
           </div>
         </div>
@@ -234,10 +234,10 @@ export default function Settings() {
           <div style={{ background: '#13131a', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, width: '90%', maxWidth: 400, padding: '32px' }}>
             <h3 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, margin: '0 0 12px 0', color: '#ef4444' }}>Delete Account</h3>
             <p style={{ fontSize: 13, color: '#888', lineHeight: 1.6, margin: '0 0 20px 0' }}>This will permanently delete your account, all battles, stats, and subscription. Type <strong style={{ color: '#ef4444' }}>{user?.username}</strong> to confirm.</p>
-            <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder={user?.username} style={{ width: '100%', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', color: '#fff', padding: '10px 14px', borderRadius: 10, fontSize: 13, outline: 'none', fontFamily: 'Inter', marginBottom: 16, boxSizing: 'border-box' }} />
+            <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder={user?.username} style={{ width: '100%', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--text-main)', padding: '10px 14px', borderRadius: 10, fontSize: 13, outline: 'none', fontFamily: 'Inter', marginBottom: 16, boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm('') }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
-              <button onClick={handleDelete} disabled={deleteConfirm !== user?.username} style={{ flex: 1, background: deleteConfirm === user?.username ? '#ef4444' : 'rgba(239,68,68,0.2)', border: 'none', color: '#fff', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 700, cursor: deleteConfirm === user?.username ? 'pointer' : 'not-allowed', fontFamily: 'Inter', opacity: deleteConfirm === user?.username ? 1 : 0.5 }}>Delete Forever</button>
+              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm('') }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
+              <button onClick={handleDelete} disabled={deleteConfirm !== user?.username} style={{ flex: 1, background: deleteConfirm === user?.username ? '#ef4444' : 'rgba(239,68,68,0.2)', border: 'none', color: 'var(--text-main)', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 700, cursor: deleteConfirm === user?.username ? 'pointer' : 'not-allowed', fontFamily: 'Inter', opacity: deleteConfirm === user?.username ? 1 : 0.5 }}>Delete Forever</button>
             </div>
           </div>
         </div>

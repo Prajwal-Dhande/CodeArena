@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const codeLines = [
-  { text: '// AI Constraint: O(n) time only', color: '#555' },
+  { text: '// AI Constraint: O(n) time only', color: 'var(--text-muted)' },
   { text: 'function twoSum(nums, target) {', color: '#e5e5e5' },
   { text: '  const map = new Map();', color: '#a8b4c8' },
   { text: '  for (let i = 0; i < nums.length; i++) {', color: '#a8b4c8' },

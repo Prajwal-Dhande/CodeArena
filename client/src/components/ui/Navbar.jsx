@@ -37,7 +37,7 @@ export default function Navbar() {
         <span onClick={() => navigate('/')} className="logo">
           <span style={{ color: '#ff6b35' }}>Code</span>
           {/* BRIGHTER ARENA LOGO TEXT */}
-          <span style={{ color: '#ffffff', textShadow: scrolled ? '0 0 10px rgba(255,107,53,0.3)' : 'none' }}>Arena</span>
+          <span style={{ color: 'var(--text-main)', textShadow: scrolled ? '0 0 10px rgba(255,107,53,0.3)' : 'none' }}>Arena</span>
         </span>
 
         {/* Desktop Nav */}

@@ -357,7 +357,7 @@ export default function Profile() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#030305', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, fontFamily: 'Inter' }}>
       <div style={{ width: 48, height: 48, border: '3px solid rgba(255,107,53,0.15)', borderTopColor: '#ff6b35', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <div style={{ color: '#555', fontWeight: 600 }}>Loading profile...</div>
+      <div style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Loading profile...</div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
@@ -379,19 +379,19 @@ export default function Profile() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(16px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#13131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '90%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 18, color: '#fff' }}>Edit Profile</span>
-              <button onClick={() => setShowEditProfile(false)} style={{ background: 'none', border: 'none', color: '#555', fontSize: 20, cursor: 'pointer' }}>✕</button>
+              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 18, color: 'var(--text-main)' }}>Edit Profile</span>
+              <button onClick={() => setShowEditProfile(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 20, cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div>
-                <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>USERNAME</label>
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>USERNAME</label>
                 <input value={username} onChange={e => setUsername(e.target.value)}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#fff', outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: 'var(--text-main)', outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>BIO</label>
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>BIO</label>
                 <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell the arena about yourself..." rows={3}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#fff', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text-main)', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 {[
@@ -399,28 +399,28 @@ export default function Profile() {
                   { label: 'COMPANY', val: company, set: setCompany, ph: 'e.g. Google' },
                 ].map(({ label, val, set, ph }) => (
                   <div key={label}>
-                    <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>{label}</label>
+                    <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 8 }}>{label}</label>
                     <input value={val} onChange={e => set(e.target.value)} placeholder={ph}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#fff', outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text-main)', outline: 'none', fontFamily: 'Inter', boxSizing: 'border-box' }} />
                   </div>
                 ))}
               </div>
               <div>
-                <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>SOCIAL LINKS</label>
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>SOCIAL LINKS</label>
                 {[
                   { emoji: '🐙', label: 'GitHub', val: github, set: setGithub, ph: 'github.com/username' },
                   { emoji: '💼', label: 'LinkedIn', val: linkedin, set: setLinkedin, ph: 'linkedin.com/in/username' },
                   { emoji: '🌐', label: 'Website', val: website, set: setWebsite, ph: 'yourportfolio.dev' },
                 ].map(({ emoji, label, val, set, ph }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <span style={{ fontSize: 14, width: 80, color: '#666', flexShrink: 0 }}>{emoji} {label}</span>
+                    <span style={{ fontSize: 14, width: 80, color: 'var(--text-muted)', flexShrink: 0 }}>{emoji} {label}</span>
                     <input value={val} onChange={e => set(e.target.value)} placeholder={ph}
-                      style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#fff', outline: 'none', fontFamily: 'Inter' }} />
+                      style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--text-main)', outline: 'none', fontFamily: 'Inter' }} />
                   </div>
                 ))}
               </div>
               <div>
-                <label style={{ fontSize: 11, color: '#555', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>LANGUAGES</label>
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, display: 'block', marginBottom: 10 }}>LANGUAGES</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {LANGS.map(l => (
                     <button key={l.id} onClick={() => setSelectedLangs(prev => prev.includes(l.id) ? prev.filter(x => x !== l.id) : [...prev, l.id])}
@@ -435,7 +435,7 @@ export default function Profile() {
                 </div>
               </div>
               <button onClick={saveProfile} disabled={saving} style={{
-                background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none',
+                background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', border: 'none',
                 borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', marginTop: 4
               }}>{saving ? '⟳ Saving...' : '✓ Save Changes'}</button>
             </div>
@@ -448,7 +448,7 @@ export default function Profile() {
       {/* NAV */}
       <nav style={{ height: 64, background: 'rgba(10,10,12,0.75)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 32px', gap: 16, position: 'sticky', top: 0, zIndex: 50 }}>
         <span onClick={() => navigate('/')} style={{ fontWeight: 700, fontSize: 18, cursor: 'pointer', letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: '#fff' }}>Arena</span>
+          <span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: 'var(--text-main)' }}>Arena</span>
         </span>
         <div style={{ flex: 1 }} />
         <ThemeToggle />
@@ -458,8 +458,8 @@ export default function Profile() {
         <button onClick={handleShare} style={{ background: copied ? 'rgba(34,197,94,0.1)' : 'transparent', border: `1px solid ${copied ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`, color: copied ? '#22c55e' : '#a1a1aa', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}>
           {copied ? '✓ Copied!' : '↗ Share'}
         </button>
-        {isOwnProfile && <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>}
-        <button onClick={() => navigate('/lobby')} style={{ background: '#ff6b35', color: '#fff', border: 'none', padding: '6px 18px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Battle</button>
+        {isOwnProfile && <button onClick={() => navigate('/settings')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-muted)', borderRadius: 8, padding: '6px 12px', fontSize: 15, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.color='#fff'} onMouseLeave={e=>e.currentTarget.style.color='#a1a1aa'}>⚙️</button>}
+        <button onClick={() => navigate('/lobby')} style={{ background: '#ff6b35', color: 'var(--text-main)', border: 'none', padding: '6px 18px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Battle</button>
       </nav>
 
       <div className="profile-main-grid" style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '40px 24px 80px', display: 'grid', gridTemplateColumns: '280px 1fr', gap: 32, alignItems: 'start', position: 'relative', zIndex: 1 }}>
@@ -481,10 +481,10 @@ export default function Profile() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
-              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: '#fff' }}>{username}</span>
+              <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 20, color: 'var(--text-main)' }}>{username}</span>
               {(() => {
                 const plan = profileData?.premiumPlan || storedUser?.premiumPlan || (profileData?.isPremium ? 'pro' : 'free')
-                if (plan === 'pro_plus') return <span style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 6, letterSpacing: 0.5 }}>PRO+</span>
+                if (plan === 'pro_plus') return <span style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 6, letterSpacing: 0.5 }}>PRO+</span>
                 if (plan === 'pro') return <span style={{ background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 6, letterSpacing: 0.5 }}>PRO</span>
                 return null
               })()}
@@ -498,13 +498,13 @@ export default function Profile() {
             {/* ✅ REAL Social Stats */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                <div style={{ cursor: 'pointer' }}>
-                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{followersCount}</div>
-                 <div style={{ fontSize: 11, color: '#666', fontWeight: 600 }}>Followers</div>
+                 <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-main)', fontFamily: 'JetBrains Mono' }}>{followersCount}</div>
+                 <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Followers</div>
                </div>
                <div style={{ width: 1, background: 'rgba(255,255,255,0.05)' }} />
                <div style={{ cursor: 'pointer' }}>
-                 <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono' }}>{followingCount}</div>
-                 <div style={{ fontSize: 11, color: '#666', fontWeight: 600 }}>Following</div>
+                 <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-main)', fontFamily: 'JetBrains Mono' }}>{followingCount}</div>
+                 <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Following</div>
                </div>
             </div>
 
@@ -516,7 +516,7 @@ export default function Profile() {
               <textarea value={bio} onChange={e => setBio(e.target.value)}
                 onBlur={() => { setEditingBio(false); saveProfile() }}
                 autoFocus rows={2}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: 8, padding: '8px', fontSize: 13, color: '#fff', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box', marginBottom: 12 }} />
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: 8, padding: '8px', fontSize: 13, color: 'var(--text-main)', outline: 'none', resize: 'none', fontFamily: 'Inter', boxSizing: 'border-box', marginBottom: 12 }} />
             )}
 
             {/* 🔥 DYNAMIC BUTTON (EDIT VS FOLLOW) */}
@@ -546,24 +546,24 @@ export default function Profile() {
 
             {(github || linkedin || website) ? (
               <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {github && <a href={`https://${github}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#666', textDecoration: 'none' }}>🐙 <span style={{ color: '#60a5fa' }}>{github}</span></a>}
-                {linkedin && <a href={`https://${linkedin}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#666', textDecoration: 'none' }}>💼 <span style={{ color: '#60a5fa' }}>{linkedin}</span></a>}
-                {website && <a href={`https://${website}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#666', textDecoration: 'none' }}>🌐 <span style={{ color: '#60a5fa' }}>{website}</span></a>}
+                {github && <a href={`https://${github}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>🐙 <span style={{ color: '#60a5fa' }}>{github}</span></a>}
+                {linkedin && <a href={`https://${linkedin}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>💼 <span style={{ color: '#60a5fa' }}>{linkedin}</span></a>}
+                {website && <a href={`https://${website}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>🌐 <span style={{ color: '#60a5fa' }}>{website}</span></a>}
               </div>
             ) : isOwnProfile && (
-              <button onClick={() => setShowEditProfile(true)} style={{ marginTop: 8, fontSize: 12, color: '#444', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add social links</button>
+              <button onClick={() => setShowEditProfile(true)} style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add social links</button>
             )}
           </div>
 
           {/* Languages Card */}
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '22px 24px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 14 }}>Languages</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)', marginBottom: 14 }}>Languages</div>
             
             {primaryWeapon && (
                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, marginBottom: 16 }}>
                  <div style={{ fontSize: 20 }}>⚔️</div>
                  <div>
-                   <div style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Primary Weapon</div>
+                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Primary Weapon</div>
                    <div style={{ fontSize: 14, color: primaryWeapon.color, fontWeight: 700 }}>{primaryWeapon.label}</div>
                  </div>
                </div>
@@ -579,17 +579,17 @@ export default function Profile() {
                     <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
-                        <span style={{ fontSize: 13, color: '#aaa' }}>{l.label}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{l.label}</span>
                       </div>
                       {languageWins > 0 && (
-                        <span style={{ fontSize: 12, color: '#555' }}>{languageWins} wins</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{languageWins} wins</span>
                       )}
                     </div>
                   )
                 })}
               </div>
             ) : isOwnProfile && (
-              <button onClick={() => setShowEditProfile(true)} style={{ fontSize: 12, color: '#444', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add languages</button>
+              <button onClick={() => setShowEditProfile(true)} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'Inter' }}>+ Add languages</button>
             )}
           </div>
 
@@ -604,8 +604,8 @@ export default function Profile() {
               <div style={{ position: 'relative', width: 140, height: 140, flexShrink: 0 }}>
                 <CircleChart wins={wins} losses={losses} total={total} easyWins={easyWins} medWins={medWins} hardWins={hardWins} />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 28, color: '#fff', lineHeight: 1 }}>{wins}</div>
-                  <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>Solved</div>
+                  <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 28, color: 'var(--text-main)', lineHeight: 1 }}>{wins}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Solved</div>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -616,8 +616,8 @@ export default function Profile() {
                 ].map(({ label, val, color }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color, width: 36 }}>{label}</span>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{val}</span>
-                    <span style={{ fontSize: 11, color: '#444' }}>wins</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-main)' }}>{val}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>wins</span>
                   </div>
                 ))}
               </div>
@@ -628,21 +628,21 @@ export default function Profile() {
               <div style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${tier.color}40`, borderRadius: 16, padding: '20px 24px', position: 'relative' }}>
                 
                 <div style={{ position: 'absolute', top: 20, right: 24, textAlign: 'right' }}>
-                   <div style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Global Rank</div>
-                   <div style={{ fontFamily: 'JetBrains Mono', fontSize: 20, fontWeight: 800, color: '#fff' }}>#{globalRank.toLocaleString()}</div>
+                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Global Rank</div>
+                   <div style={{ fontFamily: 'JetBrains Mono', fontSize: 20, fontWeight: 800, color: 'var(--text-main)' }}>#{globalRank.toLocaleString()}</div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <span style={{ fontSize: 28 }}>{tier.icon}</span>
                   <div>
                     <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 28, color: tier.color, lineHeight: 1 }}>{elo}</div>
-                    <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>ELO Rating</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>ELO Rating</div>
                   </div>
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: tier.color, marginBottom: 8 }}>{tier.name}</div>
                 {tier.nextElo && (
                   <>
-                    <div style={{ fontSize: 11, color: '#555', marginBottom: 6 }}>{elo} / {tier.nextElo} to next tier</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{elo} / {tier.nextElo} to next tier</div>
                     <div style={{ background: 'rgba(255,255,255,0.06)', height: 6, borderRadius: 3, overflow: 'hidden', maxWidth: '60%' }}>
                       <div style={{ height: '100%', background: `linear-gradient(90deg, ${tier.color}, ${tier.color}99)`, width: `${tierProgress}%`, borderRadius: 3, transition: 'width 1s' }} />
                     </div>
@@ -654,12 +654,12 @@ export default function Profile() {
                 {[
                   { label: 'Win Rate', val: `${winRate}%`, color: '#fb923c' },
                   { label: 'Streak 🔥', val: user?.stats?.streak || 0, color: '#fb923c' },
-                  { label: 'Peak ELO', val: Math.max(peakElo, elo), color: '#a1a1aa' },
-                  { label: 'Battles', val: total, color: '#a1a1aa' },
+                  { label: 'Peak ELO', val: Math.max(peakElo, elo), color: 'var(--text-muted)' },
+                  { label: 'Battles', val: total, color: 'var(--text-muted)' },
                 ].map(({ label, val, color }) => (
                   <div key={label} className="stat-card" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '16px 12px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 600, fontSize: 18, color, marginBottom: 4 }}>{val}</div>
-                    <div style={{ fontSize: 11, color: '#666', fontWeight: 500 }}>{label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -668,8 +668,8 @@ export default function Profile() {
 
           <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px 28px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontWeight: 700, color: '#fff', fontSize: 14 }}>Badges</span>
-              <span style={{ fontSize: 12, color: '#555' }}>{ACHIEVEMENTS.filter(a => a.unlocked).length} / {ACHIEVEMENTS.length} unlocked</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: 14 }}>Badges</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{ACHIEVEMENTS.filter(a => a.unlocked).length} / {ACHIEVEMENTS.length} unlocked</span>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {ACHIEVEMENTS.map(({ icon, title, unlocked }) => (
@@ -691,22 +691,22 @@ export default function Profile() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 20 }}>🟩</span>
-                <span style={{ fontWeight: 900, color: '#fff', fontSize: 16, fontFamily: 'Outfit', letterSpacing: 1 }}>
+                <span style={{ fontWeight: 900, color: 'var(--text-main)', fontSize: 16, fontFamily: 'Outfit', letterSpacing: 1 }}>
                   ACTIVITY MATRIX
                 </span>
                 <span style={{ marginLeft: 8, fontSize: 13, color: '#22c55e', background: 'rgba(34,197,94,0.1)', padding: '2px 8px', borderRadius: 4 }}>
                   {total > 0 ? `${total} Contributions` : '0 Contributions'}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 8, fontSize: 12, color: '#666', alignItems: 'center', fontWeight: 600 }}>
-                <span>Max streak: <span style={{ color: '#fff' }}>{user?.stats?.streak || 0}</span></span>
+              <div style={{ display: 'flex', gap: 8, fontSize: 12, color: 'var(--text-muted)', alignItems: 'center', fontWeight: 600 }}>
+                <span>Max streak: <span style={{ color: 'var(--text-main)' }}>{user?.stats?.streak || 0}</span></span>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 10 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 20 }}>
                 {['', 'Mon', '', 'Wed', '', 'Fri', ''].map((day, idx) => (
-                  <div key={idx} style={{ height: 14, width: 24, fontSize: 10, color: '#666', fontFamily: 'Inter', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <div key={idx} style={{ height: 14, width: 24, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'Inter', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                     {day}
                   </div>
                 ))}
@@ -715,7 +715,7 @@ export default function Profile() {
               <div style={{ flex: 1, overflowX: 'auto', paddingBottom: 8 }}>
                 <div style={{ display: 'flex', gap: 3, marginBottom: 6, paddingLeft: 2 }}>
                   {dynamicMonths.map((m, i) => (
-                    <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: '#555', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
+                    <div key={i} style={{ width: `${100/12}%`, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', fontWeight: 600, fontFamily: 'JetBrains Mono' }}>{m}</div>
                   ))}
                 </div>
 
@@ -743,7 +743,7 @@ export default function Profile() {
               </div>
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12, color: '#666', fontFamily: 'JetBrains Mono' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>
               <span>Less</span>
               {[0,1,2,3,4].map(v => <div key={v} style={{ width: 14, height: 14, borderRadius: 3, background: heatColor(v), boxShadow: v > 0 ? `0 0 8px ${heatColor(v)}40` : 'none' }} />)}
               <span>More</span>
@@ -770,8 +770,8 @@ export default function Profile() {
               {/* Count bar */}
               {battles.length > 0 && (
                 <div style={{ padding: '10px 24px', background: 'rgba(255,107,53,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: '#555' }}>
-                    Showing <span style={{ color: '#ff6b35', fontWeight: 700 }}>{Math.min(visibleCount, battles.length)}</span> of <span style={{ color: '#aaa', fontWeight: 700 }}>{battles.length}</span> battles
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    Showing <span style={{ color: '#ff6b35', fontWeight: 700 }}>{Math.min(visibleCount, battles.length)}</span> of <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>{battles.length}</span> battles
                   </span>
                   {battles.length > 10 && visibleCount >= battles.length && (
                     <span style={{ fontSize: 11, color: '#333' }}>All loaded ✓</span>
@@ -782,11 +782,11 @@ export default function Profile() {
                 {['RESULT', 'PROBLEM', 'OPPONENT', 'DIFF', 'TIME', 'DATE'].map(h => <div key={h}>{h}</div>)}
               </div>
               {battles.length === 0 ? (
-                <div style={{ padding: '80px', textAlign: 'center', color: '#555' }}>
+                <div style={{ padding: '80px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
                   <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#888' }}>No battles yet!</div>
-                  <div style={{ fontSize: 13, color: '#555', marginBottom: 24 }}>Enter the arena and start your coding combat journey</div>
-                  {isOwnProfile && <button onClick={() => navigate('/lobby')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', cursor: 'pointer', fontWeight: 700, fontFamily: 'Inter', fontSize: 14, boxShadow: '0 8px 24px rgba(255,107,53,0.3)', transition: 'all 0.3s' }}>⚡ Enter Arena</button>}
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>Enter the arena and start your coding combat journey</div>
+                  {isOwnProfile && <button onClick={() => navigate('/lobby')} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', border: 'none', borderRadius: 12, padding: '12px 28px', cursor: 'pointer', fontWeight: 700, fontFamily: 'Inter', fontSize: 14, boxShadow: '0 8px 24px rgba(255,107,53,0.3)', transition: 'all 0.3s' }}>⚡ Enter Arena</button>}
                 </div>
               ) : battles.slice(0, visibleCount).map((b, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 130px 90px 70px 90px', padding: '16px 24px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.03)', transition: 'all 0.2s' }}
@@ -803,7 +803,7 @@ export default function Profile() {
                         const slug = b.problemSlug || b.problem?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
                         navigate(`/battle?problem=${slug}&practice=true`)
                       }}
-                      style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 3, cursor: 'pointer', transition: 'color 0.2s' }}
+                      style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-main)', marginBottom: 3, cursor: 'pointer', transition: 'color 0.2s' }}
                       onMouseEnter={e => { e.currentTarget.style.color = '#ff6b35'; e.currentTarget.style.textDecoration = 'underline'; }}
                       onMouseLeave={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.textDecoration = 'none'; }}
                       title="View this problem in Practice Mode"
@@ -815,7 +815,7 @@ export default function Profile() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #334155, #0f172a)', border: '1px solid rgba(71,85,105,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #334155, #0f172a)', border: '1px solid rgba(71,85,105,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'var(--text-main)' }}>
                       {(b.opponent || 'OP').slice(0, 2).toUpperCase()}
                     </div>
                     <span onClick={() => navigate(`/profile/${b.opponent}`)} style={{ fontSize: 12, color: '#888', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color='#fff'} onMouseLeave={e => e.currentTarget.style.color='#888'}>{b.opponent || 'Unknown'}</span>
@@ -825,15 +825,15 @@ export default function Profile() {
                       {b.difficulty || 'Med'}
                     </span>
                   </div>
-                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 12, color: '#666', fontWeight: 600 }}>{formatTime(b.timeTaken)}</div>
-                  <div style={{ fontSize: 11, color: '#555', fontWeight: 500 }}>{formatDate(b.date)}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono', fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{formatTime(b.timeTaken)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{formatDate(b.date)}</div>
                 </div>
               ))}
 
               {/* Load More button */}
               {battles.length > visibleCount && (
                 <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                  <span style={{ fontSize: 12, color: '#444' }}>Showing {Math.min(visibleCount, battles.length)} of {battles.length} battles</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Showing {Math.min(visibleCount, battles.length)} of {battles.length} battles</span>
                   <button
                     onClick={() => setVisibleCount(c => c + 10)}
                     style={{ background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)', color: '#ff6b35', borderRadius: 10, padding: '8px 20px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.2s' }}
@@ -871,8 +871,8 @@ export default function Profile() {
                   <div style={{ width: 52, height: 52, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 14, background: unlocked ? 'rgba(255,107,53,0.12)' : 'rgba(255,255,255,0.03)', border: `1px solid ${unlocked ? 'rgba(255,107,53,0.25)' : 'rgba(255,255,255,0.05)'}`, boxShadow: unlocked ? '0 8px 20px rgba(0,0,0,0.3)' : 'none' }}>
                     {unlocked ? icon : '🔒'}
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#fff', marginBottom: 4 }}>{title}</div>
-                  <div style={{ fontSize: 12, color: '#555', lineHeight: 1.5 }}>{desc}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-main)', marginBottom: 4 }}>{title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{desc}</div>
                   {unlocked && <div style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: '#ff6b35', letterSpacing: 1 }}>✓ UNLOCKED</div>}
                 </div>
               ))}
@@ -885,13 +885,13 @@ export default function Profile() {
               
               <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '24px 28px', gridColumn: '1 / -1', boxShadow: '0 20px 48px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '30%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,53,0.4), transparent)' }} />
-                <div style={{ fontWeight: 800, color: '#fff', marginBottom: 10, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Topic Mastery</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-main)', marginBottom: 10, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Topic Mastery</div>
                 <TopicRadarChart data={masteryData} />
               </div>
 
               <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '24px 28px', boxShadow: '0 20px 48px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '40%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
-                <div style={{ fontWeight: 800, color: '#fff', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Performance</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-main)', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Performance</div>
                 {[
                   { label: 'Wins', val: wins, total: total || 1, color: '#22c55e' },
                   { label: 'Losses', val: losses, total: total || 1, color: '#ef4444' },
@@ -901,7 +901,7 @@ export default function Profile() {
                 ].map(({ label, val, total, color }) => (
                   <div key={label} style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12 }}>
-                      <span style={{ color: '#666', fontWeight: 500 }}>{label}</span>
+                      <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{label}</span>
                       <span style={{ color, fontWeight: 800, fontFamily: 'JetBrains Mono' }}>{val}</span>
                     </div>
                     <div style={{ background: 'rgba(255,255,255,0.04)', height: 5, borderRadius: 10, overflow: 'hidden' }}>
@@ -913,7 +913,7 @@ export default function Profile() {
 
               <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '24px 28px', boxShadow: '0 20px 48px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '40%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
-                <div style={{ fontWeight: 800, color: '#fff', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Account</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-main)', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>Account</div>
                 {[
                   { label: 'Username', val: username },
                   { label: 'Email', val: user?.email || '-' },
@@ -925,7 +925,7 @@ export default function Profile() {
                   { label: 'Joined', val: new Date(user?.createdAt || Date.now()).toLocaleDateString() },
                 ].map(({ label, val }) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.035)', fontSize: 13 }}>
-                    <span style={{ color: '#555', fontWeight: 500 }}>{label}</span>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{label}</span>
                     <span style={{ color: '#e5e5e5', fontWeight: 600, fontFamily: label === 'Current ELO' || label === 'Peak ELO' || label === 'Win Rate' ? 'JetBrains Mono, monospace' : 'inherit' }}>{val}</span>
                   </div>
                 ))}
@@ -933,7 +933,7 @@ export default function Profile() {
 
               <div style={{ background: 'rgba(18, 18, 22, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '24px 28px', gridColumn: '1 / -1', boxShadow: '0 20px 48px rgba(0,0,0,0.5)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '30%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,53,0.4), transparent)' }} />
-                <div style={{ fontWeight: 800, color: '#fff', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>ELO History</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-main)', marginBottom: 20, fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>ELO History</div>
                 {battles.length > 0 ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
@@ -948,13 +948,13 @@ export default function Profile() {
                         )
                       })}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: '#555' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
                       <span>{battles.length} battles ago</span>
                       <span style={{ color: '#ff6b35', fontWeight: 700 }}>{elo} ELO (now)</span>
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px', color: '#555', fontSize: 13 }}>
+                  <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: 13 }}>
                     Play your first battle to see ELO history!
                   </div>
                 )}

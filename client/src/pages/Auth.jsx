@@ -291,7 +291,7 @@ export default function Auth() {
         <div className="auth-left-content">
           <div className="auth-logo">
             <span className="logo-icon">⚡</span>
-            <span><span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: '#fff' }}>Arena</span></span>
+            <span><span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: 'var(--text-main)' }}>Arena</span></span>
           </div>
 
           <h1 className="auth-headline">

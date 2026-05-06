@@ -28,7 +28,7 @@ export default function PremiumRadarChart({ timeTaken, totalTests, passed, langu
     }}>
       <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <div style={{ color: '#c084fc', fontSize: 13, fontWeight: 800, letterSpacing: 1 }}>FAANG-LEVEL ANALYSIS</div>
-        <div style={{ color: '#fff', fontSize: 24, fontWeight: 900, fontFamily: 'Outfit' }}>
+        <div style={{ color: 'var(--text-main)', fontSize: 24, fontWeight: 900, fontFamily: 'Outfit' }}>
           Better than {globalPercentile}% of users
         </div>
       </div>
@@ -43,7 +43,7 @@ export default function PremiumRadarChart({ timeTaken, totalTests, passed, langu
               tick={{ fill: '#c084fc', fontSize: 11, fontWeight: 600, fontFamily: 'Inter' }}
             />
             <Tooltip
-              contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid #c084fc', borderRadius: 8, color: '#fff' }}
+              contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid #c084fc', borderRadius: 8, color: 'var(--text-main)' }}
               itemStyle={{ color: '#e879f9' }}
             />
             <Radar

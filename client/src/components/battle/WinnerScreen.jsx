@@ -116,7 +116,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
             background: isWin ? 'linear-gradient(90deg, #22c55e, #86efac)' : 'linear-gradient(90deg, #ef4444, #fca5a5)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 4
           }}>{isWin ? 'Victory!' : 'Defeated!'}</div>
-          <div style={{ color: '#555', fontSize: 13 }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
             {isWin ? 'You outpaced your opponent!' : 'Better luck next time.'}
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
           ].map(({ val, label, color }) => (
             <div key={label} style={{ flex: '1 1 auto', minWidth: 80, background: '#13131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
               <div style={{ fontSize: 15, fontWeight: 800, color, fontFamily: 'Outfit' }}>{val}</div>
-              <div style={{ fontSize: 9, color: '#555', marginTop: 2, letterSpacing: 0.5 }}>{label.toUpperCase()}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, letterSpacing: 0.5 }}>{label.toUpperCase()}</div>
             </div>
           ))}
         </div>
@@ -161,7 +161,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
               fontFamily: 'Inter'
             }}>
               <span>🤖 Clara AI Review</span>
-              <span style={{ fontSize: 11, color: '#666' }}>{showAI ? '▲ Hide' : '▼ Show'}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{showAI ? '▲ Hide' : '▼ Show'}</span>
             </button>
 
             {showAI && (
@@ -182,7 +182,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
                       <ul style={{ margin: 0, paddingLeft: 14, color: '#bbb', fontSize: 12, lineHeight: 1.6 }}>{aiFeedback.improvements?.map((s, i) => <li key={i}>{s}</li>)}</ul>
                     </div>
                   </div>
-                ) : <div style={{ color: '#555', fontSize: 12, textAlign: 'center' }}>Feedback unavailable.</div>}
+                ) : <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center' }}>Feedback unavailable.</div>}
               </div>
             )}
           </>
@@ -201,7 +201,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
               fontFamily: 'Inter'
             }}>
               <span>🏢 MAANG Report Card</span>
-              <span style={{ fontSize: 11, color: '#666' }}>{showReport ? '▲ Hide' : '▼ Show'}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{showReport ? '▲ Hide' : '▼ Show'}</span>
             </button>
 
             {showReport && (
@@ -247,7 +247,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
                     <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                       <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
                         <div style={{ fontSize: 18, fontWeight: 900, color: reportCard.verdict === 'HIRE' ? '#22c55e' : '#fbbf24', fontFamily: 'Outfit' }}>{reportCard.hireScore}</div>
-                        <div style={{ fontSize: 8, color: '#555' }}>HIRE SCORE</div>
+                        <div style={{ fontSize: 8, color: 'var(--text-muted)' }}>HIRE SCORE</div>
                       </div>
                       {reportCard.topStrength && (
                         <div style={{ flex: 2, background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.1)', borderRadius: 8, padding: '8px', display: 'flex', alignItems: 'center' }}>
@@ -256,7 +256,7 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
                       )}
                     </div>
                   </div>
-                ) : <div style={{ color: '#555', fontSize: 12, textAlign: 'center' }}>Report unavailable.</div>}
+                ) : <div style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center' }}>Report unavailable.</div>}
               </div>
             )}
           </>
@@ -271,8 +271,8 @@ export default function WinnerScreen({ result, problem, myTests, totalTests, tim
         display: 'flex', justifyContent: 'center'
       }}>
         <div style={{ display: 'flex', gap: 12, maxWidth: 400, width: '100%' }}>
-          <button onClick={onLobby} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>🏠 Lobby</button>
-          <button onClick={onLobby} style={{ flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none', color: '#fff', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>⚔️ Play Again</button>
+          <button onClick={onLobby} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>🏠 Lobby</button>
+          <button onClick={onLobby} style={{ flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none', color: 'var(--text-main)', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>⚔️ Play Again</button>
         </div>
       </div>
 

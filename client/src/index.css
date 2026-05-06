@@ -12,6 +12,8 @@
   --bg3: #181818;
   --border: #1f1f1f;
   --border2: #252525;
+  --bg-dark: #030305;
+  --text-main: #f8fafc;
   --orange: #ff6b35;
   --orange2: #f7451d;
   --orange-dim: rgba(255,107,53,0.15);
@@ -36,6 +38,8 @@
   --bg3: #ebebeb;
   --border: #e0e0e0;
   --border2: #d0d0d0;
+  --bg-dark: #f0f2f5;
+  --text-main: #0f172a;
   --orange: #e85d2a;
   --orange2: #d63e14;
   --orange-dim: rgba(232,93,42,0.08);

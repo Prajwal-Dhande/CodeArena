@@ -197,7 +197,7 @@ export default function InterviewDSA() {
             <BrainIcon />
           </motion.div>
         </div>
-        <h2 style={{ fontFamily: 'Outfit, sans-serif', color: '#fff', fontSize: 28, margin: '0 0 12px 0', letterSpacing: '-0.5px' }}>Accessing Vault</h2>
+        <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', fontSize: 28, margin: '0 0 12px 0', letterSpacing: '-0.5px' }}>Accessing Vault</h2>
       </div>
     </div>
   );
@@ -207,7 +207,7 @@ export default function InterviewDSA() {
       <nav className="glass-nav">
         <span className="logo" onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35', marginRight: '6px' }}>{"{C}"}</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>CodeArena</span>
+          <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>CodeArena</span>
         </span>
         <div style={{ flex: 1 }} />
         <div className="nav-links">
@@ -345,7 +345,7 @@ export default function InterviewDSA() {
                           </div>
                         </div>
 
-                        <div style={{ flex: 1, color: '#a1a1aa', fontSize: '13px', fontWeight: 500 }}>
+                        <div style={{ flex: 1, color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>
                           {p.acceptance}%
                         </div>
 

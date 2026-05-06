@@ -196,7 +196,7 @@ export default function Premium() {
       <nav style={{ height: 60, background: 'rgba(10,10,12,0.9)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 24px', position: 'sticky', top: 0, zIndex: 50, backdropFilter: 'blur(20px)' }}>
         <span style={{ fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: 32 }} onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35', marginRight: 6 }}>{'{C}'}</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>CodeArena</span>
+          <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>CodeArena</span>
         </span>
         <div style={{ display: 'flex', gap: 24, flex: 1 }}>
           {[
@@ -205,7 +205,7 @@ export default function Premium() {
             { label: 'Leaderboard', path: '/leaderboard' },
             { label: 'Profile', path: '/profile' },
           ].map(item => (
-            <span key={item.label} onClick={() => navigate(item.path)} style={{ fontSize: 13, fontWeight: 600, color: '#a1a1aa', cursor: 'pointer' }}
+            <span key={item.label} onClick={() => navigate(item.path)} style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.color = '#fff'}
               onMouseLeave={e => e.currentTarget.style.color = '#a1a1aa'}>
               {item.label}
@@ -215,8 +215,8 @@ export default function Premium() {
         </div>
         <ThemeToggle />
         <div onClick={() => navigate('/profile')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '4px 14px 4px 10px', cursor: 'pointer' }}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{initials}</div>
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#fff' }}>{user?.username || 'Player'}</span>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text-main)' }}>{initials}</div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-main)' }}>{user?.username || 'Player'}</span>
         </div>
       </nav>
 
@@ -242,7 +242,7 @@ export default function Premium() {
           <div style={{ display: 'inline-block', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 11, fontWeight: 800, letterSpacing: 2, padding: '6px 18px', borderRadius: 20, marginBottom: 24 }}>
             💎 CODEARENA PREMIUM
           </div>
-          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 56, fontWeight: 900, color: '#fff', margin: '0 0 20px 0', letterSpacing: '-2px', lineHeight: 1.1 }}>
+          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 56, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 20px 0', letterSpacing: '-2px', lineHeight: 1.1 }}>
             The fastest path to<br />
             <span style={{ background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>crack FAANG</span>
           </h1>
@@ -279,7 +279,7 @@ export default function Premium() {
               {plan.popular && (
                 <div style={{
                   position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
-                  background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff',
+                  background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)',
                   fontSize: 10, fontWeight: 800, padding: '6px 18px', borderRadius: 20,
                   letterSpacing: 1.5, boxShadow: '0 4px 16px rgba(255,107,53,0.5)', whiteSpace: 'nowrap'
                 }}>MOST POPULAR</div>
@@ -290,7 +290,7 @@ export default function Premium() {
 
               {/* Price */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
-                <span style={{ fontSize: 48, fontWeight: 900, color: '#fff', fontFamily: 'Outfit, sans-serif', letterSpacing: '-2px' }}>{plan.priceLabel}</span>
+                <span style={{ fontSize: 48, fontWeight: 900, color: 'var(--text-main)', fontFamily: 'Outfit, sans-serif', letterSpacing: '-2px' }}>{plan.priceLabel}</span>
                 <span style={{ fontSize: 14, color: '#52525b', fontWeight: 600 }}>{plan.period}</span>
               </div>
 
@@ -330,7 +330,7 @@ export default function Premium() {
                     ? { background: 'rgba(255,255,255,0.04)', color: '#52525b', border: '1px solid rgba(255,255,255,0.08)' }
                     : plan.btnStyle === 'pro'
                       ? { background: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }
-                      : { background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', boxShadow: '0 8px 24px rgba(255,107,53,0.35)' }
+                      : { background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', boxShadow: '0 8px 24px rgba(255,107,53,0.35)' }
                   ),
                   opacity: (plan.disabled || (isPremiumUser && plan.id !== 'free')) ? 0.5 : 1,
                 }}
@@ -353,7 +353,7 @@ export default function Premium() {
 
         {/* WHY PREMIUM SECTION */}
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} style={{ marginTop: 80 }}>
-          <h2 style={{ textAlign: 'center', fontSize: 32, fontWeight: 800, color: '#fff', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>Why go Premium?</h2>
+          <h2 style={{ textAlign: 'center', fontSize: 32, fontWeight: 800, color: 'var(--text-main)', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>Why go Premium?</h2>
           <p style={{ textAlign: 'center', color: '#71717a', marginBottom: 48, fontSize: 15 }}>Real features. Real results. Real offers.</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
@@ -369,7 +369,7 @@ export default function Premium() {
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.08 }}
                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: '24px' }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{item.icon}</div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 8px 0' }}>{item.title}</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-main)', margin: '0 0 8px 0' }}>{item.title}</h3>
                 <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6, margin: 0 }}>{item.desc}</p>
               </motion.div>
             ))}
@@ -380,9 +380,9 @@ export default function Premium() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
           style={{ textAlign: 'center', marginTop: 80, padding: '48px', background: 'linear-gradient(135deg, rgba(255,107,53,0.08), rgba(96,165,250,0.05))', border: '1px solid rgba(255,107,53,0.2)', borderRadius: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🚀</div>
-          <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 28, fontWeight: 900, color: '#fff', margin: '0 0 12px 0' }}>Start your FAANG journey today</h2>
+          <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 28, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 12px 0' }}>Start your FAANG journey today</h2>
           <p style={{ color: '#71717a', marginBottom: 28, fontSize: 15 }}>Join hundreds of coders who cracked their dream companies using CodeArena Premium.</p>
-          <button onClick={() => handlePayment(PLANS[2])} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: '#fff', border: 'none', borderRadius: 12, padding: '16px 40px', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 30px rgba(255,107,53,0.35)', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s' }}
+          <button onClick={() => handlePayment(PLANS[2])} style={{ background: 'linear-gradient(135deg, #ff6b35, #f7451d)', color: 'var(--text-main)', border: 'none', borderRadius: 12, padding: '16px 40px', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 30px rgba(255,107,53,0.35)', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 14px 40px rgba(255,107,53,0.5)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(255,107,53,0.35)' }}>
             ✨ Unlock Pro+ — ₹599/mo

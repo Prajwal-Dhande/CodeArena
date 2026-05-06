@@ -71,8 +71,8 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
           background: `linear-gradient(135deg, ${accentColor}08, transparent)`
         }}>
           <div>
-            <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: '#fff', marginBottom: 6 }}>{title}</div>
-            <div style={{ fontSize: 13, color: '#555' }}>{subtitle}</div>
+            <div style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: 'var(--text-main)', marginBottom: 6 }}>{title}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{subtitle}</div>
           </div>
           <button onClick={onClose} className="modal-close-btn">✕</button>
         </div>
@@ -90,7 +90,7 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
             className="modal-search-input"
             style={{
               background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#fff', padding: '8px 14px', borderRadius: 10,
+              color: 'var(--text-main)', padding: '8px 14px', borderRadius: 10,
               fontSize: 12, outline: 'none', fontFamily: 'Inter', width: '200px', transition: 'all 0.2s'
             }}
           />
@@ -109,7 +109,7 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
             </select>
           ))}
           <div style={{
-            marginLeft: 'auto', fontSize: 12, color: '#444', fontWeight: 600,
+            marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)', fontWeight: 600,
             background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
             padding: '6px 12px', borderRadius: 8
           }}>{list.length} problems</div>
@@ -118,7 +118,7 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
         {/* Problem List */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {list.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#444' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
               <div style={{ fontWeight: 600, marginBottom: 6 }}>No problems found</div>
               <div style={{ fontSize: 12 }}>Try changing your search or filters</div>
@@ -143,7 +143,7 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
                   fontSize: 12, fontWeight: 800, color: dColor[p.difficulty]?.color, fontFamily: 'Outfit'
                 }}>{idx + 1}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-main)', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
                     {p.title}
                     {isSolved && (
                       <span style={{
@@ -155,10 +155,10 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
                     )}
                   </div>
 
-                  <div style={{ fontSize: 11, color: '#555', display: 'flex', gap: 8 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 8 }}>
                     <span>{p.category}</span><span>·</span>
                     <span>{p.acceptance}% acceptance</span>
-                    {p.companies?.[0] && <><span>·</span><span style={{ color: '#444' }}>{p.companies[0]}</span></>}
+                    {p.companies?.[0] && <><span>·</span><span style={{ color: 'var(--text-muted)' }}>{p.companies[0]}</span></>}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -171,7 +171,7 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
                     <div style={{
                       width: 22, height: 22, borderRadius: '50%', background: accentColor,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 12, color: '#fff', fontWeight: 800
+                      fontSize: 12, color: 'var(--text-main)', fontWeight: 800
                     }}>✓</div>
                   )}
                 </div>
@@ -190,11 +190,11 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: accentColor, boxShadow: `0 0 8px ${accentColor}` }} />
               <span style={{ fontSize: 13, color: '#888' }}>
                 Selected: <strong style={{ color: accentColor }}>{selectedP.title}</strong>
-                <span style={{ color: '#444', marginLeft: 6 }}>({selectedP.difficulty})</span>
+                <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>({selectedP.difficulty})</span>
               </span>
             </div>
           ) : (
-            <div style={{ flex: 1, fontSize: 13, color: '#444' }}>Select a problem to continue</div>
+            <div style={{ flex: 1, fontSize: 13, color: 'var(--text-muted)' }}>Select a problem to continue</div>
           )}
 
           <button onClick={onClose} className="modal-cancel-btn">Cancel</button>
@@ -581,11 +581,11 @@ export default function Lobby() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#13131a', border: '1px solid rgba(255,107,53,0.3)', borderRadius: 24, width: '90%', maxWidth: 440, padding: '40px', textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
-            <h2 style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: '#fff', margin: '0 0 8px 0' }}>Room Created!</h2>
+            <h2 style={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: 24, color: 'var(--text-main)', margin: '0 0 8px 0' }}>Room Created!</h2>
             <p style={{ color: '#888', fontSize: 13, margin: '0 0 24px 0' }}>Share this code with your opponent to start the battle.</p>
             
             <div style={{ background: 'rgba(255,107,53,0.06)', border: '2px dashed rgba(255,107,53,0.3)', borderRadius: 14, padding: '20px', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#555', letterSpacing: 2, marginBottom: 8 }}>ROOM CODE</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>ROOM CODE</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 36, fontWeight: 900, color: '#ff6b35', letterSpacing: 6 }}>{createdRoomCode}</div>
             </div>
 
@@ -597,18 +597,18 @@ export default function Lobby() {
 
             {selectedProblem && (
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '12px', marginBottom: 16, textAlign: 'left' }}>
-                <div style={{ fontSize: 10, color: '#555', fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PROBLEM</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PROBLEM</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#e5e5e5' }}>{selectedProblem.title}</div>
-                <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{selectedProblem.category} · {selectedProblem.difficulty}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{selectedProblem.category} · {selectedProblem.difficulty}</div>
               </div>
             )}
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setCreatedRoomCode(null)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#aaa', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
-              <button onClick={handleStartCreatedRoom} style={{ flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none', color: '#fff', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Enter Room</button>
+              <button onClick={() => setCreatedRoomCode(null)} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
+              <button onClick={handleStartCreatedRoom} style={{ flex: 1, background: 'linear-gradient(135deg, #ff6b35, #f7451d)', border: 'none', color: 'var(--text-main)', borderRadius: 10, padding: '12px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>⚡ Enter Room</button>
             </div>
 
-            <div style={{ fontSize: 11, color: '#444', marginTop: 14 }}>💡 Your opponent enters this code in the "Join Room" tab</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 14 }}>💡 Your opponent enters this code in the "Join Room" tab</div>
           </div>
         </div>
       )}
@@ -617,7 +617,7 @@ export default function Lobby() {
       <nav className="glass-nav">
         <span className="logo" onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35', marginRight: '6px' }}>{'{C}'}</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>CodeArena</span>
+          <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>CodeArena</span>
         </span>
         <div style={{ flex: 1 }} />
         <div className="nav-links">
@@ -641,7 +641,7 @@ export default function Lobby() {
             onChange={(e) => handleSearch(e.target.value)}
             style={{
               width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '20px', padding: '8px 12px 8px 32px', color: '#fff', fontSize: '12px', outline: 'none', transition: 'all 0.2s', fontFamily: 'Inter'
+              borderRadius: '20px', padding: '8px 12px 8px 32px', color: 'var(--text-main)', fontSize: '12px', outline: 'none', transition: 'all 0.2s', fontFamily: 'Inter'
             }}
             onFocus={(e) => e.target.style.borderColor = 'rgba(255,107,53,0.4)'}
             onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; setTimeout(() => setSearchResults([]), 200) }}
@@ -659,11 +659,11 @@ export default function Lobby() {
                   onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #ff6b35, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #ff6b35, #ea580c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'var(--text-main)', flexShrink: 0 }}>
                     {u.username.slice(0, 2).toUpperCase()}
                   </div>
                   <div style={{ overflow: 'hidden' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.username}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.username}</div>
                     <div style={{ fontSize: '10px', color: '#888' }}>{u.rank} · {u.elo} ELO</div>
                   </div>
                 </div>
@@ -674,7 +674,7 @@ export default function Lobby() {
 
         {!user?.isPremium && (
           <button onClick={() => navigate('/premium')} style={{
-            background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8,
+            background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: 'var(--text-main)', borderRadius: 8,
             padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter', marginRight: 16,
             boxShadow: '0 4px 14px rgba(255,107,53,0.3)', transition: 'all 0.2s'
           }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -721,7 +721,7 @@ export default function Lobby() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, marginTop: 32 }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, marginTop: 32 }}
           >
             {/* LEFT: Main content grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
@@ -738,11 +738,11 @@ export default function Lobby() {
             >
               <div style={{ position: 'relative', zIndex: 2 }}>
                 <div style={{ padding: '6px 12px', background: 'rgba(236,72,153,0.1)', color: '#fbcfe8', border: '1px solid rgba(236,72,153,0.2)', borderRadius: 6, fontSize: 11, fontWeight: 700, width: 'fit-content', marginBottom: 16 }}>MAANG EXCLUSIVE</div>
-                <h3 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12 }}>Interview Pro Vault {user?.isPremium && <span style={{ fontSize: 16, color: '#22c55e' }}>✓ Unlocked</span>}</h3>
-                <p style={{ color: '#a1a1aa', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>Master the exact algorithms asked by top tech companies. Train with precision, zero distractions, and our integrated AI interviewer.</p>
+                <h3 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-main)', marginBottom: 12 }}>Interview Pro Vault {user?.isPremium && <span style={{ fontSize: 16, color: '#22c55e' }}>✓ Unlocked</span>}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>Master the exact algorithms asked by top tech companies. Train with precision, zero distractions, and our integrated AI interviewer.</p>
 
                 <button style={{
-                  background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: '#fff', borderRadius: 8,
+                  background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', border: 'none', color: 'var(--text-main)', borderRadius: 8,
                   padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter',
                   boxShadow: '0 4px 14px rgba(255,107,53,0.3)', width: 'fit-content', marginBottom: 24
                 }}>
@@ -751,13 +751,13 @@ export default function Lobby() {
 
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
                   {['Google', 'Amazon', 'Meta', 'Netflix', 'Apple'].map(c => (
-                    <span key={c} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: '#d1d5db', fontSize: 12, padding: '4px 10px', borderRadius: 6, fontWeight: 500 }}>{c}</span>
+                    <span key={c} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-muted)', fontSize: 12, padding: '4px 10px', borderRadius: 6, fontWeight: 500 }}>{c}</span>
                   ))}
                 </div>
               </div>
               {!user?.isPremium && (
                 <div style={{ position: 'absolute', top: 32, right: 32, background: 'rgba(0,0,0,0.5)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 16 }}>🔒</span> <span style={{ fontSize: 12, fontWeight: 700, color: '#aaa' }}>PREMIUM</span>
+                  <span style={{ fontSize: 16 }}>🔒</span> <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>PREMIUM</span>
                 </div>
               )}
             </motion.div>
@@ -773,9 +773,9 @@ export default function Lobby() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,107,53,0.1)', color: '#ff6b35', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚡</div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Random Match</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Random Match</h3>
               </div>
-              <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Find an opponent near your ELO instantly and battle!</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Find an opponent near your ELO instantly and battle!</p>
               <button style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.2)', color: '#ff6b35', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
                 ⚡ Start Quick Play
               </button>
@@ -792,9 +792,9 @@ export default function Lobby() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(168,85,247,0.1)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎯</div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Ranked Match</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Ranked Match</h3>
               </div>
-              <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Choose a specific problem and fight for global ELO ranking.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Choose a specific problem and fight for global ELO ranking.</p>
               <button style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#a855f7', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
                 🎯 Join Ranked Queue
               </button>
@@ -811,9 +811,9 @@ export default function Lobby() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(34,197,94,0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🤖</div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>Practice Bot</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Practice Bot</h3>
               </div>
-              <p style={{ color: '#a1a1aa', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Hone your skills against our AI speed bot. No ELO risk, just pure coding.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>Hone your skills against our AI speed bot. No ELO risk, just pure coding.</p>
               <button style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e', borderRadius: 8, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: 'auto', fontFamily: 'Inter' }}>
                 🤖 Start Practice
               </button>
@@ -853,7 +853,7 @@ export default function Lobby() {
               {puzzlesLoading ? (
                 <div style={{ color: '#0ea5e9', padding: '20px' }}>⟳ Loading Brain Teasers...</div>
               ) : dailyPuzzles.length === 0 ? (
-                <div style={{ color: '#666', padding: '40px', textAlign: 'center' }}>
+                <div style={{ color: 'var(--text-muted)', padding: '40px', textAlign: 'center' }}>
                   <div style={{ fontSize: 40, marginBottom: 12 }}>🧩</div>
                   <div style={{ fontWeight: 600, marginBottom: 6 }}>No puzzles available</div>
                   <div style={{ fontSize: 12 }}>Check back soon — new puzzles are being added!</div>
@@ -903,7 +903,7 @@ export default function Lobby() {
                         </div>
                       </div>
                       <h3 className="puzzle-title" style={{ fontSize: 16 }}>
-                        <span style={{ color: '#555', fontWeight: 400, marginRight: 6 }}>#{idx + 1}</span>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginRight: 6 }}>#{idx + 1}</span>
                         {p.title}
                       </h3>
                       <div className="puzzle-meta">
@@ -935,7 +935,7 @@ export default function Lobby() {
           <div className="create-grid">
             <div className="glass-panel">
               <div className="panel-header">
-                <span className="panel-title">Select a Problem <span style={{ color: '#555', fontSize: 12 }}>({filteredProblems.length})</span></span>
+                <span className="panel-title">Select a Problem <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>({filteredProblems.length})</span></span>
                 <div className="filters">
 
                   <input
@@ -980,13 +980,13 @@ export default function Lobby() {
               <div style={{ background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.2)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
                 <div className="label-mini">YOUR ROOM CODE</div>
                 <div style={{ fontFamily: 'JetBrains Mono', fontSize: 16, fontWeight: 700, color: '#ff6b35', letterSpacing: 2, marginTop: 4 }}>{selectedProblem ? `room-${selectedProblem.slug.slice(0, 6)}` : 'Select problem first'}</div>
-                <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Share this with your opponent</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Share this with your opponent</div>
               </div>
               <div className="selected-preview">
                 <div className="label-mini">SELECTED PROBLEM</div>
                 {selectedProblem ? (
-                  <div><div className="prev-title">{selectedProblem.title}</div><div className="prev-tags"><span className="prob-diff" style={{ background: diffColor[selectedProblem.difficulty]?.bg, color: diffColor[selectedProblem.difficulty]?.color, border: `1px solid ${diffColor[selectedProblem.difficulty]?.border}` }}>{selectedProblem.difficulty}</span><span style={{ fontSize: 11, color: '#555' }}>{selectedProblem.category}</span></div></div>
-                ) : <span style={{ fontSize: 13, color: '#555' }}>None selected</span>}
+                  <div><div className="prev-title">{selectedProblem.title}</div><div className="prev-tags"><span className="prob-diff" style={{ background: diffColor[selectedProblem.difficulty]?.bg, color: diffColor[selectedProblem.difficulty]?.color, border: `1px solid ${diffColor[selectedProblem.difficulty]?.border}` }}>{selectedProblem.difficulty}</span><span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{selectedProblem.category}</span></div></div>
+                ) : <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>None selected</span>}
               </div>
               <div className="setting-group">
                 <label className="label-mini">TIME LIMIT</label>
@@ -1022,8 +1022,8 @@ export default function Lobby() {
         {tab === 'live' && (
           <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', margin: '32px auto', maxWidth: 600 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>👁</div>
-            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: '#fff' }}>Watch Live Battles</h2>
-            <p style={{ color: '#666', fontSize: 13 }}>Live spectating coming soon!</p>
+            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: 'var(--text-main)' }}>Watch Live Battles</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Live spectating coming soon!</p>
           </div>
         )}
       </div>
@@ -1109,11 +1109,11 @@ export default function Lobby() {
         .btn-pro-plus { background: linear-gradient(135deg, #ff6b35, #f7451d); color: #fff; border: none; box-shadow: 0 8px 20px rgba(255,107,53,0.3); }
         .btn-pro-plus:hover { background: linear-gradient(135deg, #f7451d, #ea580c); box-shadow: 0 12px 28px rgba(255,107,53,0.4); }
 
-        .glass-nav { height: 60px; background: #111113; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
-        .logo { font-size: 16px; cursor: pointer; display: flex; align-items: center; margin-right: 32px; }
+        .glass-nav { height: 60px; background: var(--nav-bg, #111113); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+        .logo { font-size: 16px; cursor: pointer; display: flex; align-items: center; margin-right: 32px; color: var(--text-main); }
         .nav-links { display: flex; gap: 24px; margin-right: 32px; }
-        .nav-links span { font-size: 13px; font-weight: 600; color: #a1a1aa; cursor: pointer; position: relative; padding: 20px 0; }
-        .nav-links span:hover { color: #fff; }
+        .nav-links span { font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; padding: 20px 0; }
+        .nav-links span:hover { color: var(--text-main); }
         .nav-links span.active { color: #ff6b35; }
         .nav-links span.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #ff6b35; }
         .online-badge { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 6px 14px; font-size: 12px; margin-right: 12px; }
@@ -1124,22 +1124,22 @@ export default function Lobby() {
         .user-chip:hover { background: rgba(255,255,255,0.08); }
         .rank-icon { font-size: 11px; color: #d97706; font-weight: 600; padding-right: 8px; border-right: 1px solid rgba(255,255,255,0.1); }
         .avatar { width: 22px; height: 22px; border-radius: 50%; background: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
-        .username { font-size: 12px; font-weight: 600; }
+        .username { font-size: 12px; font-weight: 600; color: var(--text-main); }
         
-        .lobby-container { max-width: 900px; margin: 0 auto; padding: 60px 24px; position: relative; z-index: 10; }
+        .lobby-container { max-width: 1200px; margin: 0 auto; padding: 60px 24px; position: relative; z-index: 10; }
         .lobby-header { text-align: center; margin-bottom: 40px; }
-        .page-title { font-size: 32px; font-weight: 700; color: #fff; margin: 0 0 12px 0; letter-spacing: -0.5px; }
+        .page-title { font-size: 32px; font-weight: 700; color: var(--text-main); margin: 0 0 12px 0; letter-spacing: -0.5px; }
         .page-subtitle { font-size: 15px; color: var(--text-muted); max-width: 500px; line-height: 1.6; margin: 0 auto; }
         .tab-wrapper { display: flex; justify-content: center; margin-bottom: 40px; }
-        .tab-container { display: flex; gap: 4px; background: #16161a; border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 4px; }
+        .tab-container { display: flex; gap: 4px; background: var(--card-bg); border: 1px solid rgba(128,128,128,0.1); border-radius: 12px; padding: 4px; }
         .tab-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted); background: transparent; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .tab-btn:hover { color: var(--text-main); }
-        .tab-btn.active { background: rgba(255,255,255,0.08); color: #fff; }
+        .tab-btn.active { background: rgba(128,128,128,0.15); color: var(--text-main); }
         
         .create-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-top: 32px; }
-        .glass-panel { background: #16161a; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 24px; }
+        .glass-panel { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.1); border-radius: 20px; padding: 24px; }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .panel-title { font-size: 14px; font-weight: 600; color: #fff; }
+        .panel-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
         .filters { display: flex; gap: 10px; }
         .glass-select { background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; font-size: 12px; outline: none; cursor: pointer; }
         .loading-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }

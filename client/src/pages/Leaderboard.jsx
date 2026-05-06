@@ -77,7 +77,7 @@ export default function Leaderboard() {
 
       <nav className="glass-nav">
         <span className="logo" onClick={() => navigate('/')}>
-          <span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: '#fff' }}>Arena</span>
+          <span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: 'var(--text-main)' }}>Arena</span>
         </span>
         <div className="nav-divider" />
         <span className="nav-subtitle">Leaderboard</span>

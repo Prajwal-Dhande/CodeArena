@@ -744,7 +744,7 @@ export default function BattleRoom() {
       <div className="battle-header" style={{ display: zenMode ? 'none' : 'flex' }}>
         <span className="logo" onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35' }}>Code</span>
-          <span style={{ color: '#fff' }}>Arena</span>
+          <span style={{ color: 'var(--text-main)' }}>Arena</span>
         </span>
         <div className="divider" />
 
@@ -780,7 +780,7 @@ export default function BattleRoom() {
             {isProblemLocked ? (
                <span style={{ fontSize: 12, color: '#ef4444', marginLeft: 4 }} title="Problem locked in Matchmaking">🔒</span>
             ) : (
-               <span style={{ fontSize: 10, color: '#555' }}>▼</span>
+               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>▼</span>
             )}
           </button>
 
@@ -812,7 +812,7 @@ export default function BattleRoom() {
                 <div className="avatar" style={{ background: i === 0 ? '#ff6b35' : '#ef4444' }}>
                   {p.username?.slice(0, 2).toUpperCase()}
                 </div>
-                <span style={{ fontSize: 11, color: '#aaa' }}>{p.username}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.username}</span>
                 {i === 0 && roomPlayers.length > 1 && <span className="vs">vs</span>}
               </div>
             ))}
@@ -838,10 +838,10 @@ export default function BattleRoom() {
 
         {!premiumMode && !isAlreadySolved && (
           <div className="timer-box">
-            <span style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
             {battleStarted
               ? <Timer key={timerKey} initialSeconds={remainingTime} onTimeUp={handleTimeUp} />
-              : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#666' }}>10:00</span>
+              : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: 'var(--text-muted)' }}>10:00</span>
             }
           </div>
         )}
@@ -962,7 +962,7 @@ export default function BattleRoom() {
                 {problem?.title || 'Loading...'}
               </div>
 
-              <div style={{ fontSize: 13, color: '#555', marginBottom: 36, fontWeight: 500 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 36, fontWeight: 500 }}>
                 {practiceMode ? 'Setting up your arena...' : `Room: `}
                 {!practiceMode && <span style={{ color: '#ff6b35', fontFamily: 'monospace', fontWeight: 700 }}>{roomId}</span>}
               </div>
@@ -975,7 +975,7 @@ export default function BattleRoom() {
                     width: 54, height: 54, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #ff6b35, #f7451d)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, fontWeight: 800, color: '#fff',
+                    fontSize: 18, fontWeight: 800, color: 'var(--text-main)',
                     boxShadow: '0 0 20px rgba(255,107,53,0.4)',
                     animation: 'avatarPop 0.4s cubic-bezier(0.16,1,0.3,1)'
                   }}>
@@ -1162,7 +1162,7 @@ export default function BattleRoom() {
                     <div className="info-box" style={{ marginTop: 12 }}>
                       <div className="info-label">💡 HINTS</div>
                       {problem.hints.map((h, i) => (
-                        <div key={i} className="code-line" style={{ color: '#666' }}>• {h}</div>
+                        <div key={i} className="code-line" style={{ color: 'var(--text-muted)' }}>• {h}</div>
                       ))}
                     </div>
                   )}
@@ -1320,7 +1320,7 @@ export default function BattleRoom() {
                 : 'TEST RESULTS'}
             </div>
             {results.length === 0 && !isAlreadySolved && (
-              <span style={{ color: '#555', fontSize: 12 }}>Run your code to see results...</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Run your code to see results...</span>
             )}
             {results.map((r, i) => (
               <div key={i} className={`test-result-row ${r.ok ? 'pass' : 'fail'}`}>
@@ -1342,12 +1342,12 @@ export default function BattleRoom() {
                   {!aiDebugHint && (
                     <button onClick={handleAiDebug} disabled={aiDebugLoading} style={{
                       background: aiDebugLoading ? 'rgba(139,92,246,0.3)' : 'linear-gradient(90deg, #ec4899, #8b5cf6)',
-                      border: 'none', color: '#fff', padding: '7px 14px', borderRadius: 8,
+                      border: 'none', color: 'var(--text-main)', padding: '7px 14px', borderRadius: 8,
                       fontSize: 12, fontWeight: 700, cursor: aiDebugLoading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s'
                     }}>
                       {aiDebugLoading
-                        ? <><span style={{ width: 10, height: 10, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Analyzing...</>
+                        ? <><span style={{ width: 10, height: 10, border: '2px solid rgba(255,255,255,0.3)', borderTopcolor: 'var(--text-main)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Analyzing...</>
                         : '🔍 Find Bug'}
                     </button>
                   )}
@@ -1404,7 +1404,7 @@ export default function BattleRoom() {
             <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(236,72,153,0.15)', background: 'linear-gradient(135deg, rgba(236,72,153,0.08), rgba(139,92,246,0.06))', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 0 14px rgba(236,72,153,0.4)', flexShrink: 0 }}>🤖</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'Outfit' }}>Clara</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-main)', fontFamily: 'Outfit' }}>Clara</div>
                 <div style={{ fontSize: 10, color: '#ec4899', fontWeight: 700, letterSpacing: 1 }}>MAANG INTERVIEWER</div>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1525,7 +1525,7 @@ export default function BattleRoom() {
               <div className="dot-red" />
               <span>{opponentName}</span>
             </div>
-            <span style={{ marginLeft: 'auto', fontSize: 11, color: '#555' }}>Read only</span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>Read only</span>
           </div>
 
           <div className="monaco-wrapper" style={{ opacity: 0.7 }}>

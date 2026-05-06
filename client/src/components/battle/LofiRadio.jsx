@@ -101,7 +101,7 @@ export default function LofiRadio() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
           <span style={{ fontSize: 18 }}>🎧</span>
-          <span style={{ color: '#fff', fontSize: 12, fontWeight: 800, letterSpacing: 1, fontFamily: 'Outfit' }}>
+          <span style={{ color: 'var(--text-main)', fontSize: 12, fontWeight: 800, letterSpacing: 1, fontFamily: 'Outfit' }}>
             LO-FI FOCUS
           </span>
         </div>
