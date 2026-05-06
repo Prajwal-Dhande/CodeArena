@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import API_URL from '../config/api'
+import { ThemeToggle } from '../context/ThemeContext'
 
 const PLANS = [
   {
@@ -212,6 +213,7 @@ export default function Premium() {
           ))}
           <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b35' }}>💎 Premium</span>
         </div>
+        <ThemeToggle />
         <div onClick={() => navigate('/profile')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '4px 14px 4px 10px', cursor: 'pointer' }}>
           <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{initials}</div>
           <span style={{ fontSize: 12, fontWeight: 600, color: '#fff' }}>{user?.username || 'Player'}</span>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async' 
 import API_URL from '../config/api'
+import { ThemeToggle } from '../context/ThemeContext'
 
 // Load premium fonts
 if (typeof document !== 'undefined') {
@@ -81,6 +82,7 @@ export default function Leaderboard() {
         <div className="nav-divider" />
         <span className="nav-subtitle">Leaderboard</span>
         <div style={{ flex: 1 }} />
+        <ThemeToggle />
         <button onClick={() => navigate('/lobby')} className="btn-battle-now">
           ⚡ Battle Now
         </button>

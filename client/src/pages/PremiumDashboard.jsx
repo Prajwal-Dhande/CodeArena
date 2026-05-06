@@ -5,6 +5,7 @@ import {
   AreaChart, Area, RadialBarChart, RadialBar, Cell, PieChart, Pie
 } from 'recharts'
 import API_URL from '../config/api'
+import { ThemeToggle } from '../context/ThemeContext'
 
 const RANK_META = {
   Bronze:      { color: '#cd7f32', bg: 'rgba(205,127,50,0.1)',  icon: '🥉', next: 'Silver'   },
@@ -102,7 +103,9 @@ export default function PremiumDashboard() {
             <div style={{ fontSize: 11, color: '#555', marginTop: 1 }}>@{stats.username} • AI-powered performance analytics</div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: rank.bg, border: `1px solid ${rank.color}44`, borderRadius: 12, padding: '8px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <ThemeToggle />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: rank.bg, border: `1px solid ${rank.color}44`, borderRadius: 12, padding: '8px 16px' }}>
           <span style={{ fontSize: 20 }}>{rank.icon}</span>
           <div>
             <div style={{ fontSize: 15, fontWeight: 900, color: rank.color, fontFamily: 'Outfit' }}>{stats.rank}</div>

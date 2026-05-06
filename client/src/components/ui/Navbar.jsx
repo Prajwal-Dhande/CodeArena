@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { ThemeToggle } from '../../context/ThemeContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -51,6 +52,7 @@ export default function Navbar() {
         </div>
 
         <div className="nav-actions desktop-only">
+          <ThemeToggle />
           {isLoggedIn ? (
             <>
               <span onClick={() => navigate('/profile')} className="profile-btn" title="View Profile">
@@ -84,6 +86,7 @@ export default function Navbar() {
             <span key={label} onClick={() => handleNavClick(href)} className="nav-link">{label}</span>
           ))}
           <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <ThemeToggle />
               <button onClick={() => navigate('/lobby')} className="btn-primary">⚡ Enter Arena</button>
           </div>
         </div>

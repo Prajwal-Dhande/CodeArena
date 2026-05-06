@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ThemeToggle } from '../context/ThemeContext'
 import API_URL from '../config/api'
 
 const THEMES = ['Monokai', 'Dracula', 'One Dark', 'GitHub Dark', 'Solarized Dark']
@@ -108,6 +109,7 @@ export default function Settings() {
           <span style={{ color: '#fff', fontWeight: 700 }}>CodeArena</span>
         </span>
         <div style={{ flex: 1 }} />
+        <ThemeToggle />
         <button onClick={() => navigate('/profile')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#a1a1aa', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>← Back to Profile</button>
       </nav>
 

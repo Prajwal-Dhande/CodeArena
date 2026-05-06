@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import API_URL from "../config/api";
+import { ThemeToggle } from '../context/ThemeContext';
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard'];
 const TOPICS = ['All', 'Arrays', 'Strings', 'Linked List', 'Trees', 'Dynamic Programming', 'Graphs', 'Binary Search', 'Stack', 'Design'];
@@ -218,6 +219,7 @@ export default function InterviewDSA() {
           <span onClick={() => navigate('/profile')}>Profile</span>
         </div>
         <div style={{ flex: 1 }} />
+        <ThemeToggle />
         <div className="user-chip" onClick={() => navigate('/profile')}>
           <div className="rank-icon">🥇 PRO</div>
           <div className="avatar">{initials}</div>

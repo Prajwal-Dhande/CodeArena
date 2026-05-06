@@ -20,6 +20,29 @@ router.post('/follow/:id', authMiddleware, userController.followUser)
 router.post('/unfollow/:id', authMiddleware, userController.unfollowUser)
 router.get('/search', authMiddleware, userController.searchUsers)
 
+// 📅 ACTIVITY CALENDAR (lightweight - returns dates with activity counts)
+router.get('/activity', authMiddleware, async (req, res) => {
+  try {
+    const User = require('../models/User')
+    const user = await User.findById(req.userId).select('matchHistory stats')
+    if (!user) return res.status(404).json({ success: false })
+    
+    // Build a map of YYYY-MM-DD -> { battles, wins }
+    const activityMap = {}
+    ;(user.matchHistory || []).forEach(m => {
+      const d = new Date(m.date)
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+      if (!activityMap[key]) activityMap[key] = { battles: 0, wins: 0 }
+      activityMap[key].battles++
+      if (m.result === 'win') activityMap[key].wins++
+    })
+    
+    res.json({ success: true, activity: activityMap, streak: user.stats?.streak || 0, maxStreak: user.stats?.maxStreak || 0 })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+})
+
 // 📊 PREMIUM DASHBOARD STATS
 router.get('/premium-stats', authMiddleware, async (req, res) => {
   try {

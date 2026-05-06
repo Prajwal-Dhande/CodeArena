@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import Matchmaking from '../components/battle/Matchmaking'
+import ActivityCalendar from '../components/ActivityCalendar'
+import { ThemeToggle } from '../context/ThemeContext'
 import API_URL from '../config/api'
 
 const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard']
@@ -646,7 +648,7 @@ export default function Lobby() {
           />
           {searchResults.length > 0 && (
             <div style={{
-              position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: '#16161a',
+              position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: 'var(--card-bg)',
               borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', zIndex: 100, overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
             }}>
               {searchResults.map(u => (
@@ -680,6 +682,7 @@ export default function Lobby() {
           </button>
         )}
 
+        <ThemeToggle />
         <div className="online-badge">
           <div className={`status-dot ${pulse ? 'pulse-anim' : ''}`} />
           <span><span className="text-green">{onlineCount}</span> online</span>
@@ -718,15 +721,17 @@ export default function Lobby() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 32 }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, marginTop: 32 }}
           >
+            {/* LEFT: Main content grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
             {/* Interview Pro Vault Card */}
             <motion.div
               whileHover={{ y: -2 }}
               onClick={() => user?.isPremium ? navigate('/interview-dsa') : setShowPremiumModal(true)}
               style={{
                 gridColumn: 'span 2', gridRow: 'span 2',
-                background: '#16161a',
+                background: 'var(--card-bg)',
                 border: '1px solid rgba(255,255,255,0.04)',
                 position: 'relative', overflow: 'hidden', padding: 32, borderRadius: 20, cursor: 'pointer', display: 'flex', flexDirection: 'column'
               }}
@@ -762,7 +767,7 @@ export default function Lobby() {
               whileHover={{ y: -2 }}
               onClick={() => { setMatchmakingMode('random'); setRoomType('public'); setShowMatchmaking(true); }}
               style={{
-                background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
+                background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.04)',
                 borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
@@ -781,7 +786,7 @@ export default function Lobby() {
               whileHover={{ y: -2 }}
               onClick={handleRankedClick}
               style={{
-                background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
+                background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.04)',
                 borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
@@ -800,7 +805,7 @@ export default function Lobby() {
               whileHover={{ y: -2 }}
               onClick={handlePracticeClick}
               style={{
-                background: '#16161a', border: '1px solid rgba(255,255,255,0.04)',
+                background: 'var(--card-bg)', border: '1px solid rgba(255,255,255,0.04)',
                 borderRadius: 20, padding: 28, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 16
               }}
             >
@@ -813,6 +818,12 @@ export default function Lobby() {
                 🤖 Start Practice
               </button>
             </motion.div>
+            </div>
+
+            {/* RIGHT: Activity Calendar sidebar */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <ActivityCalendar />
+            </div>
           </motion.div>
         )}
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async' 
+import { ThemeToggle } from '../context/ThemeContext'
 import API_URL from '../config/api'
 
 // Load premium fonts
@@ -450,6 +451,7 @@ export default function Profile() {
           <span style={{ color: '#ff6b35' }}>Code</span><span style={{ color: '#fff' }}>Arena</span>
         </span>
         <div style={{ flex: 1 }} />
+        <ThemeToggle />
         {[{ label: 'Lobby', path: '/lobby' }, { label: 'Leaderboard', path: '/leaderboard' }].map(({ label, path }) => (
           <span key={label} onClick={() => navigate(path)} style={{ fontSize: 13, color: '#888', cursor: 'pointer', fontWeight: 500 }}>{label}</span>
         ))}

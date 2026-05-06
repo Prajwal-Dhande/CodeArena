@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import API_URL from '../config/api'
+import { ThemeToggle } from '../context/ThemeContext'
 
 const TIER_META = {
   open:     { label: 'OPEN',     color: '#22c55e', bg: 'rgba(34,197,94,0.1)',    icon: '🌐', glow: 'rgba(34,197,94,0.2)'   },
@@ -202,11 +203,14 @@ export default function Tournaments() {
               <div style={{ fontSize: 11, color: '#555', marginTop: 1 }}>Compete. Climb. Conquer MAANG.</div>
             </div>
           </div>
-          {!user?.isPremium && (
-            <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(90deg, #a855f7, #ec4899)', border: 'none', color: '#fff', borderRadius: 10, padding: '8px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
-              💎 Upgrade to Pro
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <ThemeToggle />
+            {!user?.isPremium && (
+              <button onClick={() => navigate('/premium')} style={{ background: 'linear-gradient(90deg, #a855f7, #ec4899)', border: 'none', color: '#fff', borderRadius: 10, padding: '8px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
+                💎 Upgrade to Pro
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
