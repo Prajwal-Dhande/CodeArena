@@ -141,8 +141,8 @@ const parseSimulationArgs = (functionCall) => {
 const runJavaScript = (code, tc, problemType) => {
   // Strip user-defined ListNode/TreeNode to avoid redeclaration conflicts
   const cleanCode = code
-    .replace(/(?:\/\*[\s\S]*?\*\/\s*)?(?:function\s+ListNode\s*\([\s\S]*?\n\}|class\s+ListNode\s*\{[\s\S]*?\n\})\s*/g, '')
-    .replace(/(?:\/\*[\s\S]*?\*\/\s*)?(?:function\s+TreeNode\s*\([\s\S]*?\n\}|class\s+TreeNode\s*\{[\s\S]*?\n\})\s*/g, '');
+    .replace(/^\s*(?:\/\*[\s\S]*?\*\/\s*)?(?:function\s+ListNode\s*\([\s\S]*?^\s*\}|class\s+ListNode\s*\{[\s\S]*?^\s*\})\s*/gm, '')
+    .replace(/^\s*(?:\/\*[\s\S]*?\*\/\s*)?(?:function\s+TreeNode\s*\([\s\S]*?^\s*\}|class\s+TreeNode\s*\{[\s\S]*?^\s*\})\s*/gm, '');
 
   const vm = new VM({ timeout: 5000, sandbox: {} });
   let runnerCode;
