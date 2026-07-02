@@ -261,9 +261,9 @@ A **height-balanced** binary tree is defined as:
       '-10^4 <= Node.val <= 10^4'
     ],
     testCases: [
-      { input: { root: [3,9,20,null,null,15,7] }, expected: true, functionCall: 'isBalanced(createBinaryTree([3,9,20,null,null,15,7]))' },
-      { input: { root: [1,2,2,3,3,null,null,4,4] }, expected: false, functionCall: 'isBalanced(createBinaryTree([1,2,2,3,3,null,null,4,4]))' },
-      { input: { root: [] }, expected: true, functionCall: 'isBalanced(createBinaryTree([]))' }
+      { input: { root: [3,9,20,null,null,15,7] }, expected: true, functionCall: 'isBalanced([3,9,20,null,null,15,7])' },
+      { input: { root: [1,2,2,3,3,null,null,4,4] }, expected: false, functionCall: 'isBalanced([1,2,2,3,3,null,null,4,4])' },
+      { input: { root: [] }, expected: true, functionCall: 'isBalanced([])' }
     ],
     starterCode: {
       javascript: `/**
