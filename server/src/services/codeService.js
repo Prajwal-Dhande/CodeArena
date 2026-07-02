@@ -193,9 +193,12 @@ ${cleanCode}
   }
 
   // ── STRATEGY D: NORMAL FUNCTION ──────────────────────────────────────────
-  // Auto-detect and rename function if user named it differently
-  const funcNameMatch = cleanCode.match(/function\s+([a-zA-Z0-9_]+)\s*\(/) ||
-                        cleanCode.match(/(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/);
+  // Auto-detect the MAIN (outermost) function name.
+  // Priority: var/const/let X = function(...) → function X(...) → var/const/let X = (...) =>
+  // We match against the FIRST occurrence to avoid picking up nested helpers.
+  const funcNameMatch = cleanCode.match(/(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*function\s*[\s(]/) ||
+                        cleanCode.match(/^function\s+([a-zA-Z0-9_]+)\s*\(/m) ||
+                        cleanCode.match(/^(?:const|let|var)\s+([a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/m);
   const realName = funcNameMatch ? funcNameMatch[1] : null;
   const callToUse = realName
     ? tc.functionCall.replace(/^[a-zA-Z0-9_]+\s*\(/, `${realName}(`)
