@@ -1547,7 +1547,8 @@ export default function BattleRoom() {
                 fontFamily: 'JetBrains Mono, monospace', padding: { top: 14, bottom: 14 },
                 smoothScrolling: true, cursorBlinking: 'smooth',
                 wordWrap: 'on', tabSize: prefTabSize, lineNumbers: 'on',
-                scrollBeyondLastLine: false
+                scrollBeyondLastLine: false,
+                acceptSuggestionOnCommitCharacter: false
               }}
             />
           </div>
