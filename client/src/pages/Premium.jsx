@@ -410,34 +410,34 @@ export default function Premium() {
       </div>
 
       {/* NAV */}
-      <nav style={{ height: 60, background: 'var(--nav-bg)', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', padding: '0 24px', position: 'sticky', top: 0, zIndex: 50, backdropFilter: 'blur(20px)', transition: 'background-color 0.3s ease' }}>
-        <span style={{ fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: 32 }} onClick={() => navigate('/')}>
+      <nav className="premium-nav" style={{ height: 60, background: 'var(--nav-bg)', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', padding: '0 24px', position: 'sticky', top: 0, zIndex: 50, backdropFilter: 'blur(20px)', transition: 'background-color 0.3s ease' }}>
+        <span style={{ fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', marginRight: 32, flexShrink: 0 }} onClick={() => navigate('/')}>
           <span style={{ color: '#ff6b35', marginRight: '6px' }}>{'{N}'}</span>
           <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>NodeClash</span>
         </span>
-        <div style={{ display: 'flex', gap: 24, flex: 1 }}>
+        <div className="premium-nav-links" style={{ display: 'flex', gap: 24, flex: 1, overflow: 'hidden' }}>
           {[
             { label: 'Dashboard', path: '/dashboard' },
             { label: 'Practice', path: '/lobby' },
             { label: 'Leaderboard', path: '/leaderboard' },
             { label: 'Profile', path: '/profile' },
           ].map(item => (
-            <span key={item.label} onClick={() => navigate(item.path)} style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer', transition: 'color 0.2s' }}
+            <span key={item.label} onClick={() => navigate(item.path)} style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer', transition: 'color 0.2s', whiteSpace: 'nowrap' }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
               {item.label}
             </span>
           ))}
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b35', display: 'flex', alignItems: 'center', gap: 4 }}><Crown size={14} /> Premium</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b35', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}><Crown size={14} /> Premium</span>
         </div>
         <ThemeToggle />
-        <div onClick={() => navigate('/profile')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--glass-overlay)', border: '1px solid var(--glass-border)', borderRadius: 20, padding: '4px 14px 4px 10px', cursor: 'pointer', marginLeft: 16 }}>
+        <div onClick={() => navigate('/profile')} className="premium-nav-user" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--glass-overlay)', border: '1px solid var(--glass-border)', borderRadius: 20, padding: '4px 14px 4px 10px', cursor: 'pointer', marginLeft: 16, flexShrink: 0 }}>
           <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{initials}</div>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-main)' }}>{user?.username || 'Player'}</span>
         </div>
       </nav>
 
-      <div style={{ position: 'relative', zIndex: 10, maxWidth: 1200, margin: '0 auto', padding: '80px 24px 60px' }}>
+      <div className="premium-content" style={{ position: 'relative', zIndex: 10, maxWidth: 1200, margin: '0 auto', padding: '80px 24px 60px' }}>
 
         {/* SUCCESS / EXPIRY WARNING BANNER */}
         {isPremiumUser && premiumStatus && (() => {
@@ -456,7 +456,8 @@ export default function Premium() {
 
           return (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-              style={{ background: bannerBg, border: bannerBorder, borderRadius: 16, padding: '20px 28px', marginBottom: 48, display: 'flex', alignItems: 'center', gap: 16 }}>
+              className="premium-banner"
+              style={{ background: bannerBg, border: bannerBorder, borderRadius: 16, padding: '20px 28px', marginBottom: 48, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ fontSize: 36 }}>{isExpiring ? '⚠️' : '🎉'}</div>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: accentColor, fontFamily: 'Outfit, sans-serif', marginBottom: 4 }}>
@@ -505,7 +506,7 @@ export default function Premium() {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 11, fontWeight: 800, letterSpacing: 2, padding: '6px 18px', borderRadius: 20, marginBottom: 24 }}>
             <Crown size={14} /> NODECLASH PRO
           </div>
-          <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 56, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 20px 0', letterSpacing: '-2px', lineHeight: 1.1 }}>
+          <h1 className="premium-hero-title" style={{ fontFamily: 'Outfit, sans-serif', fontSize: 56, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 20px 0', letterSpacing: '-2px', lineHeight: 1.1 }}>
             The fastest path to<br />
             <span style={{ background: 'linear-gradient(135deg, #ff6b35, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>crack MAANG</span>
           </h1>
@@ -515,7 +516,7 @@ export default function Premium() {
         </motion.div>
 
         {/* PRICING CARDS */}
-        <div data-pricing style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, alignItems: 'stretch' }}>
+        <div data-pricing className="premium-pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, alignItems: 'stretch' }}>
           {PLANS.map((plan, idx) => {
             const btn = getBtnProps(plan)
             const isDisabled = btn.disabled || processing === plan.id
@@ -664,7 +665,7 @@ export default function Premium() {
           <h2 style={{ textAlign: 'center', fontSize: 32, fontWeight: 800, color: 'var(--text-main)', marginBottom: 8, fontFamily: 'Outfit, sans-serif' }}>Why go PRO?</h2>
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 48, fontSize: 15 }}>Real features. Real results. Real offers.</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <div className="premium-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
             {[
               { icon: <Bot size={28} color="#ff6b35" />, color: '#ff6b35', title: 'Clara AI Interviewer', desc: 'Practice with an AI trained to behave exactly like a MAANG interviewer. Get hints, feedback, and code review in real-time.' },
               { icon: <BarChart size={28} color="#3b82f6" />, color: '#3b82f6', title: 'Deep Code Analytics', desc: 'After every submission, get time & space complexity analysis, edge case reports, and comparisons to optimal solutions.' },
@@ -731,8 +732,48 @@ export default function Premium() {
           --text-main: #111827;
           --text-muted: #6b7280;
         }
-        @media (max-width: 900px) {
-          /* Stack cards on mobile */
+
+        /* ── MOBILE RESPONSIVE ── */
+        @media (max-width: 768px) {
+          .premium-nav-links {
+            display: none !important;
+          }
+          .premium-nav-user span {
+            display: none;
+          }
+          .premium-content {
+            padding: 40px 16px 40px !important;
+          }
+          .premium-hero-title {
+            font-size: 32px !important;
+            letter-spacing: -1px !important;
+          }
+          .premium-pricing-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .premium-features-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+          }
+          .premium-banner {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 16px 18px !important;
+            gap: 12px !important;
+          }
+          .premium-banner button {
+            width: 100%;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .premium-features-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .premium-hero-title {
+            font-size: 26px !important;
+          }
         }
       `}</style>
     </div>
