@@ -621,6 +621,16 @@ export default function BattleRoom() {
     if (prefVimMode) {
       initVimMode(editor, document.createElement('div'));
     }
+
+    // Disable red squiggly underlines for JS/TS — our backend handles validation
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true,
+      noSyntaxValidation: true,
+    });
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true,
+      noSyntaxValidation: true,
+    });
   };
 
   const handleProblemChange = async (slug) => {
