@@ -162,7 +162,6 @@ const ProblemModal = ({ user, title, subtitle, borderColor, accentColor, selecte
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 8 }}>
                     <span>{p.category}</span><span>·</span>
                     <span>{p.acceptance}% acceptance</span>
-                    {p.companies?.[0] && <><span>·</span><span>{p.companies[0]}</span></>}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

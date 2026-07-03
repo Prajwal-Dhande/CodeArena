@@ -1697,7 +1697,7 @@ export default function BattleRoom() {
                   <div style={{ background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.2)', borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 13, color: '#f9a8d4', lineHeight: 1.6 }}>
                     💡 Start coding! I'll give you real-time hints if you get stuck, and a full code review when you submit.
                   </div>
-                  {problem?.companies?.length > 0 && (
+                  {premiumMode && problem?.companies?.length > 0 && (
                     <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '0 14px 14px 14px', padding: '12px 14px', fontSize: 12, color: '#fbbf24', lineHeight: 1.6 }}>
                       🏢 This problem is asked at: <strong>{problem.companies.slice(0, 4).join(', ')}</strong>
                     </div>
