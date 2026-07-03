@@ -206,6 +206,14 @@ export default function BattleRoom() {
     return 900;
   })
 
+  // MOBILE STATE
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const socketRef = useRef(null)
   const constraintTriggered = useRef(false)
   const gameOverRef = useRef(false)
@@ -2055,10 +2063,61 @@ export default function BattleRoom() {
         @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes slideDown { from{opacity:0;transform:translate(-50%,-20px)} to{opacity:1;transform:translate(-50%,0)} }
         @media (max-width: 1024px) {
-          .main-grid { grid-template-columns: 1fr; overflow-y: auto; display: flex; flex-direction: column; }
-          .opp-panel { display: none; }
-          .panel { border-right: none; border-bottom: 1px solid var(--border); min-height: 50vh; }
-          .editor-panel { min-height: 70vh; }
+          /* Override react-resizable-panels inline styles for mobile */
+          div[data-panel-group-id] {
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            display: block !important;
+            height: 100vh !important;
+          }
+          div[data-panel-id] {
+            flex: none !important;
+            width: 100% !important;
+            min-height: unset !important;
+            max-height: unset !important;
+            height: auto !important;
+            display: block !important;
+          }
+          .problem-panel {
+            min-height: 50vh !important;
+            border-right: none !important;
+            border-bottom: 2px solid var(--border) !important;
+            overflow: visible !important;
+          }
+          .problem-panel > div {
+            position: static !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .editor-panel {
+            min-height: 80vh !important;
+            border-right: none !important;
+            border-bottom: 2px solid var(--border) !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .editor-panel > div[data-panel-group-id] {
+             height: 100% !important;
+          }
+          .opp-panel { 
+            min-height: 40vh !important;
+          }
+          div[data-panel-resize-handle-id] {
+            display: none !important;
+          }
+          
+          /* Adjust header and info boxes */
+          .info-box { padding: 8px; }
+          .title-area h2 { font-size: 20px !important; }
+        }
+        
+        @media (max-width: 768px) {
+          .editor-header { flex-wrap: wrap; height: auto; padding: 12px; gap: 8px; }
+          .editor-header .user-indicator { font-size: 10px; padding: 4px 8px; }
+          .run-btn, .submit-btn { font-size: 11px; padding: 6px 12px; }
+          .pro-lang-select { font-size: 11px; padding: 6px 24px 6px 12px; }
         }
       `}</style>
     </div>
