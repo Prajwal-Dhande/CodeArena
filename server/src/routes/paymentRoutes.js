@@ -111,7 +111,7 @@ router.post('/verify', authMiddleware, async (req, res) => {
           const htmlContent = `
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0f0f14; border-radius: 16px; overflow: hidden;">
               <div style="background: linear-gradient(135deg, #ff6b35, #f7451d); padding: 28px 32px;">
-                <h1 style="color: #fff; margin: 0; font-size: 24px;">{C} CodeArena Pro</h1>
+                <h1 style="color: #fff; margin: 0; font-size: 24px;">{C} NodeClash Pro</h1>
                 <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 14px;">Thank you for subscribing!</p>
               </div>
               <div style="padding: 32px;">
@@ -145,9 +145,9 @@ router.post('/verify', authMiddleware, async (req, res) => {
               'content-type': 'application/json'
             },
             body: JSON.stringify({
-              sender: { email: process.env.EMAIL_USER, name: 'CodeArena' },
+              sender: { email: process.env.EMAIL_USER, name: 'NodeClash' },
               to: [{ email: user.email }],
-              subject: '🎉 Welcome to CodeArena Pro!',
+              subject: '🎉 Welcome to NodeClash Pro!',
               htmlContent: htmlContent
             })
           });

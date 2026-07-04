@@ -6,7 +6,7 @@ const groq = new Groq({
 
 const generateConstraint = async (code, problem, currentPassed, totalTests) => {
   try {
-    const prompt = `You are an AI Interviewer in a live coding battle platform called CodeArena.
+    const prompt = `You are an AI Interviewer in a live coding battle platform called NodeClash.
 
 A player is solving: "${problem.title}"
 Their current code:

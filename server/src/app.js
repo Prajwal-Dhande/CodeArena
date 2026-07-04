@@ -51,7 +51,7 @@ app.use('/api/contact', require('./routes/contactRoutes'));
 
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'CodeArena server is alive 🔥' })
+  res.json({ status: 'OK', message: 'NodeClash server is alive 🔥' })
 })
 
 module.exports = app

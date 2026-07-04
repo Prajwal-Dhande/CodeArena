@@ -51,8 +51,8 @@ const startExpiryCheckCron = () => {
               user: user._id,
               title: isUrgent ? '⚠️ PRO Expires Tomorrow!' : `🔔 PRO Expires in ${daysRemaining} Days`,
               message: isUrgent
-                ? 'Your CodeArena PRO plan expires tomorrow! Renew now to keep access to The Elite Archive, Clara AI, and all premium features.'
-                : `Your CodeArena PRO plan expires in ${daysRemaining} days. Renew to continue your competitive edge.`,
+                ? 'Your NodeClash PRO plan expires tomorrow! Renew now to keep access to The Elite Archive, Clara AI, and all premium features.'
+                : `Your NodeClash PRO plan expires in ${daysRemaining} days. Renew to continue your competitive edge.`,
               type: isUrgent ? 'error' : 'warning',
               link: '/premium'
             })
@@ -73,7 +73,7 @@ const startExpiryCheckCron = () => {
             await Notification.create({
               user: user._id,
               title: '❌ PRO Plan Expired',
-              message: 'Your CodeArena PRO plan has expired. You are now on the Free tier. Upgrade anytime to regain access.',
+              message: 'Your NodeClash PRO plan has expired. You are now on the Free tier. Upgrade anytime to regain access.',
               type: 'error',
               link: '/premium'
             })

@@ -114,7 +114,7 @@ router.get('/today', async (req, res) => {
       { username: 'SyntaxSamurai',  baseTimes: [178, 289, 312, 521, 234] },
       { username: 'GFGMaster',      baseTimes: [490, 178, 445, 289, 412] },
       { username: 'DevRocket_',     baseTimes: [234, 490, 178, 312, 567] },
-      { username: 'CodeArena_Pro',  baseTimes: [412, 234, 567, 178, 289] },
+      { username: 'NodeClash_Pro',  baseTimes: [412, 234, 567, 178, 289] },
       { username: 'AlphaDevX',      baseTimes: [356, 412, 289, 490, 198] },
       { username: 'ZeroToMAANG',    baseTimes: [521, 356, 490, 234, 312] },
       { username: 'BitMasker',      baseTimes: [267, 523, 189, 456, 378] },

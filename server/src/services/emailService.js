@@ -16,7 +16,7 @@ const sendBrevoEmail = async (toEmail, subject, htmlContent) => {
       'content-type': 'application/json'
     },
     body: JSON.stringify({
-      sender: { email: process.env.EMAIL_USER, name: 'CodeArena' },
+      sender: { email: process.env.EMAIL_USER, name: 'NodeClash' },
       to: [{ email: toEmail }],
       subject: subject,
       htmlContent: htmlContent
@@ -33,9 +33,9 @@ const sendBrevoEmail = async (toEmail, subject, htmlContent) => {
 // ✅ OTP Email
 const sendOtpEmail = async (toEmail, username, otp) => {
   const mailOptions = {
-    from: `"CodeArena" <${process.env.EMAIL_USER}>`,
+    from: `"NodeClash" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `${otp} is your CodeArena verification code`,
+    subject: `${otp} is your NodeClash verification code`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -75,18 +75,18 @@ const sendOtpEmail = async (toEmail, username, otp) => {
             <!-- Warning -->
             <div style="background:rgba(255,107,53,0.05); border:1px solid rgba(255,107,53,0.15); border-radius:8px; padding:14px 16px; margin-bottom:28px;">
               <p style="color:#888; font-size:12px; margin:0; line-height:1.6;">
-                🔒 <strong style="color:#aaa;">Security tip:</strong> Never share this code with anyone. CodeArena will never ask for your OTP via chat or email.
+                🔒 <strong style="color:#aaa;">Security tip:</strong> Never share this code with anyone. NodeClash will never ask for your OTP via chat or email.
               </p>
             </div>
 
             <p style="color:#555; font-size:12px; line-height:1.6; margin:0;">
-              If you didn't create a CodeArena account, you can safely ignore this email.
+              If you didn't create a NodeClash account, you can safely ignore this email.
             </p>
           </div>
 
           <!-- Footer -->
           <div style="padding:20px 40px; border-top:1px solid #1f1f1f; text-align:center;">
-            <p style="color:#333; font-size:11px; margin:0;">© 2025 CodeArena. All rights reserved.</p>
+            <p style="color:#333; font-size:11px; margin:0;">© 2025 NodeClash. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -107,9 +107,9 @@ const sendOtpEmail = async (toEmail, username, otp) => {
 // ✅ Welcome Email
 const sendWelcomeEmail = async (toEmail, username) => {
   const mailOptions = {
-    from: `"CodeArena" <${process.env.EMAIL_USER}>`,
+    from: `"NodeClash" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `Welcome to CodeArena, ${username}! ⚡`,
+    subject: `Welcome to NodeClash, ${username}! ⚡`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -162,7 +162,7 @@ const sendWelcomeEmail = async (toEmail, username) => {
           </div>
 
           <div style="padding:20px 40px; border-top:1px solid #1f1f1f; text-align:center;">
-            <p style="color:#333; font-size:11px; margin:0;">© 2025 CodeArena. Code smarter. Battle harder.</p>
+            <p style="color:#333; font-size:11px; margin:0;">© 2025 NodeClash. Code smarter. Battle harder.</p>
           </div>
         </div>
       </body>
@@ -182,11 +182,11 @@ const sendWelcomeEmail = async (toEmail, username) => {
 const sendExpiryEmail = async (toEmail, username, daysLeft) => {
   const isUrgent = daysLeft <= 1
   const subject = isUrgent
-    ? `⚠️ ${username}, your CodeArena PRO expires TODAY!`
-    : `🔔 ${username}, your CodeArena PRO expires in ${daysLeft} days`
+    ? `⚠️ ${username}, your NodeClash PRO expires TODAY!`
+    : `🔔 ${username}, your NodeClash PRO expires in ${daysLeft} days`
 
   const mailOptions = {
-    from: `"CodeArena" <${process.env.EMAIL_USER}>`,
+    from: `"NodeClash" <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject,
     html: `
@@ -216,7 +216,7 @@ const sendExpiryEmail = async (toEmail, username, daysLeft) => {
             <p style="color:#888; font-size:14px; line-height:1.6; margin:0 0 32px 0;">
               Hey <strong style="color:#e5e5e5;">${username}</strong>! ${isUrgent
                 ? 'This is your final reminder. After today, you will lose access to The Elite Archive, Clara AI interviews, and all premium features.'
-                : `Your CodeArena PRO membership is expiring in <strong style="color:${isUrgent ? '#ef4444' : '#ff6b35'};">${daysLeft} days</strong>. Renew now to keep your competitive edge.`}
+                : `Your NodeClash PRO membership is expiring in <strong style="color:${isUrgent ? '#ef4444' : '#ff6b35'};">${daysLeft} days</strong>. Renew now to keep your competitive edge.`}
             </p>
 
             <!-- Features at risk -->
@@ -244,7 +244,7 @@ const sendExpiryEmail = async (toEmail, username, daysLeft) => {
 
           <!-- Footer -->
           <div style="padding:20px 40px; border-top:1px solid #1f1f1f; text-align:center;">
-            <p style="color:#333; font-size:11px; margin:0;">© 2025 CodeArena. Code smarter. Battle harder.</p>
+            <p style="color:#333; font-size:11px; margin:0;">© 2025 NodeClash. Code smarter. Battle harder.</p>
           </div>
         </div>
       </body>
@@ -269,7 +269,7 @@ const sendNewsletterNotificationEmail = async (subscriberEmail, preferences) => 
     <div style="font-family: Arial, sans-serif; background:#09090b; padding:40px; color:#fff;">
       <div style="max-width:500px; margin:0 auto; background:#111; padding:30px; border-radius:12px; border:1px solid #27272a;">
         <h2 style="color:#ff6b35; margin-top:0;">New Newsletter Subscriber! 🎉</h2>
-        <p style="color:#ccc;">A new user has just subscribed to the CodeArena newsletter.</p>
+        <p style="color:#ccc;">A new user has just subscribed to the NodeClash newsletter.</p>
         <div style="background:#1a1a1a; padding:15px; border-radius:8px; margin:20px 0;">
           <p style="margin:5px 0;"><strong>Email:</strong> <span style="color:#22c55e;">${subscriberEmail}</span></p>
           <p style="margin:5px 0;"><strong>General Newsletter:</strong> ${preferences.general ? '✅ Yes' : '❌ No'}</p>
@@ -297,7 +297,7 @@ const sendContactEmail = async (senderEmail, message) => {
     <div style="font-family: Arial, sans-serif; background:#09090b; padding:40px; color:#fff;">
       <div style="max-width:500px; margin:0 auto; background:#111; padding:30px; border-radius:12px; border:1px solid #27272a;">
         <h2 style="color:#ff6b35; margin-top:0;">New Contact Form Message! 📩</h2>
-        <p style="color:#ccc;">Someone has reached out via the CodeArena contact form.</p>
+        <p style="color:#ccc;">Someone has reached out via the NodeClash contact form.</p>
         <div style="background:#1a1a1a; padding:15px; border-radius:8px; margin:20px 0;">
           <p style="margin:5px 0;"><strong>From:</strong> <span style="color:#22c55e;">${senderEmail}</span></p>
           <div style="margin-top:15px; padding-top:15px; border-top:1px solid #333;">

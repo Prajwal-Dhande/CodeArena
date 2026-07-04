@@ -111,7 +111,7 @@ router.post('/seed', async (req, res) => {
       },
       {
         title: '🏆 Grand Prix — Season Finale',
-        description: 'The ultimate CodeArena tournament. Last season winner: @champion99',
+        description: 'The ultimate NodeClash tournament. Last season winner: @champion99',
         tier: 'pro', difficulty: 'Hard', problem: 'Merge K Sorted Lists', problemSlug: 'merge-k-sorted-lists-faang',
         prizePool: '👑 Grandmaster Badge + 1000 ELO + Hall of Fame',
         maxSlots: 16, duration: 30, status: 'completed',
