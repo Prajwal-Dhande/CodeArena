@@ -209,4 +209,77 @@ router.get('/status', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/payment/webhook (Background Server-to-Server Payment Verification)
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  
+  if (!secret) {
+    console.error("Razorpay Webhook Secret not configured!");
+    return res.status(200).send("Webhook secret missing"); // Returning 200 so Razorpay stops retrying
+  }
+
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    
+    // Validate signature using raw body
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(req.rawBody || JSON.stringify(req.body))
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      console.error("Invalid Webhook Signature!");
+      return res.status(400).send("Invalid signature");
+    }
+
+    const event = req.body.event;
+    
+    // Handle specific payment events (either payment.captured or order.paid)
+    if (event === 'order.paid' || event === 'payment.captured') {
+      const entity = req.body.payload.payment ? req.body.payload.payment.entity : req.body.payload.order.entity;
+      const orderId = entity.order_id || entity.id; // order.paid has id as order_id
+      const notes = entity.notes || {};
+      const userId = notes.userId;
+      const planId = notes.plan || 'pro_1m';
+
+      if (userId) {
+        const userBeforeUpdate = await User.findById(userId);
+        
+        // Skip if already upgraded via frontend verify
+        if (userBeforeUpdate && (!userBeforeUpdate.isPremium || userBeforeUpdate.premiumOrderId !== orderId)) {
+          let expiry = new Date();
+          if (userBeforeUpdate.isPremium && userBeforeUpdate.premiumExpiry && new Date(userBeforeUpdate.premiumExpiry) > new Date()) {
+            expiry = new Date(userBeforeUpdate.premiumExpiry);
+          }
+
+          if (planId.includes('6m') || planId === 'six_months' || planId === 'yearly') {
+            expiry.setMonth(expiry.getMonth() + 6);
+            expiry.setDate(expiry.getDate() + 7);
+          } else {
+            expiry.setMonth(expiry.getMonth() + 1);
+          }
+
+          await User.findByIdAndUpdate(userId, { 
+            isPremium: true,
+            premiumPlan: planId,
+            premiumExpiry: expiry,
+            premiumOrderId: orderId
+          });
+          
+          console.log(`Webhook successfully upgraded User ${userId} to Pro!`);
+        } else {
+          console.log(`User ${userId} already upgraded by frontend verify route. Webhook skipped.`);
+        }
+      }
+    }
+
+    // Acknowledge receipt of the webhook to Razorpay
+    res.status(200).json({ status: 'ok' });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    // Send 200 so Razorpay doesn't keep retrying continuously for non-critical errors
+    res.status(200).send("Processed with error");
+  }
+});
+
 module.exports = router;

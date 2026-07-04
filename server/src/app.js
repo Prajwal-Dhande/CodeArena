@@ -30,7 +30,11 @@ app.use(cors({
 }))
 // 👆🔥 YAHAN HUA HAI ASLI FIX (CORS UPDATE) 🔥👆
 
-app.use(express.json())
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/code', codeRoutes)
