@@ -233,6 +233,7 @@ export default function Lobby() {
 
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [roomCode, setRoomCode] = useState('')
+  const [watchRoomCode, setWatchRoomCode] = useState('')
   const [creating, setCreating] = useState(false)
   const [createdRoomCode, setCreatedRoomCode] = useState(null)
   const [roomCodeCopied, setRoomCodeCopied] = useState(false)
@@ -423,6 +424,11 @@ export default function Lobby() {
     if (roomCode.trim().length < 4) return
     setJoining(true)
     setTimeout(() => navigate(`/battle?room=${roomCode.trim()}`), 800)
+  }
+
+  const handleWatchRoom = () => {
+    if (watchRoomCode.trim().length < 4) return
+    navigate(`/battle?room=${watchRoomCode.trim()}&viewOnly=true`)
   }
 
   const solvedCount = dailyPuzzles.filter(p => user?.solvedPuzzles?.some(id => String(id) === String(p._id || p.id))).length;
@@ -1039,9 +1045,31 @@ export default function Lobby() {
         {/* WATCH LIVE TAB */}
         {tab === 'live' && (
           <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', margin: '32px auto', maxWidth: 600 }}>
-            <div style={{ fontSize: 48, marginBottom: 16, color: 'var(--text-muted)' }}><Eye size={48} /></div>
+            <div style={{ fontSize: 48, marginBottom: 16, color: 'var(--blue)' }}><Eye size={48} /></div>
             <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: 'var(--text-main)' }}>Watch Live Battles</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Live spectating coming soon!</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>Enter a room code below to spectate a live match.</p>
+            
+            <div className="join-input-wrapper" style={{ margin: '0 auto 24px', maxWidth: 400 }}>
+              <Lock className="join-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Enter Room Code (e.g. A1B2C3)"
+                className="join-input"
+                value={watchRoomCode}
+                onChange={e => setWatchRoomCode(e.target.value.toUpperCase())}
+                maxLength={8}
+                onKeyDown={(e) => e.key === 'Enter' && handleWatchRoom()}
+              />
+            </div>
+            
+            <button 
+              className="start-room-btn" 
+              disabled={watchRoomCode.trim().length < 4}
+              onClick={handleWatchRoom}
+              style={{ maxWidth: 400, margin: '0 auto', background: watchRoomCode.trim().length >= 4 ? 'var(--blue)' : 'var(--glass-overlay)' }}
+            >
+              <Eye size={16} /> Spectate Match
+            </button>
           </div>
         )}
       </div>

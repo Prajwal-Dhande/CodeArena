@@ -196,6 +196,8 @@ export default function BattleRoom() {
   const [claraMessages, setClaraMessages] = useState([])
   const [claraThinking, setClaraThinking] = useState(false)
   const [roomPlayers, setRoomPlayers] = useState([])
+  const roomPlayersRef = useRef([])
+  useEffect(() => { roomPlayersRef.current = roomPlayers }, [roomPlayers])
   const [battleStarted, setBattleStarted] = useState(false)
   const [opponentName, setOpponentName] = useState('Opponent')
   const [gameOver, setGameOver] = useState(false)
@@ -439,12 +441,39 @@ export default function BattleRoom() {
           rank: currentUser?.rank
         })
       } else {
-        socket.emit('join_room', { roomId, username: currentUser?.username || `Player_${socket.id?.slice(0, 4)}`, avatar: currentUser?.avatar })
+        socket.emit('join_room', { 
+          roomId, 
+          username: currentUser?.username || `Player_${socket.id?.slice(0, 4)}`, 
+          avatar: currentUser?.avatar,
+          isSpectator: isViewOnlyMode()
+        })
       }
     })
 
     socket.on('disconnect', () => setConnected(false))
-    socket.on('opponent_code', ({ code }) => setOpponentCode(code))
+    socket.on('opponent_code', ({ code }) => setOpponentCode(code)) // Fallback for old clients
+    socket.on('player_code_update', ({ username, code }) => {
+      const players = roomPlayersRef.current;
+      if (isViewOnlyMode()) {
+        if (players[0]?.username === username) setCode(code)
+        else if (players[1]?.username === username) setOpponentCode(code)
+      } else {
+        if (username !== (currentUser?.username || players.find(p => !p.isBot)?.username)) {
+          setOpponentCode(code)
+        }
+      }
+    })
+    socket.on('player_tests_update', ({ username, passed, total }) => {
+      const players = roomPlayersRef.current;
+      if (isViewOnlyMode()) {
+        if (players[0]?.username === username) setMyTests(passed)
+        else if (players[1]?.username === username) setOppTests(passed)
+      } else {
+        if (username !== (currentUser?.username || players.find(p => !p.isBot)?.username)) {
+          setOppTests(passed)
+        }
+      }
+    })
     socket.on('ai_constraint', ({ message }) => { setConstraint(message); setAiLoading(false) })
 
     socket.on('room_update', ({ players }) => {
@@ -674,7 +703,7 @@ export default function BattleRoom() {
     const roomId = getRoomId()
     localStorage.setItem(`nodeclash_draft_${roomId}`, val)
     if (!isPracticeMode() && !isViewOnlyMode()) {
-      socketRef.current?.emit('code_change', { roomId, code: val })
+      socketRef.current?.emit('code_change', { roomId, code: val, username: currentUser?.username || roomPlayers.find(p => !p.isBot)?.username || 'Player' })
     }
   }
 
@@ -742,7 +771,7 @@ export default function BattleRoom() {
 
       setMyTests(data.passed)
       if (data.complexity) setComplexity(data.complexity)
-      socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
+      socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total, username: currentUser?.username || roomPlayers.find(p => !p.isBot)?.username || 'Player' })
       setResults(resultsArray.map(r => ({
         i: r.testCase, ok: r.passed, result: r.result,
         expected: r.expected, input: JSON.stringify(r.input),
@@ -849,7 +878,7 @@ export default function BattleRoom() {
 
       setMyTests(data.passed)
       if (data.complexity) setComplexity(data.complexity)
-      socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total })
+      socketRef.current?.emit('tests_update', { roomId, passed: data.passed, total: data.total, username: currentUser?.username || roomPlayers.find(p => !p.isBot)?.username || 'Player' })
       
       const tId = getTournamentId()
       if (tId) {

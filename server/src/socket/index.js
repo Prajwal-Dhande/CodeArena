@@ -191,14 +191,26 @@ function initSocket(server) {
     })
 
     // ✅ ROOM JOIN & RECONNECTION
-    socket.on('join_room', ({ roomId, username, avatar }) => {
+    socket.on('join_room', ({ roomId, username, avatar, isSpectator }) => {
       socket.join(roomId)
 
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { players: [], battleStarted: false, mode: 'quick_play' })
+        rooms.set(roomId, { players: [], spectators: [], battleStarted: false, mode: 'quick_play' })
       }
       
       const roomData = rooms.get(roomId)
+      if (!roomData.spectators) roomData.spectators = [] // For backwards compatibility
+      
+      if (isSpectator) {
+        const existingSpectator = roomData.spectators.find(s => s.username === username)
+        if (existingSpectator) existingSpectator.socketId = socket.id
+        else roomData.spectators.push({ username: username || `Spec_${socket.id.slice(0, 4)}`, socketId: socket.id })
+        
+        socket.emit('room_update', { players: roomData.players, count: roomData.players.length })
+        if (roomData.battleStarted) socket.emit('battle_start', { players: roomData.players })
+        return
+      }
+
       const existingPlayer = roomData.players.find(p => p.username === username)
       
       if (existingPlayer) {
@@ -231,12 +243,14 @@ function initSocket(server) {
       }
     })
 
-    socket.on('code_change', ({ roomId, code }) => {
-      socket.to(roomId).emit('opponent_code', { code })
+    socket.on('code_change', ({ roomId, code, username }) => {
+      socket.to(roomId).emit('player_code_update', { username, code })
+      socket.to(roomId).emit('opponent_code', { code }) // Fallback
     })
 
-    socket.on('tests_update', ({ roomId, passed, total }) => {
-      socket.to(roomId).emit('opponent_tests', { passed, total })
+    socket.on('tests_update', ({ roomId, passed, total, username }) => {
+      socket.to(roomId).emit('player_tests_update', { username, passed, total })
+      socket.to(roomId).emit('opponent_tests', { passed, total }) // Fallback
     })
 
     socket.on('battle_won', ({ roomId, winner }) => {
