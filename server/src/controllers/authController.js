@@ -211,23 +211,36 @@ const getMe = async (req, res) => {
 // 🔥 GOOGLE OAUTH
 const googleAuth = async (req, res) => {
   try {
-    const { credential } = req.body
-    if (!credential) return res.status(400).json({ message: 'Google credential required' })
+    const { credential, access_token } = req.body
+    if (!credential && !access_token) return res.status(400).json({ message: 'Google credential or access_token required' })
 
-    const clientId = process.env.GOOGLE_CLIENT_ID
-    if (!clientId) return res.status(500).json({ message: 'Google OAuth not configured on server' })
+    let email, name, googleId;
 
-    // Verify the Google ID token
-    const { OAuth2Client } = require('google-auth-library')
-    const client = new OAuth2Client(clientId)
-    
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: clientId,
-    })
-    const payload = ticket.getPayload()
+    if (credential) {
+      const clientId = process.env.GOOGLE_CLIENT_ID
+      if (!clientId) return res.status(500).json({ message: 'Google OAuth not configured on server' })
 
-    const { email, name, sub: googleId, picture } = payload
+      const { OAuth2Client } = require('google-auth-library')
+      const client = new OAuth2Client(clientId)
+      
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      })
+      const payload = ticket.getPayload()
+      email = payload.email
+      name = payload.name
+      googleId = payload.sub
+    } else if (access_token) {
+      const axios = require('axios');
+      const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      email = response.data.email
+      name = response.data.name
+      googleId = response.data.sub
+    }
+
     if (!email) return res.status(400).json({ message: 'Could not get email from Google' })
 
     // Find or create user
