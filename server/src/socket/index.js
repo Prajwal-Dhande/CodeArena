@@ -200,9 +200,13 @@ function initSocket(server) {
       
       const roomData = rooms.get(roomId)
       
-      // Sync room settings (problem and timeLimit) to whoever joins
+      // Update room settings if a player brings them (fixes race condition if Player 2 joins before Player 1)
+      if (problemSlug && !roomData.problemSlug) roomData.problemSlug = problemSlug
+      if (timeLimit && !roomData.timeLimit) roomData.timeLimit = timeLimit
+      
+      // Sync room settings (problem and timeLimit) to EVERYONE in the room
       if (roomData.problemSlug || roomData.timeLimit) {
-        socket.emit('room_settings', { problemSlug: roomData.problemSlug, timeLimit: roomData.timeLimit })
+        io.to(roomId).emit('room_settings', { problemSlug: roomData.problemSlug, timeLimit: roomData.timeLimit })
       }
       if (!roomData.spectators) roomData.spectators = [] // For backwards compatibility
       
