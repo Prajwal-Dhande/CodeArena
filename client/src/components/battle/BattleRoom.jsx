@@ -115,7 +115,7 @@ const isViewOnlyMode = () => new URLSearchParams(window.location.search).get('vi
 const getTournamentId = () => new URLSearchParams(window.location.search).get('tournamentId')
 
 export default function BattleRoom() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
   // Redirect to landing page if accessed directly without any parameters (e.g. from Google Search)
@@ -445,12 +445,27 @@ export default function BattleRoom() {
           roomId, 
           username: currentUser?.username || `Player_${socket.id?.slice(0, 4)}`, 
           avatar: currentUser?.avatar,
-          isSpectator: isViewOnlyMode()
+          isSpectator: isViewOnlyMode(),
+          problemSlug: searchParams.get('problem'),
+          timeLimit: searchParams.get('time')
         })
       }
     })
 
     socket.on('disconnect', () => setConnected(false))
+    
+    socket.on('room_settings', ({ problemSlug, timeLimit }) => {
+      const currentProblem = searchParams.get('problem');
+      const currentTime = searchParams.get('time');
+      if ((problemSlug && currentProblem !== problemSlug) || (timeLimit && currentTime !== String(timeLimit))) {
+        setSearchParams(prev => {
+          if (problemSlug) prev.set('problem', problemSlug);
+          if (timeLimit) prev.set('time', timeLimit);
+          return prev;
+        }, { replace: true });
+      }
+    })
+
     socket.on('opponent_code', ({ code }) => setOpponentCode(code)) // Fallback for old clients
     socket.on('player_code_update', ({ username, code }) => {
       const players = roomPlayersRef.current;

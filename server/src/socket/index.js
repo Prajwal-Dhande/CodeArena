@@ -191,14 +191,19 @@ function initSocket(server) {
     })
 
     // ✅ ROOM JOIN & RECONNECTION
-    socket.on('join_room', ({ roomId, username, avatar, isSpectator }) => {
+    socket.on('join_room', ({ roomId, username, avatar, isSpectator, problemSlug, timeLimit }) => {
       socket.join(roomId)
 
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { players: [], spectators: [], battleStarted: false, mode: 'quick_play' })
+        rooms.set(roomId, { players: [], spectators: [], battleStarted: false, mode: 'quick_play', problemSlug, timeLimit })
       }
       
       const roomData = rooms.get(roomId)
+      
+      // Sync room settings (problem and timeLimit) to whoever joins
+      if (roomData.problemSlug || roomData.timeLimit) {
+        socket.emit('room_settings', { problemSlug: roomData.problemSlug, timeLimit: roomData.timeLimit })
+      }
       if (!roomData.spectators) roomData.spectators = [] // For backwards compatibility
       
       if (isSpectator) {
