@@ -524,7 +524,12 @@ export default function BattleRoom() {
 
     socket.on('opponent_tests', ({ passed }) => setOppTests(passed))
 
-    socket.on('opponent_won', () => {
+    socket.on('opponent_won', ({ winner }) => {
+      if (isViewOnlyMode()) {
+        alert(`Match Finished! ${winner || 'A player'} has won the match.`);
+        navigate('/lobby', { replace: true });
+        return;
+      }
       if (!gameOverRef.current) {
         gameOverRef.current = true
         setTimeTaken(Math.round((Date.now() - startTimeRef.current) / 1000))
@@ -561,7 +566,14 @@ export default function BattleRoom() {
     })
 
     // Explicit forfeit by opponent (no grace period)
-    socket.on('opponent_left_match', ({ message }) => {
+    socket.on('opponent_left_match', ({ message, loser }) => {
+      if (isViewOnlyMode()) {
+        alert(`Match Finished! ${loser || 'A player'} forfeited the match.`);
+        navigate('/lobby', { replace: true });
+        return;
+      }
+      if (loser === currentUser?.username) return; // Ignore if current user is the loser
+      
       if (!gameOverRef.current) {
         gameOverRef.current = true
         setOpponentForfeitToast(message || 'Opponent left the battle!')
@@ -571,6 +583,11 @@ export default function BattleRoom() {
     })
 
     socket.on('player_left', ({ username }) => {
+      if (isViewOnlyMode()) {
+        alert(`Match Aborted! ${username} disconnected.`);
+        navigate('/lobby', { replace: true });
+        return;
+      }
       setOpponentCode(`// ${username} left the battle...`)
       clearTimeout(botTimeoutRef.current)
       if (!gameOverRef.current) {

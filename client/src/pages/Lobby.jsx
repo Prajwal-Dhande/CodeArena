@@ -1044,32 +1044,32 @@ export default function Lobby() {
 
         {/* WATCH LIVE TAB */}
         {tab === 'live' && (
-          <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', margin: '32px auto', maxWidth: 600 }}>
-            <div style={{ fontSize: 48, marginBottom: 16, color: 'var(--blue)' }}><Eye size={48} /></div>
-            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, marginBottom: 8, color: 'var(--text-main)' }}>Watch Live Battles</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 32 }}>Enter a room code below to spectate a live match.</p>
-            
-            <div className="join-input-wrapper" style={{ margin: '0 auto 24px', maxWidth: 400 }}>
-              <Lock className="join-icon" size={20} />
-              <input
-                type="text"
-                placeholder="Enter Room Code (e.g. A1B2C3)"
-                className="join-input"
-                value={watchRoomCode}
-                onChange={e => setWatchRoomCode(e.target.value.toUpperCase())}
-                maxLength={8}
-                onKeyDown={(e) => e.key === 'Enter' && handleWatchRoom()}
-              />
+          <div className="join-container glass-panel">
+            <div className="join-icon" style={{ background: 'var(--blue)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', justifyContent: 'center' }}>
+              <Eye size={42} color="var(--blue)" style={{ WebkitTextFillColor: 'initial' }} />
             </div>
-            
+            <h2 className="join-title">Watch Live Battles</h2>
+            <p className="join-desc">Enter an active room code below to spectate a match in real-time.</p>
+            <label className="label-mini">ROOM CODE</label>
+            <input 
+              placeholder="e.g. A1B2C3" 
+              value={watchRoomCode} 
+              onChange={e => setWatchRoomCode(e.target.value.toUpperCase())} 
+              onKeyDown={e => e.key === 'Enter' && handleWatchRoom()} 
+              maxLength={8}
+              className="join-input" 
+            />
             <button 
-              className="start-room-btn" 
-              disabled={watchRoomCode.trim().length < 4}
-              onClick={handleWatchRoom}
-              style={{ maxWidth: 400, margin: '0 auto', background: watchRoomCode.trim().length >= 4 ? 'var(--blue)' : 'var(--glass-overlay)' }}
+              onClick={handleWatchRoom} 
+              disabled={watchRoomCode.trim().length < 4} 
+              className={`btn-primary-full ${watchRoomCode.trim().length < 4 ? 'disabled' : ''}`}
+              style={{ background: watchRoomCode.trim().length >= 4 ? 'var(--blue)' : 'var(--glass-overlay)' }}
             >
-              <Eye size={16} /> Spectate Match
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Eye size={18} /> Spectate Match
+              </span>
             </button>
+            <div className="join-hint">💡 You will join as a read-only spectator. Players won't be interrupted.</div>
           </div>
         )}
       </div>

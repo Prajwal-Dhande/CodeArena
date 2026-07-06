@@ -277,8 +277,8 @@ function initSocket(server) {
       if (remaining.length === 1) {
         const winner = remaining[0]
 
-        // Notify the remaining player immediately (no grace period for explicit quit)
-        io.to(winner.socketId).emit('opponent_left_match', {
+        // Notify the remaining player and spectators immediately
+        io.to(roomId).emit('opponent_left_match', {
           winner: winner.username,
           loser: username,
           message: `${username} forfeited the match. You win!`
