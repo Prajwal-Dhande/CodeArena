@@ -395,13 +395,15 @@ export default function Lobby() {
       finalProblemSlug = fallbackProb ? fallbackProb.slug : 'contains-duplicate';
     }
 
+    const time = parseInt(timeLimit.split(' ')[0]) || 15;
+
     if (matchData.isReal) {
       const roomId = matchData.roomId
-      navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&real=true&mode=${matchmakingMode}`)
+      navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&real=true&mode=${matchmakingMode}&time=${time}`)
       return
     }
     const roomId = `${matchmakingMode}-${Math.floor(Date.now() / 30000)}`
-    navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&bot=${matchData.name}&mode=${matchmakingMode}`)
+    navigate(`/battle?problem=${finalProblemSlug}&room=${roomId}&bot=${matchData.name}&mode=${matchmakingMode}&time=${time}`)
   }
 
   const handleCreateRoom = () => {
@@ -413,7 +415,8 @@ export default function Lobby() {
 
   const handleStartCreatedRoom = () => {
     if (!selectedProblem || !createdRoomCode) return
-    navigate(`/battle?problem=${selectedProblem.slug}&room=${createdRoomCode}`)
+    const time = parseInt(timeLimit.split(' ')[0]) || 15;
+    navigate(`/battle?problem=${selectedProblem.slug}&room=${createdRoomCode}&time=${time}`)
   }
 
   const handleJoinRoom = () => {

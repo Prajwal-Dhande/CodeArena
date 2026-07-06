@@ -235,15 +235,15 @@ export default function BattleRoom() {
 
   useEffect(() => {
     if (battleStarted) {
-      // ✅ Agar problem already solved hai toh timer mat chalaao
-      if (isAlreadySolved) return;
-
       // ✅ Premium/Vault mode = UNLIMITED time, no countdown
       if (isPremiumMode()) return;
 
       const roomId = getRoomId();
       const savedRemaining = localStorage.getItem(`nodeclash_remainingTime_${roomId}`);
       
+      const timeParam = searchParams.get('time');
+      const initialTime = timeParam ? parseInt(timeParam) * 60 : 900; // 900s = 15m default
+
       if (savedRemaining) {
         const timeLeft = parseInt(savedRemaining, 10);
         if (timeLeft > 0) {
@@ -254,12 +254,12 @@ export default function BattleRoom() {
           handleTimeUp();
         }
       } else {
-        localStorage.setItem(`nodeclash_remainingTime_${roomId}`, '900');
-        setRemainingTime(900);
+        localStorage.setItem(`nodeclash_remainingTime_${roomId}`, String(initialTime));
+        setRemainingTime(initialTime);
         setTimerKey(prev => prev + 1);
       }
     }
-  }, [battleStarted, isAlreadySolved])
+  }, [battleStarted, searchParams])
 
   useEffect(() => {
     const slug = getProblemSlug()
@@ -1089,12 +1089,12 @@ export default function BattleRoom() {
           })()}
         </div>
 
-        {!premiumMode && !isAlreadySolved && (
+        {!premiumMode && (
           <div className="timer-box">
             <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1 }}>TIME</span>
             {battleStarted
               ? <Timer key={timerKey} initialSeconds={remainingTime} roomId={getRoomId()} onTimeUp={handleTimeUp} />
-              : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: 'var(--text-muted)' }}>15:00</span>
+              : <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: 'var(--text-muted)' }}>{searchParams.get('time') || '15'}:00</span>
             }
           </div>
         )}
