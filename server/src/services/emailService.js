@@ -49,7 +49,7 @@ const sendOtpEmail = async (toEmail, username, otp) => {
           <!-- Header -->
           <div style="background:linear-gradient(135deg, rgba(255,107,53,0.15), rgba(15,15,20,1)); padding:40px 40px 32px; text-align:center; border-bottom:1px solid #1f1f1f;">
             <div style="font-weight:900; font-size:28px; letter-spacing:-0.5px; margin-bottom:8px;">
-              <span style="color:#ff6b35;">Code</span><span style="color:#ffffff;">Arena</span>
+              <span style="color:#ff6b35;">Node</span><span style="color:#ffffff;">Clash</span>
             </div>
             <p style="color:#555; font-size:13px; margin:0;">Real-time 1v1 DSA Battles</p>
           </div>
@@ -119,7 +119,7 @@ const sendWelcomeEmail = async (toEmail, username) => {
           <div style="background:linear-gradient(135deg, rgba(255,107,53,0.15), rgba(15,15,20,1)); padding:40px; text-align:center; border-bottom:1px solid #1f1f1f;">
             <div style="font-size:48px; margin-bottom:16px;">⚔️</div>
             <div style="font-weight:900; font-size:28px; letter-spacing:-0.5px; margin-bottom:8px;">
-              <span style="color:#ff6b35;">Code</span><span style="color:#ffffff;">Arena</span>
+              <span style="color:#ff6b35;">Node</span><span style="color:#ffffff;">Clash</span>
             </div>
           </div>
 
@@ -203,7 +203,7 @@ const sendExpiryEmail = async (toEmail, username, daysLeft) => {
           <div style="background:linear-gradient(135deg, ${isUrgent ? 'rgba(239,68,68,0.15)' : 'rgba(255,107,53,0.15)'}, rgba(15,15,20,1)); padding:40px 40px 32px; text-align:center; border-bottom:1px solid #1f1f1f;">
             <div style="font-size:48px; margin-bottom:16px;">${isUrgent ? '⏰' : '🔔'}</div>
             <div style="font-weight:900; font-size:28px; letter-spacing:-0.5px; margin-bottom:8px;">
-              <span style="color:#ff6b35;">Code</span><span style="color:#ffffff;">Arena</span>
+              <span style="color:#ff6b35;">Node</span><span style="color:#ffffff;">Clash</span>
             </div>
             <p style="color:#555; font-size:13px; margin:0;">Premium Membership Alert</p>
           </div>
@@ -232,7 +232,7 @@ const sendExpiryEmail = async (toEmail, username, daysLeft) => {
             </div>
 
             <!-- CTA Button -->
-            <a href="${process.env.CLIENT_URL || 'https://code-arena-virid.vercel.app'}/premium"
+            <a href="${process.env.CLIENT_URL || 'https://nodeclash.in'}/premium"
               style="display:block; background:linear-gradient(135deg, #ff6b35, #f7451d); color:#fff; text-align:center; padding:16px; border-radius:10px; font-weight:700; font-size:15px; text-decoration:none; box-shadow:0 4px 20px rgba(255,107,53,0.3);">
               🔄 Renew PRO Now
             </a>

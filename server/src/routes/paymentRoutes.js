@@ -130,7 +130,7 @@ router.post('/verify', authMiddleware, async (req, res) => {
                     <tr><td style="padding: 8px 0; color: #888;">Order ID</td><td style="text-align: right; font-size: 11px; color: #888;">${razorpay_order_id}</td></tr>
                   </table>
                 </div>
-                <a href="https://code-arena-virid.vercel.app/interview-dsa" style="display: inline-block; background: linear-gradient(135deg, #ff6b35, #f7451d); color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-top: 8px;">
+                <a href="https://nodeclash.in/interview-dsa" style="display: inline-block; background: linear-gradient(135deg, #ff6b35, #f7451d); color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-top: 8px;">
                   🚀 Start Practicing Now
                 </a>
               </div>
