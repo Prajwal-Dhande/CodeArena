@@ -118,6 +118,13 @@ export default function BattleRoom() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
+  // Redirect to landing page if accessed directly without any parameters (e.g. from Google Search)
+  useEffect(() => {
+    if (!window.location.search) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   // USER STATE
   const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('user') || '{}'))
 
