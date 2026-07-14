@@ -562,8 +562,21 @@ export default function BattleRoom() {
         p.username === username ? { ...p, finished: true, timeTaken, position } : p
       ))
     })
+
+    // Immediate notification when opponent disconnects (before grace period ends)
+    socket.on('player_disconnected', ({ username }) => {
+      if (isViewOnlyMode()) return; // Spectators don't need this
+      if (username === currentUser?.username) return; // Ignore own disconnect echo
+      setOpponentForfeitToast(`⏳ ${username} disconnected. Waiting 15s for reconnection...`)
+    })
     
-    socket.on('opponent_left_win', ({ message }) => {
+    socket.on('opponent_left_win', ({ message, winner, loser }) => {
+      if (isViewOnlyMode()) {
+        alert(`Match Finished! ${loser || 'A player'} disconnected. ${winner || 'Opponent'} wins!`);
+        navigate('/lobby', { replace: true });
+        return;
+      }
+      if (loser === currentUser?.username) return; // Don't show win screen to the loser
       if (!gameOverRef.current) {
         gameOverRef.current = true
         setOpponentForfeitToast(message || 'Opponent disconnected. You win!')

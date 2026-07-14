@@ -318,6 +318,9 @@ function initSocket(server) {
           const leavingPlayer = roomData.players[playerIndex]
           
           if (roomData.battleStarted) {
+            // Immediately notify remaining player that opponent disconnected
+            io.to(roomId).emit('player_disconnected', { username: leavingPlayer.username })
+            
             // 15-second grace period for reconnection
             console.log(`⏳ Starting 15s grace period for ${leavingPlayer.username}...`)
             
@@ -328,7 +331,8 @@ function initSocket(server) {
                 
                 if (remainingPlayers.length === 1) {
                   const winner = remainingPlayers[0]
-                  io.to(winner.socketId).emit('opponent_left_win', {
+                  // Broadcast to entire room so winner gets the message even if their socketId changed
+                  io.to(roomId).emit('opponent_left_win', {
                     winner: winner.username,
                     loser: leavingPlayer.username,
                     message: `${leavingPlayer.username} disconnected and didn't return. You win!`
