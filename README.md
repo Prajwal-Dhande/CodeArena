@@ -30,9 +30,12 @@ Mid-battle, the AI analyzes your code and injects dynamic, real-time constraints
 | Feature | Description |
 | :--- | :--- |
 | **⚔️ Live 1v1 Battles** | Real-time matchmaking and bidirectional code execution powered by Socket.io. See your opponent's progress live. |
+| **👀 Watch Live (Spectator)** | Join active rooms via a secure Room Code to spectate high-stakes matches in real-time with a dual-pane editor view. |
 | **🤖 AI Interviewer** | Integrated with **Groq** & **Google Gemini API** to analyze code logic and throw sudden constraints mid-game. |
 | **🏆 ELO Ranking System** | A highly competitive global leaderboard. Start at `Bronze` and fight your way up to `Grandmaster` (4000+ ELO). |
+| **💎 Premium Vault & Quests** | Unlock advanced algorithmic challenges in the Vault and complete Daily Quests to earn bonus XP. |
 | **💻 Pro-Grade Editor** | Embedded **Monaco Editor** (the engine behind VS Code). Supports JavaScript, Python, C++, and Java with auto-complete. |
+| **🛡️ Seamless Authentication** | Frictionless, secure login experience powered by official Google OAuth integration. |
 | **🧠 Practice Mode** | Not ready for ranked? Spar against a smart AI Bot to warm up your logic before hitting the live arena. |
 
 ---
