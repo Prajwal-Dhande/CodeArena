@@ -11,7 +11,7 @@ import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "reac
 import { synthwaveTheme } from './MonacoThemes';
 import LofiRadio from './LofiRadio';
 import VisualFlowHint from './VisualFlowHint';
-import { CheckCircle, Lock, Bot, Brain, Swords, ClipboardList, Bug, Search, Lightbulb, Pencil, Copy, RotateCcw } from 'lucide-react'
+import { CheckCircle, Lock, Bot, Brain, Swords, ClipboardList, Bug, Search, Lightbulb, Pencil, Copy, RotateCcw, Eye } from 'lucide-react'
 import CompanyLogo from '../ui/CompanyLogo';
 
 const PROBLEM_COMPLEXITY = {
@@ -515,10 +515,11 @@ export default function BattleRoom() {
       }
     })
 
-    socket.on('battle_start', () => {
+    socket.on('battle_start', ({ elapsedSeconds } = {}) => {
       clearTimeout(botTimeoutRef.current)
       if (!battleStartedRef.current) {
-        battleStartedRef.current = true; setBattleStarted(true); startTimeRef.current = Date.now()
+        battleStartedRef.current = true; setBattleStarted(true); 
+        startTimeRef.current = elapsedSeconds ? Date.now() - (elapsedSeconds * 1000) : Date.now();
       }
     })
 
@@ -1585,9 +1586,10 @@ export default function BattleRoom() {
             {viewOnlyMode ? (
               <button disabled style={{ 
                 background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa',
-                padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: 'Inter', cursor: 'default' 
+                padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, fontFamily: 'Inter', cursor: 'default',
+                display: 'flex', alignItems: 'center', gap: '6px'
               }}>
-                📋 Review Mode
+                <Eye size={14} /> Review Mode
               </button>
             ) : (
               <>

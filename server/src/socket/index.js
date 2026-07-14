@@ -216,7 +216,10 @@ function initSocket(server) {
         else roomData.spectators.push({ username: username || `Spec_${socket.id.slice(0, 4)}`, socketId: socket.id })
         
         socket.emit('room_update', { players: roomData.players, count: roomData.players.length })
-        if (roomData.battleStarted) socket.emit('battle_start', { players: roomData.players })
+        if (roomData.battleStarted) {
+          const elapsedSeconds = Math.floor((Date.now() - (roomData.battleStartTime || Date.now())) / 1000)
+          socket.emit('battle_start', { players: roomData.players, elapsedSeconds })
+        }
         return
       }
 
@@ -248,7 +251,12 @@ function initSocket(server) {
 
       if (roomData.players.length === 2 && !roomData.battleStarted) {
         roomData.battleStarted = true
+        roomData.battleStartTime = Date.now()
         io.to(roomId).emit('battle_start', { players: roomData.players })
+      } else if (roomData.battleStarted && existingPlayer) {
+        // Player reconnected mid-battle, sync their timer
+        const elapsedSeconds = Math.floor((Date.now() - (roomData.battleStartTime || Date.now())) / 1000)
+        socket.emit('battle_start', { players: roomData.players, elapsedSeconds })
       }
     })
 
