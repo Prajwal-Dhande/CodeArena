@@ -204,6 +204,8 @@ export default function BattleRoom() {
   const [gameResult, setGameResult] = useState(null)
   const [timeTaken, setTimeTaken] = useState(0)
   const [complexity, setComplexity] = useState(null)
+  const [spectators, setSpectators] = useState([])
+  const [showSpectatorList, setShowSpectatorList] = useState(false)
 
   const [timerKey, setTimerKey] = useState(0) 
   const [remainingTime, setRemainingTime] = useState(() => {
@@ -524,6 +526,10 @@ export default function BattleRoom() {
     })
 
     socket.on('opponent_tests', ({ passed }) => setOppTests(passed))
+
+    socket.on('spectators_update', ({ spectators: specList }) => {
+      setSpectators(specList || [])
+    })
 
     socket.on('opponent_won', ({ winner }) => {
       if (isViewOnlyMode()) {
@@ -1132,6 +1138,42 @@ export default function BattleRoom() {
             <span className="status-text" style={{ color: viewOnlyMode ? '#60a5fa' : battleStarted ? '#22c55e' : '#fb923c' }}>
               {viewOnlyMode ? <span style={{display: 'flex', alignItems: 'center', gap: 4}}><ClipboardList size={14}/> REVIEW</span> : battleStarted ? <span style={{display: 'flex', alignItems: 'center', gap: 4}}><Swords size={14}/> LIVE</span> : `${roomPlayers.length}/2`}
             </span>
+          </div>
+        )}
+
+        {/* Spectator indicator */}
+        {spectators.length > 0 && !isViewOnlyMode() && (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowSpectatorList(s => !s)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)',
+                borderRadius: 8, padding: '5px 12px', cursor: 'pointer',
+                color: '#60a5fa', fontSize: 12, fontWeight: 700, fontFamily: 'Inter'
+              }}
+            >
+              <Eye size={14} /> {spectators.length}
+            </button>
+            {showSpectatorList && (
+              <div style={{
+                position: 'absolute', top: '110%', right: 0, zIndex: 999,
+                background: 'rgba(15,15,20,0.95)', border: '1px solid rgba(96,165,250,0.2)',
+                borderRadius: 10, padding: '10px 0', minWidth: 180,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)'
+              }}>
+                <div style={{ padding: '4px 14px 8px', fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Spectators</div>
+                {spectators.map((name, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 14px', fontSize: 12, color: '#e2e8f0', fontWeight: 600
+                  }}>
+                    <Eye size={12} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                    {name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

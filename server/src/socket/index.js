@@ -215,6 +215,9 @@ function initSocket(server) {
         if (existingSpectator) existingSpectator.socketId = socket.id
         else roomData.spectators.push({ username: username || `Spec_${socket.id.slice(0, 4)}`, socketId: socket.id })
         
+        // Notify all players & spectators about updated spectator list
+        io.to(roomId).emit('spectators_update', { spectators: roomData.spectators.map(s => s.username) })
+        
         socket.emit('room_update', { players: roomData.players, count: roomData.players.length })
         if (roomData.battleStarted) {
           const elapsedSeconds = Math.floor((Date.now() - (roomData.battleStartTime || Date.now())) / 1000)
@@ -350,6 +353,15 @@ function initSocket(server) {
               io.to(roomId).emit('player_left', { username: leavingPlayer.username })
               io.to(roomId).emit('room_update', { players: remainingPlayers })
             }
+          }
+        }
+        
+        // Remove spectator on disconnect and notify room
+        if (roomData.spectators) {
+          const specIdx = roomData.spectators.findIndex(s => s.socketId === socket.id)
+          if (specIdx !== -1) {
+            roomData.spectators.splice(specIdx, 1)
+            io.to(roomId).emit('spectators_update', { spectators: roomData.spectators.map(s => s.username) })
           }
         }
       })
